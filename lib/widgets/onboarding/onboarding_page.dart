@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:haji_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/colors.dart';
 
 class OnboardingPage extends StatelessWidget {
   final String image;

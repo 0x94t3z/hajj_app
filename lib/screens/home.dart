@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:haji_app/widgets/components/bottom_nav_bar.dart';
-import 'package:haji_app/widgets/components/top_nav_bar.dart';
+import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
+import 'package:hajj_app/widgets/components/top_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
