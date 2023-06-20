@@ -17,10 +17,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopNavBar(),
-      body: const Center(
-        child: Text('Profile Screen'),
-      ),
-      bottomNavigationBar: BottomNavBar(
+      body: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {

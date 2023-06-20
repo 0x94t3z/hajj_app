@@ -17,10 +17,7 @@ class _FindMeScreenState extends State<FindMeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopNavBar(),
-      body: const Center(
-        child: Text('Find Me Screen'),
-      ),
-      bottomNavigationBar: BottomNavBar(
+      body: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {

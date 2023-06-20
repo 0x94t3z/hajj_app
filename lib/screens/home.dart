@@ -17,10 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopNavBar(),
-      body: const Center(
-        child: Text('Home Screen'),
-      ),
-      bottomNavigationBar: BottomNavBar(
+      body: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {

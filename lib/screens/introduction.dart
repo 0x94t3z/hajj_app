@@ -31,7 +31,7 @@ class _IntroductionState extends State<Introduction> {
   void navigateToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      MaterialPageRoute(builder: (context) => HomeScreen()),
     );
   }
 

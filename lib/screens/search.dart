@@ -17,10 +17,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const TopNavBar(),
-      body: const Center(
-        child: Text('Search Screen'),
-      ),
-      bottomNavigationBar: BottomNavBar(
+      body: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
