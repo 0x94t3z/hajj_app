@@ -20,6 +20,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Colors.black12,
       body: IndexedStack(
         index: widget.currentIndex,
         children: const [
@@ -67,8 +68,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Home Screen'),
+    return Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text('Home Screen'),
+      ),
     );
   }
 }
@@ -78,8 +82,11 @@ class FindMeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Find Me Screen'),
+    return Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text('Find Me Screen'),
+      ),
     );
   }
 }
@@ -89,8 +96,11 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Search Screen'),
+    return Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text('Search Screen'),
+      ),
     );
   }
 }
@@ -100,8 +110,11 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Profile Screen'),
+    return Container(
+      color: Colors.white,
+      child: const Center(
+        child: Text('Profile Screen'),
+      ),
     );
   }
 }
