@@ -15,3 +15,9 @@ flutter pub get
 ```
 flutter run
 ```
+
+> Build `.apk`
+
+```
+flutter build apk --target-platform android-arm,android-arm64 --no-tree-shake-icons
+```
