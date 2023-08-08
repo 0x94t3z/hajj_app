@@ -15,14 +15,14 @@ class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(
             Icons.notifications,
-            color: Colors.green,
+            color: Color.fromRGBO(69, 125, 143, 1),
           ),
           onPressed: () {},
         ),
         IconButton(
           icon: const Icon(
             Icons.more_vert,
-            color: Colors.green,
+            color: Color.fromRGBO(69, 125, 143, 1),
           ),
           onPressed: () {},
         ),
@@ -30,7 +30,7 @@ class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
       leading: IconButton(
         icon: const Icon(
           Icons.menu,
-          color: Colors.green,
+          color: Color.fromRGBO(69, 125, 143, 1),
         ),
         onPressed: () {},
       ),

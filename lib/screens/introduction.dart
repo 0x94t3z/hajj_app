@@ -31,7 +31,7 @@ class _IntroductionState extends State<Introduction> {
   void navigateToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
     );
   }
 
@@ -106,7 +106,7 @@ class _IntroductionState extends State<Introduction> {
       width: isActive ? 30 : 6,
       margin: const EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
-        color: ColorSys.greenSecondary,
+        color: ColorSys.darkBlue,
         borderRadius: BorderRadius.circular(5),
       ),
     );

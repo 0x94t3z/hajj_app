@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
-import 'package:hajj_app/widgets/components/top_nav_bar.dart';
+// import 'package:hajj_app/widgets/components/top_nav_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const TopNavBar(),
+      // appBar: const TopNavBar(),
       body: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
