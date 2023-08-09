@@ -1,9 +1,8 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-
-import '../hajj_feature/home.dart';
+import 'package:hajj_app/screens/hajj_feature/home.dart';
+import 'package:hajj_app/helpers/colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -111,13 +110,13 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 40,
             ),
             TextField(
-              cursorColor: Colors.black,
+              cursorColor: ColorSys.darkBlue,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.all(0.0),
                 labelText: 'Email',
                 hintText: 'Username or e-mail',
                 labelStyle: const TextStyle(
-                  color: Colors.black,
+                  color: ColorSys.darkBlue,
                   fontSize: 14.0,
                   fontWeight: FontWeight.w400,
                 ),
@@ -127,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 prefixIcon: const Icon(
                   Iconsax.user,
-                  color: Colors.black,
+                  color: ColorSys.darkBlue,
                   size: 18,
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -135,11 +134,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 floatingLabelStyle: const TextStyle(
-                  color: Colors.black,
+                  color: ColorSys.darkBlue,
                   fontSize: 18.0,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                  borderSide:
+                      const BorderSide(color: ColorSys.darkBlue, width: 1.5),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 20,
             ),
             TextField(
-              cursorColor: Colors.black,
+              cursorColor: ColorSys.darkBlue,
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.all(0.0),
                 labelText: 'Password',
@@ -158,13 +158,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontSize: 14.0,
                 ),
                 labelStyle: const TextStyle(
-                  color: Colors.black,
+                  color: ColorSys.darkBlue,
                   fontSize: 14.0,
                   fontWeight: FontWeight.w400,
                 ),
                 prefixIcon: const Icon(
                   Iconsax.key,
-                  color: Colors.black,
+                  color: ColorSys.darkBlue,
                   size: 18,
                 ),
                 enabledBorder: OutlineInputBorder(
@@ -172,11 +172,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 floatingLabelStyle: const TextStyle(
-                  color: Colors.black,
+                  color: ColorSys.darkBlue,
                   fontSize: 18.0,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                  borderSide:
+                      const BorderSide(color: ColorSys.darkBlue, width: 1.5),
                   borderRadius: BorderRadius.circular(10.0),
                 ),
               ),
@@ -207,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         builder: (context) => const HomeScreen()));
               },
               height: 45,
-              color: Colors.black,
+              color: ColorSys.darkBlue,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
