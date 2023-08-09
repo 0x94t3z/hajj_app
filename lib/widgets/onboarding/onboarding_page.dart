@@ -38,7 +38,7 @@ class OnboardingPage extends StatelessWidget {
             const SizedBox(),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: ColorSys.primary,
               fontSize: 30,
               fontWeight: FontWeight.bold,
@@ -50,7 +50,7 @@ class OnboardingPage extends StatelessWidget {
           Text(
             content,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               color: ColorSys.grey,
               fontSize: 20,
               fontWeight: FontWeight.w400,

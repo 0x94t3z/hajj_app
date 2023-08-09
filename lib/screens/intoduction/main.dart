@@ -57,7 +57,7 @@ class _IntroductionState extends State<Introduction> {
             padding: const EdgeInsets.only(right: 20, top: 20),
             child: GestureDetector(
               onTap: navigateToLogin,
-              child: Text(
+              child: const Text(
                 'Skip',
                 style: TextStyle(
                   color: ColorSys.grey,
