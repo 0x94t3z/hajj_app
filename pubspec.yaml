@@ -39,6 +39,7 @@ dependencies:
   salomon_bottom_bar: ^3.1.0
   latlong2: ^0.8.0
   flutter_map: ^0.14.0
+  iconsax: ^0.0.8
   # shared_preferences: ^2.0.10
 
 dev_dependencies:
@@ -52,6 +53,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_launcher_icons: ^0.13.1
+
 
 flutter_launcher_icons:
   android: "launcher_icon"

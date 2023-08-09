@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/colors.dart';
 import 'package:hajj_app/helpers/strings_intro.dart';
+import 'package:hajj_app/screens/login/auth.dart';
 import 'package:hajj_app/widgets/onboarding/onboarding_page.dart';
 import 'package:hajj_app/screens/hajj_feature/home.dart';
 
@@ -28,10 +29,19 @@ class _IntroductionState extends State<Introduction> {
     super.dispose();
   }
 
+  // Navigate to Home Screen
   void navigateToHome() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
+    );
+  }
+
+  // Navigate to Login Screen
+  void navigateToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -46,7 +56,7 @@ class _IntroductionState extends State<Introduction> {
           Padding(
             padding: const EdgeInsets.only(right: 20, top: 20),
             child: GestureDetector(
-              onTap: navigateToHome,
+              onTap: navigateToLogin,
               child: Text(
                 'Skip',
                 style: TextStyle(
