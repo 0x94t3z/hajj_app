@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/colors.dart';
 import 'package:hajj_app/helpers/strings_intro.dart';
 import 'package:hajj_app/widgets/onboarding/onboarding_page.dart';
-import 'package:hajj_app/screens/home.dart';
+import 'package:hajj_app/screens/hajj_feature/home.dart';
 
 class Introduction extends StatefulWidget {
   const Introduction({Key? key}) : super(key: key);
