@@ -8,11 +8,11 @@ import 'package:hajj_app/screens/hajj_feature/search.dart';
 import 'package:hajj_app/screens/hajj_feature/profile.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const HajjApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class HajjApp extends StatelessWidget {
+  const HajjApp({super.key});
 
   @override
   Widget build(BuildContext context) {

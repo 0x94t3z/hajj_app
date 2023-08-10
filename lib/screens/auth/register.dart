@@ -13,18 +13,24 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   int activeIndex = 2;
+  late Timer _timer;
 
   @override
   void initState() {
-    Timer.periodic(const Duration(seconds: 5), (timer) {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       setState(() {
         activeIndex++;
 
         if (activeIndex == 4) activeIndex = 0;
       });
     });
+  }
 
-    super.initState();
+  @override
+  void dispose() {
+    _timer.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
   }
 
   @override
