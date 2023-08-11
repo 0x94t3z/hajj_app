@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ]),
             ),
             const SizedBox(
-              height: 40,
+              height: 30,
             ),
             TextField(
               cursorColor: ColorSys.primary,
@@ -193,7 +193,9 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/forgot');
+                  },
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(
@@ -218,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: const Text(
-                "LOGIN",
+                "Login",
                 style: TextStyle(color: Colors.white, fontSize: 16.0),
               ),
             ),

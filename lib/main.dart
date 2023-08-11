@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hajj_app/screens/presentation/introduction.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
+import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/features/home.dart';
 import 'package:hajj_app/screens/features/find_me.dart';
 import 'package:hajj_app/screens/features/search.dart';
@@ -24,6 +25,7 @@ class HajjApp extends StatelessWidget {
         '/introduction': (context) => const Introduction(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
+        '/forgot': (context) => const ForgotPasswordScreen(),
         '/home': (context) => const HomeScreen(),
         '/find_me': (context) => const FindMeScreen(),
         '/search': (context) => const SearchScreen(),

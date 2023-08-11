@@ -6,6 +6,7 @@ class ColorSys {
   static const Color grey = Color.fromRGBO(158, 158, 158, 1);
   static const Color secoundry = Color.fromRGBO(198, 116, 27, 1);
   static const Color lightSecondary = Color.fromRGBO(226, 185, 141, 1);
+  static const Color lightBlue = Color.fromRGBO(137, 183, 204, 1);
   static const Color darkBlue = Color.fromRGBO(69, 125, 143, 1);
   static const Color moreDarkBlue = Color.fromRGBO(30, 55, 70, 70);
 }
@@ -18,9 +19,9 @@ TextStyle titleTextStyle() {
   );
 }
 
-TextStyle contentTextStyle() {
+TextStyle contentTextStyle({Color? color, double? fontSize}) {
   return GoogleFonts.poppins(
-    color: ColorSys.grey,
+    color: color ?? ColorSys.grey,
     fontSize: 18,
     fontWeight: FontWeight.w400,
   );
