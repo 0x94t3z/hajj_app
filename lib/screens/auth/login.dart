@@ -154,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextField(
               cursorColor: ColorSys.primary,
+              obscureText: true, // Set this to true to hide the input text
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.all(0.0),
                 labelText: 'Password',
