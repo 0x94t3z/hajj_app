@@ -15,7 +15,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSys.darkBlue,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -56,8 +55,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Text(
                 "Masukkan email yang terdaftar untuk mendapatkan link reset password.",
                 textAlign: TextAlign.center,
-                style:
-                    contentTextStyle(color: ColorSys.primary, fontSize: 14.0),
+                style: contentTextStyle(
+                    color: Colors.grey.shade700, fontSize: 14.0),
               ),
               const SizedBox(
                 height: 50,
@@ -74,7 +73,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     fontWeight: FontWeight.w400,
                   ),
                   hintStyle: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.grey,
                     fontSize: 14.0,
                   ),
                   prefixIcon: const Icon(
@@ -84,7 +83,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderSide:
-                        const BorderSide(color: ColorSys.primary, width: 2),
+                        BorderSide(color: Colors.grey.shade200, width: 2),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   floatingLabelStyle: const TextStyle(
@@ -106,7 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Navigator.pushReplacementNamed(context, '/login');
                 },
                 height: 45,
-                color: ColorSys.primary,
+                color: ColorSys.darkBlue,
                 padding:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 50),
                 shape: RoundedRectangleBorder(
