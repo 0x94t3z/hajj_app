@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:hajj_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/helpers/strings.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: const Text(
-                "Login",
+                "LOGIN",
                 style: TextStyle(color: Colors.white, fontSize: 16.0),
               ),
             ),

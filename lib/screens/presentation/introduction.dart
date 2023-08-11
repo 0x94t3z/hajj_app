@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/helpers/strings.dart';
 import 'package:hajj_app/widgets/onboarding/onboarding_page.dart';
 
@@ -40,22 +40,18 @@ class _IntroductionState extends State<Introduction> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorSys.darkBlue,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: ColorSys.darkBlue,
+        backgroundColor: Colors.white,
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20, top: 20),
             child: GestureDetector(
               onTap: navigateToLogin,
-              child: const Text(
+              child: Text(
                 'Skip',
-                style: TextStyle(
-                  color: ColorSys.grey,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                ),
+                style: textStyle(fontSize: 18),
               ),
             ),
           )

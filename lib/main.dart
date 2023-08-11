@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/screens/introduction/main.dart';
+import 'package:hajj_app/screens/presentation/introduction.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
-import 'package:hajj_app/screens/hajj_feature/home.dart';
-import 'package:hajj_app/screens/hajj_feature/find_me.dart';
-import 'package:hajj_app/screens/hajj_feature/search.dart';
-import 'package:hajj_app/screens/hajj_feature/profile.dart';
+import 'package:hajj_app/screens/features/home.dart';
+import 'package:hajj_app/screens/features/find_me.dart';
+import 'package:hajj_app/screens/features/search.dart';
+import 'package:hajj_app/screens/features/profile.dart';
 
 void main() {
   runApp(const HajjApp());

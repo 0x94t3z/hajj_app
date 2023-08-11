@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-import 'package:hajj_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/styles.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;

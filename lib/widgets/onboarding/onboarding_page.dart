@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/styles.dart';
 
 class OnboardingPage extends StatelessWidget {
   final String image;
@@ -38,23 +38,15 @@ class OnboardingPage extends StatelessWidget {
             const SizedBox(),
           Text(
             title,
-            style: const TextStyle(
-              color: ColorSys.primary,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
+            style: titleTextStyle(),
           ),
           const SizedBox(
-            height: 20,
+            height: 10,
           ),
           Text(
             content,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: ColorSys.grey,
-              fontSize: 20,
-              fontWeight: FontWeight.w400,
-            ),
+            style: contentTextStyle(),
           ),
           if (reverse)
             Column(

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:hajj_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/helpers/strings.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -113,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ]),
             ),
             const SizedBox(
-              height: 40,
+              height: 20,
             ),
             TextField(
               cursorColor: ColorSys.primary,
