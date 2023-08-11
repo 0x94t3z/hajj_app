@@ -1,0 +1,47 @@
+PODS:
+  - Flutter (1.0.0)
+  - MapboxCommon (23.5.0)
+  - MapboxCoreMaps (10.13.1):
+    - MapboxCommon (~> 23.5)
+  - MapboxMaps (10.13.1):
+    - MapboxCommon (= 23.5.0)
+    - MapboxCoreMaps (= 10.13.1)
+    - MapboxMobileEvents (= 1.0.10)
+    - Turf (~> 2.0)
+  - MapboxMobileEvents (1.0.10)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - Turf (2.6.1)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - MapboxMaps (= 10.13.1)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - MapboxCommon
+    - MapboxCoreMaps
+    - MapboxMaps
+    - MapboxMobileEvents
+    - Turf
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+
+SPEC CHECKSUMS:
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
+  MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019
+  MapboxMaps: cb76511b98d3b95c74b0771ed105bc69f30ace6b
+  MapboxMobileEvents: de50b3a4de180dd129c326e09cd12c8adaaa46d6
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  Turf: 469ce2c3d22e5e8e4818d5a3b254699a5c89efa4
+
+PODFILE CHECKSUM: 7b8227420346c531a54a6986865031e894d91d26
+
+COCOAPODS: 1.12.1

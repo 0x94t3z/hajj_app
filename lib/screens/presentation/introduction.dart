@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/colors.dart';
-import 'package:hajj_app/helpers/strings_intro.dart';
+import 'package:hajj_app/helpers/strings.dart';
 import 'package:hajj_app/widgets/onboarding/onboarding_page.dart';
 
 class Introduction extends StatefulWidget {
@@ -40,10 +40,10 @@ class _IntroductionState extends State<Introduction> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ColorSys.darkBlue,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: ColorSys.darkBlue,
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20, top: 20),
@@ -73,17 +73,17 @@ class _IntroductionState extends State<Introduction> {
             controller: _pageController,
             children: <Widget>[
               OnboardingPage(
-                image: 'assets/images/one.png',
+                image: Strings.stepOneImage,
                 title: Strings.stepOneTitle,
                 content: Strings.stepOneContent,
               ),
               OnboardingPage(
-                image: 'assets/images/two.png',
+                image: Strings.stepTwoImage,
                 title: Strings.stepTwoTitle,
                 content: Strings.stepTwoContent,
               ),
               OnboardingPage(
-                image: 'assets/images/three.png',
+                image: Strings.stepThreeImage,
                 title: Strings.stepThreeTitle,
                 content: Strings.stepThreeContent,
               ),

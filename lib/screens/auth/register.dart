@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/helpers/colors.dart';
+import 'package:hajj_app/helpers/strings.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -59,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     curve: Curves.linear,
                     child: Image.asset(
-                      'assets/images/one.png',
+                      Strings.stepOneImage,
                       height: 400,
                     ),
                   ),
@@ -74,7 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     duration: const Duration(seconds: 1),
                     curve: Curves.linear,
                     child: Image.asset(
-                      'assets/images/two.png',
+                      Strings.stepTwoImage,
                       height: 400,
                     ),
                   ),
@@ -89,7 +90,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     duration: const Duration(seconds: 1),
                     curve: Curves.linear,
                     child: Image.asset(
-                      'assets/images/three.png',
+                      Strings.stepThreeImage,
                       height: 400,
                     ),
                   ),
@@ -104,7 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     duration: const Duration(seconds: 1),
                     curve: Curves.linear,
                     child: Image.asset(
-                      'assets/images/two.png',
+                      Strings.stepTwoImage,
                       height: 400,
                     ),
                   ),
