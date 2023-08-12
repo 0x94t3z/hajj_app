@@ -53,7 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 height: 10,
               ),
               Text(
-                "Masukkan email yang terdaftar untuk mendapatkan link reset password.",
+                "Enter your email address to reset your password",
                 textAlign: TextAlign.center,
                 style: contentTextStyle(
                     color: Colors.grey.shade700, fontSize: 14.0),
