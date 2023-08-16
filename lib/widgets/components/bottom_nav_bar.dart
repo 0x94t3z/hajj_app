@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hajj_app/widgets/components/find_me_widget.dart';
+import 'package:hajj_app/widgets/components/home_widget.dart';
+import 'package:hajj_app/widgets/components/profile_widget.dart';
+import 'package:hajj_app/widgets/components/search_widget.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:hajj_app/helpers/styles.dart';
 
@@ -25,10 +29,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
       body: IndexedStack(
         index: widget.currentIndex,
         children: const [
-          HomeScreen(),
-          FindMeScreen(),
-          SearchScreen(),
-          ProfileScreen(),
+          HomeWidget(),
+          FindMeWidget(),
+          SearchWidget(),
+          ProfileWidget(),
         ],
       ),
       bottomNavigationBar: SalomonBottomBar(
@@ -59,62 +63,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
             selectedColor: ColorSys.darkBlue,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: const Center(
-        child: Text('Home Screen'),
-      ),
-    );
-  }
-}
-
-class FindMeScreen extends StatelessWidget {
-  const FindMeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: const Center(
-        child: Text('Find Me Screen'),
-      ),
-    );
-  }
-}
-
-class SearchScreen extends StatelessWidget {
-  const SearchScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: const Center(
-        child: Text('Search Screen'),
-      ),
-    );
-  }
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: const Center(
-        child: Text('Profile Screen'),
       ),
     );
   }

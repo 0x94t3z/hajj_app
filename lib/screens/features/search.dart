@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
+import 'package:hajj_app/widgets/components/search_widget.dart';
 // import 'package:hajj_app/widgets/components/top_nav_bar.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -17,7 +18,8 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: const TopNavBar(),
-      body: BottomNavBar(
+      body: const SearchWidget(),
+      bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
