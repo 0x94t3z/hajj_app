@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
-import 'package:hajj_app/widgets/components/profile_widget.dart';
+import 'package:hajj_app/widgets/pages/fourth.dart';
 // import 'package:hajj_app/widgets/components/top_nav_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: const TopNavBar(),
-      body: const ProfileWidget(),
+      body: const FourthWidget(),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {

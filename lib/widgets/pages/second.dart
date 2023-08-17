@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class FindMeWidget extends StatelessWidget {
-  const FindMeWidget({super.key});
+class SecondWidget extends StatelessWidget {
+  const SecondWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

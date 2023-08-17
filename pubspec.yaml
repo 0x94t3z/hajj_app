@@ -37,9 +37,11 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_dotenv: ^5.1.0
   salomon_bottom_bar: ^3.1.0
-  flutter_map: ^0.14.0
   iconsax: ^0.0.8
   google_fonts: ^4.0.4
+  location: ^5.0.3
+  geolocator: ^7.0.3
+  logger: ^2.0.1
   # shared_preferences: ^2.0.10
 
 dev_dependencies:

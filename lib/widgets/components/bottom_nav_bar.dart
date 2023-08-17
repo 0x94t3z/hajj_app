@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/widgets/components/find_me_widget.dart';
-import 'package:hajj_app/widgets/components/home_widget.dart';
-import 'package:hajj_app/widgets/components/profile_widget.dart';
-import 'package:hajj_app/widgets/components/search_widget.dart';
+import 'package:hajj_app/widgets/pages/first.dart';
+import 'package:hajj_app/widgets/pages/fourth.dart';
+import 'package:hajj_app/widgets/pages/second.dart';
+import 'package:hajj_app/widgets/pages/third.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:hajj_app/helpers/styles.dart';
 
@@ -29,10 +29,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
       body: IndexedStack(
         index: widget.currentIndex,
         children: const [
-          HomeWidget(),
-          FindMeWidget(),
-          SearchWidget(),
-          ProfileWidget(),
+          FirstWidget(),
+          SecondWidget(),
+          ThirdWidget(),
+          FourthWidget(),
         ],
       ),
       bottomNavigationBar: SalomonBottomBar(
