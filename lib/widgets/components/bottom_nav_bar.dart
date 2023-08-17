@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/widgets/pages/first.dart';
-import 'package:hajj_app/widgets/pages/fourth.dart';
-import 'package:hajj_app/widgets/pages/second.dart';
-import 'package:hajj_app/widgets/pages/third.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/widgets/pages/first.dart';
+import 'package:hajj_app/widgets/pages/second.dart';
+import 'package:hajj_app/widgets/pages/third.dart';
+import 'package:hajj_app/widgets/pages/fourth.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
