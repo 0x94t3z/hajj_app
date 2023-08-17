@@ -9,30 +9,49 @@ import 'package:hajj_app/screens/features/find_me.dart';
 import 'package:hajj_app/screens/features/search.dart';
 import 'package:hajj_app/screens/features/profile.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await _requestPermissions(); // Request permissions before running the app
-  Position currentPosition =
-      await _getCurrentLocation(); // Get current location
-  print(
-      'Current Latitude: ${currentPosition.latitude}, Longitude: ${currentPosition.longitude}');
-  runApp(const HajjApp());
+void main() {
+  initializeApp().then((_) {
+    runApp(const HajjApp());
+  });
 }
 
-Future<void> _requestPermissions() async {
-  LocationPermission permission = await Geolocator.requestPermission();
+bool _isPermissionRequested = false; // Flag to track permission request status
+
+Future<void> initializeApp() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  LocationPermission permission = await Geolocator.checkPermission();
+
   if (permission == LocationPermission.always ||
       permission == LocationPermission.whileInUse) {
-    print('Location permission granted');
-  } else {
-    print('Location permission denied');
+    print('Location permission already granted');
+    getCurrentLocation(); // Call the function to print current location
+  } else if (!_isPermissionRequested) {
+    await requestPermissions();
   }
 }
 
-Future<Position> _getCurrentLocation() async {
+Future<void> requestPermissions() async {
+  _isPermissionRequested = true; // Set flag to indicate permission request
+  LocationPermission permission = await Geolocator.requestPermission();
+
+  if (permission == LocationPermission.always ||
+      permission == LocationPermission.whileInUse) {
+    print('Location permission granted');
+    getCurrentLocation(); // Call the function to print current location
+  } else {
+    print('Location permission denied');
+  }
+  _isPermissionRequested = false; // Reset the flag after permission request
+}
+
+Future<void> getCurrentLocation() async {
   Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high);
-  return position;
+    desiredAccuracy: LocationAccuracy.high,
+  );
+
+  // Print the current location
+  print(
+      'Current Latitude: ${position.latitude} Longitude: ${position.longitude}');
 }
 
 class HajjApp extends StatelessWidget {
@@ -42,8 +61,7 @@ class HajjApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute:
-          '/introduction', // Set the initial route to the Introduction screen
+      initialRoute: '/introduction',
       routes: {
         '/introduction': (context) => const Introduction(),
         '/login': (context) => const LoginScreen(),
