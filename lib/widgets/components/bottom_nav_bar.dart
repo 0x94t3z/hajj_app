@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/widgets/pages/first.dart';
@@ -43,22 +44,22 @@ class _BottomNavBarState extends State<BottomNavBar> {
         onTap: widget.onTap,
         items: [
           SalomonBottomBarItem(
-            icon: const Icon(Icons.home),
+            icon: const Icon(Iconsax.home),
             title: const Text("Home"),
             selectedColor: ColorSys.darkBlue,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.explore_outlined),
+            icon: const Icon(Iconsax.routing),
             title: const Text("Find Me"),
             selectedColor: ColorSys.darkBlue,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.data_usage),
+            icon: const Icon(Iconsax.search_normal),
             title: const Text("Search"),
             selectedColor: ColorSys.darkBlue,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Iconsax.user),
             title: const Text("Profile"),
             selectedColor: ColorSys.darkBlue,
           ),

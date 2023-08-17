@@ -28,5 +28,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSLocationUsageDescription</key>
+	<string>Allow access to your location for better service</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<string>Allow access to your location for better service</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Allow access to your location for better service</string>
 </dict>
 </plist>
