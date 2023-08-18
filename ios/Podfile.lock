@@ -45,7 +45,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  geolocator_apple: b741765c55dc21950e3e106e8b3584e55cf81ce5
+  geolocator_apple: cc556e6844d508c95df1e87e3ea6fa4e58c50401
   location: d5cf8598915965547c3f36761ae9cc4f4e87d22e
   MapboxCommon: fdf7fd31c90b7b607cd9c63e37797f023c01d860
   MapboxCoreMaps: 24270c7c6b8cb71819fc2f3c549db9620ee4d019

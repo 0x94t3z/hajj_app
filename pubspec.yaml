@@ -39,7 +39,7 @@ dependencies:
   iconsax: ^0.0.8
   google_fonts: ^4.0.4
   location: ^5.0.3
-  geolocator: ^7.0.3
+  geolocator: ^10.0.0
   logger: ^2.0.1
   # shared_preferences: ^2.0.10
 
