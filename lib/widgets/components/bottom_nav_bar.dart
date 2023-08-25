@@ -26,6 +26,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appBar: const TopNavBar(),
       // backgroundColor: Colors.black12,
       body: IndexedStack(
         index: widget.currentIndex,
@@ -37,6 +38,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ],
       ),
       bottomNavigationBar: SalomonBottomBar(
+        // backgroundColor: ColorSys.darkBlue,
         currentIndex: widget.currentIndex,
         selectedItemColor: Colors.white,
         unselectedItemColor: ColorSys.darkBlue,

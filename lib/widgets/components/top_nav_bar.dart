@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 
 class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
   const TopNavBar({super.key});
@@ -14,14 +15,14 @@ class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(
-            Icons.notifications,
+            Iconsax.notification,
             color: Color.fromRGBO(69, 125, 143, 1),
           ),
           onPressed: () {},
         ),
         IconButton(
           icon: const Icon(
-            Icons.more_vert,
+            Iconsax.more,
             color: Color.fromRGBO(69, 125, 143, 1),
           ),
           onPressed: () {},
@@ -29,7 +30,7 @@ class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
       ],
       leading: IconButton(
         icon: const Icon(
-          Icons.menu,
+          Iconsax.menu_1,
           color: Color.fromRGBO(69, 125, 143, 1),
         ),
         onPressed: () {},
