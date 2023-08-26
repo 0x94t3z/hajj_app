@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
-import 'package:hajj_app/widgets/components/top_nav_bar.dart';
+// import 'package:hajj_app/widgets/components/top_nav_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -16,7 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const TopNavBar(),
+      // appBar: const TopNavBar(),
       body: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {

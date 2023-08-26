@@ -25,48 +25,50 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: const TopNavBar(),
-      // backgroundColor: Colors.black12,
-      body: IndexedStack(
-        index: widget.currentIndex,
-        children: const [
-          FirstWidget(),
-          SecondWidget(),
-          ThirdWidget(),
-          FourthWidget(),
-        ],
-      ),
-      bottomNavigationBar: SalomonBottomBar(
-        // backgroundColor: ColorSys.darkBlue,
-        currentIndex: widget.currentIndex,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: ColorSys.darkBlue,
-        margin: const EdgeInsets.only(bottom: 20, top: 20, right: 20, left: 20),
-        onTap: widget.onTap,
-        items: [
-          SalomonBottomBarItem(
-            icon: const Icon(Iconsax.home),
-            title: const Text("Home"),
-            selectedColor: ColorSys.darkBlue,
+    return Column(
+      children: [
+        Expanded(
+          child: IndexedStack(
+            index: widget.currentIndex,
+            children: const [
+              FirstWidget(),
+              SecondWidget(),
+              ThirdWidget(),
+              FourthWidget(),
+            ],
           ),
-          SalomonBottomBarItem(
-            icon: const Icon(Iconsax.routing),
-            title: const Text("Find Me"),
-            selectedColor: ColorSys.darkBlue,
-          ),
-          SalomonBottomBarItem(
-            icon: const Icon(Iconsax.search_normal),
-            title: const Text("Search"),
-            selectedColor: ColorSys.darkBlue,
-          ),
-          SalomonBottomBarItem(
-            icon: const Icon(Iconsax.user),
-            title: const Text("Profile"),
-            selectedColor: ColorSys.darkBlue,
-          ),
-        ],
-      ),
+        ),
+        SalomonBottomBar(
+          currentIndex: widget.currentIndex,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: ColorSys.darkBlue,
+          margin:
+              const EdgeInsets.only(bottom: 20, top: 20, right: 20, left: 20),
+          onTap: widget.onTap,
+          items: [
+            SalomonBottomBarItem(
+              icon: const Icon(Iconsax.home),
+              title: const Text("Home"),
+              selectedColor: ColorSys.darkBlue,
+            ),
+            SalomonBottomBarItem(
+              icon: const Icon(Iconsax.routing),
+              title: const Text("Find Me"),
+              selectedColor: ColorSys.darkBlue,
+            ),
+            SalomonBottomBarItem(
+              icon: const Icon(Iconsax.search_normal),
+              title: const Text("Search"),
+              selectedColor: ColorSys.darkBlue,
+            ),
+            SalomonBottomBarItem(
+              icon: const Icon(Iconsax.user),
+              title: const Text("Profile"),
+              selectedColor: ColorSys.darkBlue,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
