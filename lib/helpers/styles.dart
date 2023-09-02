@@ -29,7 +29,7 @@ TextStyle contentTextStyle({Color? color, double? fontSize}) {
 
 TextStyle textStyle({double? fontSize}) {
   return GoogleFonts.poppins(
-    color: ColorSys.grey,
+    color: ColorSys.primary,
     fontSize: fontSize ?? 20,
     fontWeight: FontWeight.w400,
   );

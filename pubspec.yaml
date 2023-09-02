@@ -41,6 +41,9 @@ dependencies:
   location: ^5.0.3
   geolocator: ^10.0.0
   logger: ^2.0.1
+  intl: ^0.18.1
+  hijri: ^3.0.0
+  analog_clock: ^0.1.1
   # mapbox_maps_flutter: ^0.4.4
   # shared_preferences: ^2.0.10
 
