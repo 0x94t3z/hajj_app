@@ -21,3 +21,17 @@ flutter run
 ```
 flutter build apk --target-platform android-arm,android-arm64 --no-tree-shake-icons
 ```
+
+> Mapbox Command
+
+The access token is passed via the command line arguments when either building
+
+```
+flutter build <platform> --dart-define ACCESS_TOKEN=YOUR_TOKEN_HERE
+```
+
+or running the application
+
+```
+flutter run --dart-define ACCESS_TOKEN=YOUR_TOKEN_HERE
+```

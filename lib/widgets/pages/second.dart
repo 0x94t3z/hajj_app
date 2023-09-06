@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
 class SecondWidget extends StatefulWidget {
@@ -47,8 +48,11 @@ class _SecondWidgetState extends State<SecondWidget> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.all(32.0),
         child: FloatingActionButton(
-          backgroundColor: ColorSys.darkBlue,
-          child: const Icon(Icons.location_on),
+          backgroundColor: Colors.white,
+          child: const Icon(
+            Iconsax.location,
+            color: ColorSys.darkBlue,
+          ),
           onPressed: () => _getUserLocation(),
         ),
       ),
