@@ -14,6 +14,8 @@ void main() async {
   // Initialize dotenv package before runApp
   await dotenv.load();
 
+  WidgetsFlutterBinding.ensureInitialized();
+
   initializeApp().then((_) {
     runApp(const HajjApp());
   });

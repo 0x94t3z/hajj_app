@@ -37,6 +37,7 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
+        freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
 
     sourceSets {
@@ -52,6 +53,7 @@ android {
         targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -74,6 +76,7 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.multidex:multidex:2.0.1"
     // implementation 'com.mapbox.maps:android:10.15.1'){
     //     exclude group: 'com.mapbox.common', module: 'common'
     // }

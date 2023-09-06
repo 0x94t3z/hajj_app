@@ -11,7 +11,7 @@
             "name": "Android",
             "request": "launch",
             "type": "dart",
-            "deviceId": "android"
+            "deviceId": "emulator-555"
         },
         {
             "name": "iPhone",
