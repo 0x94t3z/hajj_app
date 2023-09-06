@@ -4,11 +4,7 @@ gradle-wrapper.jar
 /gradlew
 /gradlew.bat
 /local.properties
-<<<<<<< test
 /gradle.properties
-=======
-/gradle.properties
->>>>>>> 7f0d9a2 (add map but build failed on android)
 GeneratedPluginRegistrant.java
 android/app/src/main/res/values/string.xml
 

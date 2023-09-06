@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/screens/presentation/introduction.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
@@ -9,7 +10,10 @@ import 'package:hajj_app/screens/features/find_me.dart';
 import 'package:hajj_app/screens/features/search.dart';
 import 'package:hajj_app/screens/features/profile.dart';
 
-void main() {
+void main() async {
+  // Initialize dotenv package before runApp
+  await dotenv.load();
+
   initializeApp().then((_) {
     runApp(const HajjApp());
   });
