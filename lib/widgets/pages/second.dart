@@ -60,6 +60,8 @@ class _SecondWidgetState extends State<SecondWidget> {
         styleString: MapboxStyles.MAPBOX_STREETS,
         accessToken: dotenv.env['MAPBOX_SECRET_KEY'],
         onMapCreated: _onMapCreated,
+        // myLocationEnabled: true,
+        myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
         initialCameraPosition: const CameraPosition(
           target: LatLng(21.42664, 39.82563),
           zoom: 14.0, // Adjust the initial zoom level as needed.
