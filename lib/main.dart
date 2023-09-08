@@ -5,10 +5,10 @@ import 'package:hajj_app/screens/presentation/introduction.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
 import 'package:hajj_app/screens/auth/forgot.dart';
-import 'package:hajj_app/screens/features/home.dart';
-import 'package:hajj_app/screens/features/find_me.dart';
-import 'package:hajj_app/screens/features/search.dart';
-import 'package:hajj_app/screens/features/settings.dart';
+import 'package:hajj_app/screens/features/menu/home.dart';
+import 'package:hajj_app/screens/features/menu/find_me.dart';
+import 'package:hajj_app/screens/features/menu/search.dart';
+import 'package:hajj_app/screens/features/menu/settings.dart';
 
 void main() async {
   // Initialize dotenv package before runApp

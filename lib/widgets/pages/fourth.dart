@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/screens/features/edit.dart';
+import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:package_info/package_info.dart';
 

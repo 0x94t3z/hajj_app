@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/screens/features/edit_name.dart';
+import 'package:hajj_app/screens/features/profile/change_name.dart';
 import 'package:iconsax/iconsax.dart';
 
 class EditScreen extends StatefulWidget {
