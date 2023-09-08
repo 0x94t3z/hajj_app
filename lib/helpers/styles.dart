@@ -28,10 +28,10 @@ TextStyle contentTextStyle({Color? color, double? fontSize}) {
   );
 }
 
-TextStyle textStyle({double? fontSize}) {
+TextStyle textStyle({double? fontSize, Color? color, FontWeight? fontWeight}) {
   return GoogleFonts.poppins(
-    color: ColorSys.primary,
+    color: color ?? ColorSys.grey,
     fontSize: fontSize ?? 20,
-    fontWeight: FontWeight.w400,
+    fontWeight: fontWeight ?? FontWeight.w400,
   );
 }

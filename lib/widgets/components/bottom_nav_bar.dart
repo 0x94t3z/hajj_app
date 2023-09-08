@@ -61,8 +61,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
             selectedColor: ColorSys.darkBlue,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Iconsax.user),
-            title: const Text("Profile"),
+            icon: const Icon(Iconsax.setting_2),
+            title: const Text("Setting"),
             selectedColor: ColorSys.darkBlue,
           ),
         ],

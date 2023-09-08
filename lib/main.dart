@@ -8,7 +8,7 @@ import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/features/home.dart';
 import 'package:hajj_app/screens/features/find_me.dart';
 import 'package:hajj_app/screens/features/search.dart';
-import 'package:hajj_app/screens/features/profile.dart';
+import 'package:hajj_app/screens/features/setting.dart';
 
 void main() async {
   // Initialize dotenv package before runApp
@@ -76,7 +76,7 @@ class HajjApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/find_me': (context) => const FindMeScreen(),
         '/search': (context) => const SearchScreen(),
-        '/profile': (context) => const ProfileScreen(),
+        '/profile': (context) => const SettingScreen(),
       },
     );
   }

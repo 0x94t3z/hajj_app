@@ -22,7 +22,7 @@ class FirstWidget extends StatelessWidget {
                     const EdgeInsets.all(18.0), // Adjust the padding as needed
                 child: Text(
                   '${today.fullDate()} H.',
-                  style: textStyle(fontSize: 16.0),
+                  style: textStyle(fontSize: 16.0, color: ColorSys.primary),
                 ),
               ),
             ),

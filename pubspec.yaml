@@ -45,6 +45,7 @@ dependencies:
   hijri: ^3.0.0
   analog_clock: ^0.1.1
   mapbox_gl: ^0.16.0
+  package_info: ^2.0.2
   # mapbox_maps_flutter: ^0.4.4
 
 dev_dependencies:
