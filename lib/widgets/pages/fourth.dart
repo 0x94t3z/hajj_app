@@ -72,12 +72,11 @@ class FourthWidget extends StatelessWidget {
                           EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         children: [
-                          Icon(Iconsax.notification, color: ColorSys.darkBlue),
+                          Icon(Iconsax.notification),
                           SizedBox(width: 8),
-                          Text('Notification',
-                              style: TextStyle(color: ColorSys.darkBlue)),
+                          Text('Notification'),
                           Spacer(),
-                          Icon(Iconsax.arrow_right_3, color: ColorSys.darkBlue),
+                          Icon(Iconsax.arrow_right_3),
                         ],
                       ),
                     ),
@@ -88,11 +87,9 @@ class FourthWidget extends StatelessWidget {
                           horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         children: [
-                          const Icon(Iconsax.translate,
-                              color: ColorSys.darkBlue),
+                          const Icon(Iconsax.translate),
                           const SizedBox(width: 8),
-                          const Text('Language',
-                              style: TextStyle(color: ColorSys.darkBlue)),
+                          const Text('Language'),
                           const Spacer(),
                           const SizedBox(
                               width:
@@ -101,8 +98,7 @@ class FourthWidget extends StatelessWidget {
                             'English',
                             style: textStyle(fontSize: 14),
                           ),
-                          const Icon(Iconsax.arrow_right_3,
-                              color: ColorSys.darkBlue),
+                          const Icon(Iconsax.arrow_right_3),
                         ],
                       ),
                     ),
@@ -125,12 +121,11 @@ class FourthWidget extends StatelessWidget {
                           EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         children: [
-                          Icon(Iconsax.flag, color: ColorSys.darkBlue),
+                          Icon(Iconsax.flag),
                           SizedBox(width: 8),
-                          Text('Notices',
-                              style: TextStyle(color: ColorSys.darkBlue)),
+                          Text('Notices'),
                           Spacer(),
-                          Icon(Iconsax.arrow_right_3, color: ColorSys.darkBlue),
+                          Icon(Iconsax.arrow_right_3),
                         ],
                       ),
                     ),
@@ -141,12 +136,11 @@ class FourthWidget extends StatelessWidget {
                           EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         children: [
-                          Icon(Iconsax.shield_tick, color: ColorSys.darkBlue),
+                          Icon(Iconsax.shield_tick),
                           SizedBox(width: 8),
-                          Text('Terms and Polices',
-                              style: TextStyle(color: ColorSys.darkBlue)),
+                          Text('Terms and Polices'),
                           Spacer(),
-                          Icon(Iconsax.arrow_right_3, color: ColorSys.darkBlue),
+                          Icon(Iconsax.arrow_right_3),
                         ],
                       ),
                     ),
@@ -157,21 +151,32 @@ class FourthWidget extends StatelessWidget {
                           horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         children: [
-                          const Icon(Iconsax.info_circle,
-                              color: ColorSys.darkBlue),
+                          const Icon(Iconsax.info_circle),
                           const SizedBox(width: 8),
-                          const Text('App Version',
-                              style: TextStyle(color: ColorSys.darkBlue)),
+                          const Text('App Version'),
                           const Spacer(),
-                          const SizedBox(
-                              width:
-                                  8), // Add spacing between the arrow and the text
+                          const SizedBox(width: 8),
                           Text(
                             'Latest',
                             style: textStyle(fontSize: 14),
                           ),
-                          const Icon(Iconsax.arrow_right_3,
-                              color: ColorSys.darkBlue),
+                          const Icon(Iconsax.arrow_right_3),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  const Card(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .center, // Center the icon horizontally
+                        children: [
+                          Text('Logout'),
+                          SizedBox(width: 8),
+                          Icon(Iconsax.logout),
                         ],
                       ),
                     ),
