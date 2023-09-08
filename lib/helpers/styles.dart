@@ -35,3 +35,28 @@ TextStyle textStyle({double? fontSize, Color? color, FontWeight? fontWeight}) {
     fontWeight: fontWeight ?? FontWeight.w400,
   );
 }
+
+// theme.dart
+
+final darkTheme = ThemeData(
+  brightness: Brightness.dark,
+  primaryColor: const Color.fromRGBO(69, 125, 143, 1), // Dark blue color
+  colorScheme: const ColorScheme.dark(
+    primary: Color.fromRGBO(69, 125, 143, 1), // Dark blue color
+    secondary: Colors
+        .white, // Change this to your desired secondary color in dark mode
+  ),
+  // Add more properties like text styles, fonts, etc. as needed
+);
+
+final lightTheme = ThemeData(
+  brightness: Brightness.light,
+  primaryColor:
+      Colors.white, // Change this to your desired primary color in light mode
+  colorScheme: const ColorScheme.light(
+    primary:
+        Colors.white, // Change this to your desired primary color in light mode
+    secondary: Color.fromRGBO(69, 125, 143, 1), // Dark blue color
+  ),
+  // Add more properties like text styles, fonts, etc. as needed
+);

@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             MaterialButton(
               onPressed: () {
-                Navigator.pushReplacementNamed(context, '/home');
+                Navigator.pushNamed(context, '/home');
               },
               height: 45,
               color: ColorSys.darkBlue,
@@ -239,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/register');
+                    Navigator.pushNamed(context, '/register');
                   },
                   child: const Text(
                     'Register',

@@ -17,18 +17,20 @@ class FourthWidget extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               elevation: 0,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.grey[50],
               actions: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(right: 20, top: 20),
                   child: GestureDetector(
-                    // onTap: navigateToLogin,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/find_me');
+                    },
                     child: Text(
                       'Edit',
                       style: textStyle(fontSize: 18),
                     ),
                   ),
-                )
+                ),
               ],
             ),
             body: Align(
@@ -66,40 +68,50 @@ class FourthWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Card(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Icon(Iconsax.notification),
-                          SizedBox(width: 8),
-                          Text('Notification'),
-                          Spacer(),
-                          Icon(Iconsax.arrow_right_3),
-                        ],
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: const Card(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Icon(Iconsax.notification),
+                            SizedBox(width: 8),
+                            Text('Notification'),
+                            Spacer(),
+                            Icon(Iconsax.arrow_right_3),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        children: [
-                          const Icon(Iconsax.translate),
-                          const SizedBox(width: 8),
-                          const Text('Language'),
-                          const Spacer(),
-                          const SizedBox(
-                              width:
-                                  8), // Add spacing between the arrow and the text
-                          Text(
-                            'English',
-                            style: textStyle(fontSize: 14),
-                          ),
-                          const Icon(Iconsax.arrow_right_3),
-                        ],
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Iconsax.translate),
+                            const SizedBox(width: 8),
+                            const Text('Language'),
+                            const Spacer(),
+                            const SizedBox(
+                                width:
+                                    8), // Add spacing between the arrow and the text
+                            Text(
+                              'English',
+                              style: textStyle(fontSize: 14),
+                            ),
+                            const Icon(Iconsax.arrow_right_3),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -115,69 +127,88 @@ class FourthWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Card(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Icon(Iconsax.flag),
-                          SizedBox(width: 8),
-                          Text('Notices'),
-                          Spacer(),
-                          Icon(Iconsax.arrow_right_3),
-                        ],
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: const Card(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Icon(Iconsax.flag),
+                            SizedBox(width: 8),
+                            Text('Notices'),
+                            Spacer(),
+                            Icon(Iconsax.arrow_right_3),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  const Card(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        children: [
-                          Icon(Iconsax.shield_tick),
-                          SizedBox(width: 8),
-                          Text('Terms and Polices'),
-                          Spacer(),
-                          Icon(Iconsax.arrow_right_3),
-                        ],
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: const Card(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          children: [
+                            Icon(Iconsax.shield_tick),
+                            SizedBox(width: 8),
+                            Text('Terms and Polices'),
+                            Spacer(),
+                            Icon(Iconsax.arrow_right_3),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        children: [
-                          const Icon(Iconsax.info_circle),
-                          const SizedBox(width: 8),
-                          const Text('App Version'),
-                          const Spacer(),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Latest',
-                            style: textStyle(fontSize: 14),
-                          ),
-                          const Icon(Iconsax.arrow_right_3),
-                        ],
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          children: [
+                            const Icon(Iconsax.info_circle),
+                            const SizedBox(width: 8),
+                            const Text('App Version'),
+                            const Spacer(),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Latest',
+                              style: textStyle(fontSize: 14),
+                            ),
+                            const Icon(Iconsax.arrow_right_3),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 5),
-                  const Card(
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment
-                            .center, // Center the icon horizontally
-                        children: [
-                          Text('Logout'),
-                          SizedBox(width: 8),
-                          Icon(Iconsax.logout),
-                        ],
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: const Card(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Logout'),
+                            SizedBox(width: 8),
+                            Icon(Iconsax.logout),
+                          ],
+                        ),
                       ),
                     ),
                   ),

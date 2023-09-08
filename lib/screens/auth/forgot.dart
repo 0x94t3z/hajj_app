@@ -102,7 +102,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               MaterialButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/login');
+                  Navigator.pushNamed(context, '/login');
                 },
                 height: 45,
                 color: ColorSys.darkBlue,

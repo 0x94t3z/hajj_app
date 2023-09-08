@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hajj_app/widgets/components/top_nav_bar.dart'; // Import the custom app bar
 import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
-import 'package:hajj_app/widgets/components/top_nav_bar.dart';
+import 'package:hajj_app/widgets/pages/first.dart';
+import 'package:hajj_app/widgets/pages/second.dart';
+import 'package:hajj_app/widgets/pages/third.dart';
+import 'package:hajj_app/widgets/pages/fourth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,8 +20,32 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex == 0 ? const TopNavBar() : null,
-      body: BottomNavBar(
+      appBar: _currentIndex == 0
+          ? TopNavBar(
+              onSettingsTap: () {
+                // Handle Settings tap (_currentIndex = 3)
+                setState(() {
+                  _currentIndex = 3;
+                });
+              },
+              onMapTap: () {
+                // Handle Map tap (_currentIndex = 1)
+                setState(() {
+                  _currentIndex = 1;
+                });
+              },
+            )
+          : null,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          FirstWidget(),
+          SecondWidget(),
+          ThirdWidget(),
+          FourthWidget(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {

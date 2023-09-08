@@ -232,7 +232,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             MaterialButton(
               onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
+                Navigator.pushNamed(context, '/login');
               },
               height: 45,
               color: ColorSys.darkBlue,
@@ -260,7 +260,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/login');
+                    Navigator.pop(context);
                   },
                   child: const Text(
                     'Login',

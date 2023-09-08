@@ -11,7 +11,7 @@ class FirstWidget extends StatelessWidget {
     HijriCalendar today = HijriCalendar.now();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: [
