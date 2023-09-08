@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/screens/features/edit.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:package_info/package_info.dart';
 
@@ -23,7 +24,11 @@ class FourthWidget extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 20, top: 20),
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, '/find_me');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const EditScreen()),
+                      );
                     },
                     child: Text(
                       'Edit',
@@ -102,9 +107,7 @@ class FourthWidget extends StatelessWidget {
                             const SizedBox(width: 8),
                             const Text('Language'),
                             const Spacer(),
-                            const SizedBox(
-                                width:
-                                    8), // Add spacing between the arrow and the text
+                            const SizedBox(width: 8),
                             Text(
                               'English',
                               style: textStyle(fontSize: 14),

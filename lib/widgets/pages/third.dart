@@ -14,7 +14,7 @@ class ThirdWidget extends StatelessWidget {
 
     return SafeArea(
       child: Container(
-        color: Colors.white,
+        color: Colors.grey[50],
         padding: const EdgeInsets.all(16.0),
         child: Align(
           alignment: Alignment.topLeft,
