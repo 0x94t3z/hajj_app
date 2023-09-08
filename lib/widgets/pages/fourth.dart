@@ -198,7 +198,7 @@ class FourthWidget extends StatelessWidget {
                   const SizedBox(height: 5),
                   InkWell(
                     onTap: () {
-                      // Handle for onTap here
+                      Navigator.pop(context, '/login');
                     },
                     child: const Card(
                       child: Padding(

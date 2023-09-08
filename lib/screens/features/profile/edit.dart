@@ -15,11 +15,16 @@ class _EditScreenState extends State<EditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[50],
         iconTheme: const IconThemeData(color: ColorSys.primary),
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left_2),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back when the arrow is pressed
+          },
+        ),
         title: const Text(
           'My Profile',
           style: TextStyle(color: ColorSys.primary),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:iconsax/iconsax.dart';
 
 class EditNameScreen extends StatefulWidget {
   const EditNameScreen({Key? key}) : super(key: key);
@@ -10,7 +11,7 @@ class EditNameScreen extends StatefulWidget {
 }
 
 class _EditNameScreenState extends State<EditNameScreen> {
-  TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   final String initialName = 'Muhamad Taopik';
   bool isButtonDisabled = true;
 
@@ -41,8 +42,14 @@ class _EditNameScreenState extends State<EditNameScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[50],
         iconTheme: const IconThemeData(color: ColorSys.primary),
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left_2),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back when the arrow is pressed
+          },
+        ),
         title: const Text(
           'Change Name',
           style: TextStyle(color: ColorSys.primary),
