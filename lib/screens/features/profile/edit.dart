@@ -22,13 +22,14 @@ class _EditScreenState extends State<EditScreen> {
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left_2),
           onPressed: () {
-            Navigator.pop(context); // Navigate back when the arrow is pressed
+            Navigator.pop(context);
           },
         ),
         title: const Text(
           'My Profile',
           style: TextStyle(color: ColorSys.primary),
         ),
+        centerTitle: true,
       ),
       body: Align(
         alignment: Alignment.topCenter,

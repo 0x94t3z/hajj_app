@@ -11,10 +11,9 @@ import 'package:hajj_app/screens/features/menu/search.dart';
 import 'package:hajj_app/screens/features/menu/settings.dart';
 
 void main() async {
-  // Initialize dotenv package before runApp
-  await dotenv.load();
-
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load();
 
   initializeApp().then((_) {
     runApp(const HajjApp());

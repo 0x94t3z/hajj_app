@@ -54,6 +54,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
           'Change Name',
           style: TextStyle(color: ColorSys.primary),
         ),
+        centerTitle: true,
       ),
       body: Align(
         alignment: Alignment.topCenter,
