@@ -207,9 +207,9 @@ class FourthWidget extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Logout'),
-                            SizedBox(width: 8),
                             Icon(Iconsax.logout),
+                            SizedBox(width: 8),
+                            Text('Logout'),
                           ],
                         ),
                       ),

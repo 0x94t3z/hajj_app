@@ -15,7 +15,6 @@ class SecondWidget extends StatefulWidget {
 
 class _SecondWidgetState extends State<SecondWidget> {
   MapboxMapController? mapController;
-  var isLight = true;
 
   @override
   void initState() {
