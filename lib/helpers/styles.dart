@@ -6,7 +6,7 @@ class ColorSys {
   static const Color grey = Color.fromRGBO(158, 158, 158, 1);
   static const Color secoundry = Color.fromRGBO(198, 116, 27, 1);
   static const Color lightSecondary = Color.fromRGBO(226, 185, 141, 1);
-  static const Color lightBlue = Color.fromRGBO(238, 247, 246, 1);
+  static const Color lightBlue = Color.fromRGBO(163, 192, 201, 1);
   static const Color darkBlue = Color.fromRGBO(71, 131, 149, 1);
   static const Color moreDarkBlue = Color.fromRGBO(30, 55, 70, 70);
   static const Color colorClock = Color.fromRGBO(51, 51, 51, 1);

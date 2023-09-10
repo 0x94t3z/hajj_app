@@ -57,7 +57,7 @@ class FirstWidget extends StatelessWidget {
                 secondHandColor: Colors.red,
                 showSecondHand: true,
                 showNumbers: true,
-                showTicks: true,
+                showTicks: false,
                 textScaleFactor: 1.2,
                 showDigitalClock: false,
                 digitalClockColor: Colors.white,

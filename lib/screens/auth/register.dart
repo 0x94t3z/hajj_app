@@ -269,7 +269,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
                 color: ColorSys.darkBlue,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
+                    borderRadius: BorderRadius.circular(10.0)),
                 padding:
                     const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 child: _isLoading

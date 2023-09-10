@@ -15,9 +15,10 @@ class _EditScreenState extends State<EditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: Colors.grey[50],
+        backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: ColorSys.primary),
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left_2),
@@ -25,9 +26,10 @@ class _EditScreenState extends State<EditScreen> {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           'My Profile',
-          style: TextStyle(color: ColorSys.primary),
+          style:
+              textStyle(color: ColorSys.primary, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -50,21 +52,20 @@ class _EditScreenState extends State<EditScreen> {
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: ColorSys.darkBlue, // Set the text color
-                elevation: 0, // Remove the button's elevation
+                backgroundColor: ColorSys.darkBlue,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                      10.0), // Adjust the border radius as needed
+                  borderRadius: BorderRadius.circular(25.0),
                 ),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(16.0),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
                   'Change Image',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: textStyle(
+                      fontSize: 12,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -83,13 +84,23 @@ class _EditScreenState extends State<EditScreen> {
                       horizontal: 16.0, vertical: 14.0),
                   child: Row(
                     children: [
-                      const Text('Name'),
+                      Text(
+                        'Name',
+                        style: textStyle(
+                            fontSize: 14,
+                            color: ColorSys.darkBlue,
+                            fontWeight: FontWeight.bold),
+                      ),
                       const Spacer(),
                       Text(
                         'Muhamad Taopik',
-                        style: textStyle(fontSize: 14),
+                        style:
+                            textStyle(fontSize: 14, color: ColorSys.lightBlue),
                       ),
-                      const Icon(Iconsax.arrow_right_3),
+                      const Icon(
+                        Iconsax.arrow_right_3,
+                        color: ColorSys.darkBlue,
+                      ),
                     ],
                   ),
                 ),
@@ -105,12 +116,19 @@ class _EditScreenState extends State<EditScreen> {
                       horizontal: 16.0, vertical: 14.0),
                   child: Row(
                     children: [
-                      const Text('Email'),
+                      Text(
+                        'Email',
+                        style: textStyle(
+                            fontSize: 14,
+                            color: ColorSys.darkBlue,
+                            fontWeight: FontWeight.bold),
+                      ),
                       const Spacer(),
                       const SizedBox(width: 8),
                       Text(
                         'muhamadtaopik007@gmail.com',
-                        style: textStyle(fontSize: 14),
+                        style:
+                            textStyle(fontSize: 14, color: ColorSys.lightBlue),
                       ),
                     ],
                   ),

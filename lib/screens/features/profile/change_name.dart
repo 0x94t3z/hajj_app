@@ -14,6 +14,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
   final TextEditingController _nameController = TextEditingController();
   final String initialName = 'Muhamad Taopik';
   bool isButtonDisabled = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -39,10 +40,10 @@ class _EditNameScreenState extends State<EditNameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0.0,
-        backgroundColor: Colors.grey[50],
+        backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: ColorSys.primary),
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left_2),
@@ -50,9 +51,10 @@ class _EditNameScreenState extends State<EditNameScreen> {
             Navigator.pop(context); // Navigate back when the arrow is pressed
           },
         ),
-        title: const Text(
+        title: Text(
           'Change Name',
-          style: TextStyle(color: ColorSys.primary),
+          style:
+              textStyle(color: ColorSys.primary, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -79,17 +81,37 @@ class _EditNameScreenState extends State<EditNameScreen> {
             const SizedBox(
               height: 20,
             ), // Add some space between button and content
+            // Initialize isLoading to false
+
             Container(
               width: double.infinity, // Make the button span the entire width
               margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
               child: ElevatedButton(
-                onPressed: isButtonDisabled
-                    ? null // Disable the button if conditions are met
-                    : () {
+                onPressed: isButtonDisabled || _isLoading
+                    ? null
+                    : () async {
                         String newName = _nameController.text;
+
+                        // Set isLoading to true to indicate loading
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        // Simulate a delay, replace this with your actual async operation
+                        await Future.delayed(const Duration(seconds: 2));
+
+                        // After the async operation is done, set isLoading to false
+                        setState(() {
+                          _isLoading = false;
+                        });
+
                         // Handle the button press with the new name here
                         // You can access the new name using the `newName` variable
                         print('New Name: $newName');
+
+                        // Navigate to the SettingScreen using the stored BuildContext reference
+                        // ignore: use_build_context_synchronously
+                        Navigator.pop(context);
                       },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
@@ -101,13 +123,24 @@ class _EditNameScreenState extends State<EditNameScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height:
+                            20, // Set the desired height for the loading indicator
+                        width:
+                            20, // Set the desired width for the loading indicator
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ],

@@ -16,10 +16,11 @@ class FourthWidget extends StatelessWidget {
           final packageInfo = snapshot.data;
 
           return Scaffold(
+            backgroundColor: Colors.white,
             appBar: AppBar(
               automaticallyImplyLeading: false,
               elevation: 0,
-              backgroundColor: Colors.grey[50],
+              backgroundColor: Colors.white,
               actions: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(right: 20, top: 20),
@@ -33,7 +34,7 @@ class FourthWidget extends StatelessWidget {
                     },
                     child: Text(
                       'Edit',
-                      style: textStyle(fontSize: 18),
+                      style: textStyle(fontSize: 16),
                     ),
                   ),
                 ),
@@ -54,13 +55,13 @@ class FourthWidget extends StatelessWidget {
                     'Muhamad Taopik',
                     style: textStyle(
                         fontSize: 24,
-                        color: ColorSys.primary,
+                        color: ColorSys.darkBlue,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'muhamadtaopik007@gmail.com',
-                    style: textStyle(fontSize: 14),
+                    style: textStyle(fontSize: 14, color: ColorSys.lightBlue),
                   ),
                   const SizedBox(height: 30),
                   Padding(
@@ -69,7 +70,8 @@ class FourthWidget extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'General',
-                        style: textStyle(fontSize: 14),
+                        style:
+                            textStyle(fontSize: 14, color: ColorSys.lightBlue),
                       ),
                     ),
                   ),
@@ -78,17 +80,26 @@ class FourthWidget extends StatelessWidget {
                     onTap: () {
                       // Handle for onTap here
                     },
-                    child: const Card(
+                    child: Card(
+                      color: Colors.white,
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
-                            Icon(Iconsax.notification),
-                            SizedBox(width: 8),
-                            Text('Notification'),
-                            Spacer(),
-                            Icon(Iconsax.arrow_right_3),
+                            const Icon(
+                              Iconsax.notification,
+                              color: ColorSys.darkBlue,
+                            ),
+                            const SizedBox(width: 8),
+                            Text('Notification',
+                                style: textStyle(
+                                    fontSize: 14,
+                                    color: ColorSys.darkBlue,
+                                    fontWeight: FontWeight.bold)),
+                            const Spacer(),
+                            const Icon(Iconsax.arrow_right_3,
+                                color: ColorSys.darkBlue),
                           ],
                         ),
                       ),
@@ -104,16 +115,29 @@ class FourthWidget extends StatelessWidget {
                             horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
-                            const Icon(Iconsax.translate),
+                            const Icon(
+                              Iconsax.translate,
+                              color: ColorSys.darkBlue,
+                            ),
                             const SizedBox(width: 8),
-                            const Text('Language'),
+                            Text(
+                              'Language',
+                              style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.darkBlue,
+                                  fontWeight: FontWeight.bold),
+                            ),
                             const Spacer(),
                             const SizedBox(width: 8),
                             Text(
                               'English',
-                              style: textStyle(fontSize: 14),
+                              style: textStyle(
+                                  fontSize: 14, color: ColorSys.lightBlue),
                             ),
-                            const Icon(Iconsax.arrow_right_3),
+                            const Icon(
+                              Iconsax.arrow_right_3,
+                              color: ColorSys.darkBlue,
+                            ),
                           ],
                         ),
                       ),
@@ -126,7 +150,10 @@ class FourthWidget extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         'Support',
-                        style: textStyle(fontSize: 14),
+                        style: textStyle(
+                          fontSize: 14,
+                          color: ColorSys.lightBlue,
+                        ),
                       ),
                     ),
                   ),
@@ -135,37 +162,27 @@ class FourthWidget extends StatelessWidget {
                     onTap: () {
                       // Handle for onTap here
                     },
-                    child: const Card(
+                    child: Card(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
-                            Icon(Iconsax.flag),
-                            SizedBox(width: 8),
-                            Text('Notices'),
-                            Spacer(),
-                            Icon(Iconsax.arrow_right_3),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      // Handle for onTap here
-                    },
-                    child: const Card(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 10.0),
-                        child: Row(
-                          children: [
-                            Icon(Iconsax.shield_tick),
-                            SizedBox(width: 8),
-                            Text('Terms and Polices'),
-                            Spacer(),
-                            Icon(Iconsax.arrow_right_3),
+                            const Icon(
+                              Iconsax.flag,
+                              color: ColorSys.darkBlue,
+                            ),
+                            const SizedBox(width: 8),
+                            Text('Notices',
+                                style: textStyle(
+                                    fontSize: 14,
+                                    color: ColorSys.darkBlue,
+                                    fontWeight: FontWeight.bold)),
+                            const Spacer(),
+                            const Icon(
+                              Iconsax.arrow_right_3,
+                              color: ColorSys.darkBlue,
+                            ),
                           ],
                         ),
                       ),
@@ -181,16 +198,59 @@ class FourthWidget extends StatelessWidget {
                             horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
-                            const Icon(Iconsax.info_circle),
+                            const Icon(
+                              Iconsax.shield_tick,
+                              color: ColorSys.darkBlue,
+                            ),
                             const SizedBox(width: 8),
-                            const Text('App Version'),
+                            Text('Terms and Policies',
+                                style: textStyle(
+                                    fontSize: 14,
+                                    color: ColorSys.darkBlue,
+                                    fontWeight: FontWeight.bold)),
+                            const Spacer(),
+                            const Icon(
+                              Iconsax.arrow_right_3,
+                              color: ColorSys.darkBlue,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      // Handle for onTap here
+                    },
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 10.0),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Iconsax.info_circle,
+                              color: ColorSys.darkBlue,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'App Version',
+                              style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.darkBlue,
+                                  fontWeight: FontWeight.bold),
+                            ),
                             const Spacer(),
                             const SizedBox(width: 8),
                             Text(
                               'Latest',
-                              style: textStyle(fontSize: 14),
+                              style: textStyle(
+                                  fontSize: 14, color: ColorSys.lightBlue),
                             ),
-                            const Icon(Iconsax.arrow_right_3),
+                            const Icon(
+                              Iconsax.arrow_right_3,
+                              color: ColorSys.darkBlue,
+                            ),
                           ],
                         ),
                       ),
@@ -201,16 +261,25 @@ class FourthWidget extends StatelessWidget {
                     onTap: () {
                       Navigator.pushReplacementNamed(context, '/login');
                     },
-                    child: const Card(
+                    child: Card(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Iconsax.logout),
-                            SizedBox(width: 8),
-                            Text('Logout'),
+                            const Icon(
+                              Iconsax.logout,
+                              color: ColorSys.darkBlue,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Logout',
+                              style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.darkBlue,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
@@ -223,7 +292,8 @@ class FourthWidget extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Text(
                         packageInfo?.version ?? 'N/A',
-                        style: textStyle(fontSize: 14),
+                        style:
+                            textStyle(fontSize: 14, color: ColorSys.lightBlue),
                       ),
                     ),
                   ),
