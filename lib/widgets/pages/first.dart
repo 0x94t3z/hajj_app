@@ -38,7 +38,7 @@ class FirstWidget extends StatelessWidget {
                 height: 250,
                 decoration: BoxDecoration(
                   border: Border.all(width: 4.0, color: ColorSys.primary),
-                  color: ColorSys.colorClock,
+                  color: ColorSys.lightPrimary,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -63,7 +63,7 @@ class FirstWidget extends StatelessWidget {
                 digitalClockColor: Colors.white,
               ),
             ),
-            const SizedBox(height: 50.0),
+            const SizedBox(height: 70.0),
             _buildCountryWidget(
               country: 'Saudi Arabia',
               city: 'Mecca',
@@ -93,11 +93,11 @@ class FirstWidget extends StatelessWidget {
       height: 100.0,
       margin: const EdgeInsets.symmetric(horizontal: 20.0),
       decoration: BoxDecoration(
-        color: ColorSys.darkBlue,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(25.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
+            color: Colors.grey.withOpacity(0.2),
             spreadRadius: 3,
             blurRadius: 3,
             offset: const Offset(0, 3),
@@ -118,11 +118,11 @@ class FirstWidget extends StatelessWidget {
                   style: textStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                      color: ColorSys.darkBlue),
                 ),
                 Text(
                   city,
-                  style: textStyle(fontSize: 18, color: Colors.white),
+                  style: textStyle(fontSize: 18, color: ColorSys.darkBlue),
                 ),
               ],
             ),
@@ -130,7 +130,9 @@ class FirstWidget extends StatelessWidget {
           Text(
             formattedTime,
             style: textStyle(
-                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: ColorSys.darkBlue),
           ),
         ],
       ),

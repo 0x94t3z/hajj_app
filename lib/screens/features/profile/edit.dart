@@ -28,8 +28,7 @@ class _EditScreenState extends State<EditScreen> {
         ),
         title: Text(
           'My Profile',
-          style:
-              textStyle(color: ColorSys.primary, fontWeight: FontWeight.bold),
+          style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
       ),
@@ -52,17 +51,17 @@ class _EditScreenState extends State<EditScreen> {
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: ColorSys.darkBlue,
+                backgroundColor: ColorSys.lightPrimary,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25.0),
                 ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+              child: const Padding(
+                padding: EdgeInsets.all(16.0),
                 child: Text(
                   'Change Image',
-                  style: textStyle(
+                  style: TextStyle(
                       fontSize: 12,
                       color: Colors.white,
                       fontWeight: FontWeight.bold),
@@ -70,70 +69,73 @@ class _EditScreenState extends State<EditScreen> {
               ),
             ),
             const SizedBox(height: 35),
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const EditNameScreen()),
-                );
-              },
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 14.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Name',
-                        style: textStyle(
+            Column(
+              children: [
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const EditNameScreen()),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 14.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Name',
+                          style: textStyle(
+                              fontSize: 14,
+                              color: ColorSys.primary,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Muhamad Taopik',
+                          style: textStyle(
                             fontSize: 14,
-                            color: ColorSys.darkBlue,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'Muhamad Taopik',
-                        style:
-                            textStyle(fontSize: 14, color: ColorSys.lightBlue),
-                      ),
-                      const Icon(
-                        Iconsax.arrow_right_3,
-                        color: ColorSys.darkBlue,
-                      ),
-                    ],
+                          ),
+                        ),
+                        const Icon(
+                          Iconsax.arrow_right_3,
+                          color: ColorSys.primary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            InkWell(
-              onTap: () {
-                // Handle for onTap here
-              },
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 14.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Email',
-                        style: textStyle(
+                const Divider(),
+                InkWell(
+                  onTap: () {
+                    // Handle for onTap here
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 14.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Email',
+                          style: textStyle(
+                              fontSize: 14,
+                              color: ColorSys.primary,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        const SizedBox(width: 8),
+                        Text(
+                          'muhamadtaopik007@gmail.com',
+                          style: textStyle(
                             fontSize: 14,
-                            color: ColorSys.darkBlue,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      const SizedBox(width: 8),
-                      Text(
-                        'muhamadtaopik007@gmail.com',
-                        style:
-                            textStyle(fontSize: 14, color: ColorSys.lightBlue),
-                      ),
-                    ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

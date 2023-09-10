@@ -53,8 +53,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
         ),
         title: Text(
           'Change Name',
-          style:
-              textStyle(color: ColorSys.primary, fontWeight: FontWeight.bold),
+          style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
       ),
@@ -117,10 +116,10 @@ class _EditNameScreenState extends State<EditNameScreen> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 16), // Adjust padding
                   foregroundColor: Colors.white,
-                  backgroundColor: ColorSys.darkBlue,
+                  backgroundColor: ColorSys.lightPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+                    borderRadius: BorderRadius.circular(5.0),
                   ),
                 ),
                 child: _isLoading

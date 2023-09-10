@@ -47,6 +47,7 @@ dependencies:
   mapbox_gl: ^0.16.0
   package_info: ^2.0.2
   animate_do: ^3.1.2
+  vertical_card_pager: ^1.5.0
 
 dev_dependencies:
   flutter_test:
