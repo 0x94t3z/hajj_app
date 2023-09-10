@@ -27,11 +27,6 @@ class _IntroductionState extends State<Introduction> {
     super.dispose();
   }
 
-  // Navigate to Home Screen
-  void navigateToHome() {
-    Navigator.pushReplacementNamed(context, '/home');
-  }
-
   // Navigate to Login Screen
   void navigateToLogin() {
     Navigator.pushReplacementNamed(context, '/login');

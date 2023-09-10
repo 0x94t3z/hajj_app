@@ -45,6 +45,7 @@ dependencies:
   analog_clock: ^0.1.1
   mapbox_gl: ^0.16.0
   package_info: ^2.0.2
+  animate_do: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - .env
+    - assets/fonts/
     - assets/images/one.png
     - assets/images/two.png
     - assets/images/three.png

@@ -17,6 +17,7 @@ class FourthWidget extends StatelessWidget {
 
           return Scaffold(
             appBar: AppBar(
+              automaticallyImplyLeading: false,
               elevation: 0,
               backgroundColor: Colors.grey[50],
               actions: <Widget>[
@@ -80,7 +81,7 @@ class FourthWidget extends StatelessWidget {
                     child: const Card(
                       child: Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
                             Icon(Iconsax.notification),
@@ -100,7 +101,7 @@ class FourthWidget extends StatelessWidget {
                     child: Card(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
                             const Icon(Iconsax.translate),
@@ -137,7 +138,7 @@ class FourthWidget extends StatelessWidget {
                     child: const Card(
                       child: Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
                             Icon(Iconsax.flag),
@@ -157,7 +158,7 @@ class FourthWidget extends StatelessWidget {
                     child: const Card(
                       child: Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
                             Icon(Iconsax.shield_tick),
@@ -177,7 +178,7 @@ class FourthWidget extends StatelessWidget {
                     child: Card(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           children: [
                             const Icon(Iconsax.info_circle),
@@ -198,12 +199,12 @@ class FourthWidget extends StatelessWidget {
                   const SizedBox(height: 5),
                   InkWell(
                     onTap: () {
-                      Navigator.pop(context, '/login');
+                      Navigator.pushReplacementNamed(context, '/login');
                     },
                     child: const Card(
                       child: Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                            horizontal: 16.0, vertical: 10.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

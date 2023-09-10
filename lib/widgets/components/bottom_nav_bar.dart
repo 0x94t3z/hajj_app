@@ -16,7 +16,7 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SalomonBottomBar(
-      // backgroundColor: ColorSys.darkBlue,
+      backgroundColor: Colors.white,
       currentIndex: currentIndex,
       selectedItemColor: Colors.white,
       unselectedItemColor: ColorSys.darkBlue,

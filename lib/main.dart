@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:hajj_app/screens/presentation/introduction.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
@@ -76,6 +77,7 @@ class HajjApp extends StatelessWidget {
         '/find_me': (context) => const FindMeScreen(),
         '/search': (context) => const SearchScreen(),
         '/settings': (context) => const SettingScreen(),
+        '/edit': (context) => const EditScreen(),
       },
     );
   }

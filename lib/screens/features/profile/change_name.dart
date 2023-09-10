@@ -95,10 +95,10 @@ class _EditNameScreenState extends State<EditNameScreen> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 16), // Adjust padding
                   foregroundColor: Colors.white,
-                  backgroundColor: ColorSys.primary,
+                  backgroundColor: ColorSys.darkBlue,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25.0),
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
                 child: const Text(

@@ -7,9 +7,9 @@ class ColorSys {
   static const Color secoundry = Color.fromRGBO(198, 116, 27, 1);
   static const Color lightSecondary = Color.fromRGBO(226, 185, 141, 1);
   static const Color lightBlue = Color.fromRGBO(137, 183, 204, 1);
-  static const Color darkBlue = Color.fromRGBO(69, 125, 143, 1);
+  static const Color darkBlue = Color.fromRGBO(68, 124, 142, 1);
   static const Color moreDarkBlue = Color.fromRGBO(30, 55, 70, 70);
-  static const Color yellowClock = Color.fromRGBO(214, 159, 60, 1);
+  static const Color colorClock = Color.fromRGBO(51, 51, 51, 1);
 }
 
 TextStyle titleTextStyle() {

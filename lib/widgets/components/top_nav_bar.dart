@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:hajj_app/helpers/styles.dart';
 
 class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onSettingsTap;
@@ -20,27 +20,41 @@ class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
       child: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
+        leading: IconButton(
+          icon: const Icon(
+            Icons.menu,
+            color: ColorSys.darkBlue,
+          ),
+          onPressed: onMapTap,
+        ),
+        actions: <Widget>[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.all(10.0),
             child: InkResponse(
               onTap: onSettingsTap,
-              child: const CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(
-                  'https://avatars.githubusercontent.com/u/52822242?v=4',
+              child: Container(
+                width: 35,
+                height: 35,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: const DecorationImage(
+                        image: NetworkImage(
+                            'https://avatars.githubusercontent.com/u/52822242?v=4'),
+                        fit: BoxFit.cover)),
+                child: Transform.translate(
+                  offset: const Offset(15, -15),
+                  child: Container(
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 3, color: Colors.white),
+                        shape: BoxShape.circle,
+                        color: Colors.green),
+                  ),
                 ),
               ),
             ),
           )
         ],
-        leading: IconButton(
-          icon: const Icon(
-            Iconsax.menu_1,
-            color: Color.fromRGBO(69, 125, 143, 1),
-          ),
-          onPressed: onMapTap,
-        ),
       ),
     );
   }

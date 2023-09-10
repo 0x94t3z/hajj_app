@@ -50,11 +50,11 @@ class _EditScreenState extends State<EditScreen> {
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: ColorSys.primary, // Set the text color
+                backgroundColor: ColorSys.darkBlue, // Set the text color
                 elevation: 0, // Remove the button's elevation
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                      8.0), // Adjust the border radius as needed
+                      10.0), // Adjust the border radius as needed
                 ),
               ),
               child: const Padding(
@@ -80,7 +80,7 @@ class _EditScreenState extends State<EditScreen> {
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 10.0),
+                      horizontal: 16.0, vertical: 14.0),
                   child: Row(
                     children: [
                       const Text('Name'),
@@ -102,7 +102,7 @@ class _EditScreenState extends State<EditScreen> {
               child: Card(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 10.0),
+                      horizontal: 16.0, vertical: 14.0),
                   child: Row(
                     children: [
                       const Text('Email'),
