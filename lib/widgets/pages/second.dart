@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-// import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-// import 'package:mapbox_gl/mapbox_gl.dart';
-// import 'package:permission_handler/permission_handler.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
+import 'dart:math' as math;
 
 class SecondWidget extends StatefulWidget {
   const SecondWidget({Key? key}) : super(key: key);
@@ -16,65 +15,110 @@ class SecondWidget extends StatefulWidget {
 }
 
 class _SecondWidgetState extends State<SecondWidget> {
-  MapboxMap? mapboxMap;
-  final double _puckScale = 1.0;
+  MapboxMapController? mapController;
 
   @override
   void initState() {
     super.initState();
   }
 
-  _onMapCreated(MapboxMap mapboxMap) {
-    this.mapboxMap = mapboxMap;
+  double degreesToRadians(double degrees) {
+    return degrees * (math.pi / 180);
   }
 
-  // Future<void> _getUserLocation() async {
-  //   try {
-  //     var position = await Geolocator.getCurrentPosition(
-  //       desiredAccuracy: LocationAccuracy.high,
-  //     );
+  double calculateHaversineDistance(
+      double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371; // Radius of the Earth in kilometers
 
-  //     // Update the map camera to center around the user's location and zoom in.
-  // mapboxMap?.flyTo(
-  //     // CameraUpdate.newLatLngZoom(
-  //     //   LatLng(position.latitude, position.longitude),
-  //     //   16.0,
-  //     // ),
-  //     CameraOptions(
-  //         anchor:
-  //             ScreenCoordinate(x: position.latitude, y: position.longitude),
-  //         zoom: 17,
-  //         bearing: 180,
-  //         pitch: 30),
-  //     MapAnimationOptions(duration: 2000, startDelay: 0));
-  //   } catch (e) {
-  //     // Handle any errors that may occur when getting the location.
-  //     print(e.toString());
-  //   }
-  // }
+    // Convert latitude and longitude from degrees to radians
+    final double lat1Rad = degreesToRadians(lat1);
+    final double lon1Rad = degreesToRadians(lon1);
+    final double lat2Rad = degreesToRadians(lat2);
+    final double lon2Rad = degreesToRadians(lon2);
 
-  // Widget _getPermission() {
-  //   return TextButton(
-  //     child: const Text('get location permission'),
-  //     onPressed: () async {
-  //       var status = await Permission.locationWhenInUse.request();
-  //       print("Location granted : $status");
-  //     },
-  //   );
-  // }
+    // Haversine formula
+    final double dlon = lon2Rad - lon1Rad;
+    final double dlat = lat2Rad - lat1Rad;
+    final double a = math.pow(math.sin(dlat / 2), 2) +
+        math.cos(lat1Rad) * math.cos(lat2Rad) * math.pow(math.sin(dlon / 2), 2);
+    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    final double distance = earthRadius * c;
 
-  Widget _switchLocationPuck3D() {
-    return TextButton(
-      child: const Text('switch to 3d puck'),
-      onPressed: () {
-        mapboxMap?.location.updateSettings(LocationComponentSettings(
-            locationPuck: LocationPuck(
-                locationPuck3D: LocationPuck3D(
-                    modelUri:
-                        "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Embedded/Duck.gltf",
-                    modelScale: [_puckScale, _puckScale, _puckScale]))));
-      },
-    );
+    return distance; // Distance in kilometers
+  }
+
+  void _onMapCreated(MapboxMapController controller) {
+    mapController = controller;
+  }
+
+  Future<void> _getUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Coordinates of user 2 (you can replace these with the second user's coordinates)
+      double user2Latitude = -6.9378;
+      double user2Longitude = 107.7049;
+
+      double distance = calculateHaversineDistance(
+        position.latitude,
+        position.longitude,
+        user2Latitude,
+        user2Longitude,
+      );
+
+      // Calculate a midpoint along the road between your location and user 2's location
+      double midPointLatitude = (position.latitude + user2Latitude) / 2;
+      double midPointLongitude = (position.longitude + user2Longitude) / 2;
+
+      // Update the map camera to center around the midpoint and zoom in.
+      mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(midPointLatitude,
+              midPointLongitude), // Use midpoint as the target
+          16.0, // Zoom level
+        ),
+      );
+
+      // Add a line between your location and user 2's location
+      mapController?.addLine(
+        LineOptions(
+          geometry: [
+            LatLng(position.latitude, position.longitude),
+            LatLng(user2Latitude, user2Longitude),
+          ],
+          lineJoin: "round",
+          lineColor: "#478395", // Line color (red)
+          lineWidth: 4.0, // Line width
+        ),
+      );
+
+      // Add symbols for both your location and user 2's location
+      mapController?.addSymbols([
+        SymbolOptions(
+          geometry: LatLng(position.latitude, position.longitude),
+          iconImage: 'assets/images/one.png', // Your icon asset
+          iconSize: 0.3, // Adjust the icon size as needed
+        ),
+        SymbolOptions(
+          geometry: LatLng(user2Latitude, user2Longitude),
+          iconImage: 'assets/images/two.png', // User 2's icon asset
+          iconSize: 0.3, // Adjust the icon size as needed
+        ),
+      ]);
+
+      // Display the distance between your location and user 2's location
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Distance to User 2: ${distance.toStringAsFixed(2)} km'),
+        ),
+      );
+    } catch (e) {
+      // Handle any errors that may occur when getting the location.
+      print(e.toString());
+    }
   }
 
   @override
@@ -88,31 +132,19 @@ class _SecondWidgetState extends State<SecondWidget> {
             Iconsax.location,
             color: ColorSys.darkBlue,
           ),
-          onPressed: () => _switchLocationPuck3D(),
+          onPressed: () => _getUserLocation(),
         ),
       ),
-      body: MapWidget(
-        key: const ValueKey("mapWidget"),
-        resourceOptions: ResourceOptions(
-          accessToken: dotenv.env['MAPBOX_SECRET_KEY'] ?? '',
-        ),
-
+      body: MapboxMap(
+        styleString: MapboxStyles.MAPBOX_STREETS,
+        accessToken: dotenv.env['MAPBOX_SECRET_KEY'],
         onMapCreated: _onMapCreated,
-        cameraOptions: CameraOptions(
-            center: Point(coordinates: Position(21.42664, 39.82563)).toJson(),
-            zoom: 12.0),
-
-        // body: MapboxMap(
-        //   styleString: MapboxStyles.MAPBOX_STREETS,
-        //   accessToken: dotenv.env['MAPBOX_SECRET_KEY'],
-        //   onMapCreated: _onMapCreated,
-        //   myLocationRenderMode: MyLocationRenderMode.NORMAL,
-        //   myLocationEnabled: true,
-        //   myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
-        //   initialCameraPosition: const CameraPosition(
-        //     target: LatLng(21.42664, 39.82563),
-        //     zoom: 14.0, // Adjust the initial zoom level as needed.
-        //   ),
+        myLocationRenderMode: MyLocationRenderMode.NORMAL,
+        myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
+        initialCameraPosition: const CameraPosition(
+          target: LatLng(21.422627, 39.826115),
+          zoom: 14.0, // Adjust the initial zoom level as needed.
+        ),
       ),
     );
   }
