@@ -124,6 +124,11 @@ class _SecondWidgetState extends State<SecondWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // tambahkan button back
+      // appBar: AppBar(
+      //   elevation: 0,
+      //   backgroundColor: Colors.transparent,
+      // ),
       floatingActionButton: Padding(
         padding: const EdgeInsets.all(32.0),
         child: FloatingActionButton(
