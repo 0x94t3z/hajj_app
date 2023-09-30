@@ -42,268 +42,270 @@ class FourthWidget extends StatelessWidget {
             ),
             body: Align(
               alignment: Alignment.topCenter,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  const CircleAvatar(
-                    radius: 60,
-                    backgroundImage: NetworkImage(
-                        'https://avatars.githubusercontent.com/u/52822242?v=4'),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Muhamad Taopik',
-                    style: textStyle(
-                        fontSize: 24,
-                        color: ColorSys.primary,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'muhamadtaopik007@gmail.com',
-                    style: textStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'General',
-                        style: textStyle(fontSize: 14),
-                      ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    const CircleAvatar(
+                      radius: 60,
+                      backgroundImage: NetworkImage(
+                          'https://avatars.githubusercontent.com/u/52822242?v=4'),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          // Handle for onTap here
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 10.0,
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Iconsax.notification,
-                                color: ColorSys.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Notification',
-                                style: textStyle(
-                                  fontSize: 14,
-                                  color: ColorSys.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              const Icon(
-                                Iconsax.arrow_right_3,
-                                color: ColorSys.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const Divider(), // Add a Divider here
-                      InkWell(
-                        onTap: () {
-                          // Handle for onTap here
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 10.0,
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Iconsax.translate,
-                                color: ColorSys.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Language',
-                                style: textStyle(
-                                  fontSize: 14,
-                                  color: ColorSys.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              const SizedBox(width: 8),
-                              Text(
-                                'English',
-                                style: textStyle(
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const Icon(
-                                Iconsax.arrow_right_3,
-                                color: ColorSys.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Support',
-                        style: textStyle(
-                          fontSize: 14,
+                    const SizedBox(height: 20),
+                    Text(
+                      'Muhamad Taopik',
+                      style: textStyle(
+                          fontSize: 24,
+                          color: ColorSys.primary,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'muhamadtaopik007@gmail.com',
+                      style: textStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 30),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'General',
+                          style: textStyle(fontSize: 14),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          // Handle for onTap here
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 10.0),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Iconsax.flag,
-                                color: ColorSys.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text('Notices',
+                    const SizedBox(height: 10),
+                    Column(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            // Handle for onTap here
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 10.0,
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Iconsax.notification,
+                                  color: ColorSys.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Notification',
                                   style: textStyle(
-                                      fontSize: 14,
-                                      color: ColorSys.primary,
-                                      fontWeight: FontWeight.bold)),
-                              const Spacer(),
-                              const Icon(
-                                Iconsax.arrow_right_3,
-                                color: ColorSys.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const Divider(),
-                      InkWell(
-                        onTap: () {
-                          // Handle for onTap here
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 10.0),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Iconsax.shield_tick,
-                                color: ColorSys.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text('Terms and Policies',
-                                  style: textStyle(
-                                      fontSize: 14,
-                                      color: ColorSys.primary,
-                                      fontWeight: FontWeight.bold)),
-                              const Spacer(),
-                              const Icon(
-                                Iconsax.arrow_right_3,
-                                color: ColorSys.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const Divider(),
-                      InkWell(
-                        onTap: () {
-                          // Handle for onTap here
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0, vertical: 10.0),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Iconsax.info_circle,
-                                color: ColorSys.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'App Version',
-                                style: textStyle(
                                     fontSize: 14,
                                     color: ColorSys.primary,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              const Spacer(),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Latest',
-                                style: textStyle(fontSize: 14),
-                              ),
-                              const Icon(
-                                Iconsax.arrow_right_3,
-                                color: ColorSys.primary,
-                              ),
-                            ],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                const Icon(
+                                  Iconsax.arrow_right_3,
+                                  color: ColorSys.primary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Divider(), // Add a Divider here
+                        InkWell(
+                          onTap: () {
+                            // Handle for onTap here
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 10.0,
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Iconsax.translate,
+                                  color: ColorSys.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Language',
+                                  style: textStyle(
+                                    fontSize: 14,
+                                    color: ColorSys.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'English',
+                                  style: textStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const Icon(
+                                  Iconsax.arrow_right_3,
+                                  color: ColorSys.primary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Support',
+                          style: textStyle(
+                            fontSize: 14,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const Divider(),
-                  const SizedBox(height: 10),
-                  InkWell(
-                    onTap: () {
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Iconsax.logout,
-                            color: ColorSys.primary,
+                    ),
+                    const SizedBox(height: 10),
+                    Column(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            // Handle for onTap here
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Iconsax.flag,
+                                  color: ColorSys.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text('Notices',
+                                    style: textStyle(
+                                        fontSize: 14,
+                                        color: ColorSys.primary,
+                                        fontWeight: FontWeight.bold)),
+                                const Spacer(),
+                                const Icon(
+                                  Iconsax.arrow_right_3,
+                                  color: ColorSys.primary,
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Logout',
-                            style: textStyle(
-                                fontSize: 14,
-                                color: ColorSys.primary,
-                                fontWeight: FontWeight.bold),
+                        ),
+                        const Divider(),
+                        InkWell(
+                          onTap: () {
+                            // Handle for onTap here
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Iconsax.shield_tick,
+                                  color: ColorSys.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text('Terms and Policies',
+                                    style: textStyle(
+                                        fontSize: 14,
+                                        color: ColorSys.primary,
+                                        fontWeight: FontWeight.bold)),
+                                const Spacer(),
+                                const Icon(
+                                  Iconsax.arrow_right_3,
+                                  color: ColorSys.primary,
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
+                        ),
+                        const Divider(),
+                        InkWell(
+                          onTap: () {
+                            // Handle for onTap here
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Iconsax.info_circle,
+                                  color: ColorSys.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'App Version',
+                                  style: textStyle(
+                                      fontSize: 14,
+                                      color: ColorSys.primary,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const Spacer(),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Latest',
+                                  style: textStyle(fontSize: 14),
+                                ),
+                                const Icon(
+                                  Iconsax.arrow_right_3,
+                                  color: ColorSys.primary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: () {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Iconsax.logout,
+                              color: ColorSys.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Logout',
+                              style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.primary,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Text(
-                        packageInfo?.version ?? 'N/A',
-                        style: textStyle(fontSize: 14),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          packageInfo?.version ?? 'N/A',
+                          style: textStyle(fontSize: 14),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

@@ -58,8 +58,8 @@ class _SecondWidgetState extends State<SecondWidget> {
       );
 
       // Coordinates of user 2 (you can replace these with the second user's coordinates)
-      double user2Latitude = -6.9378;
-      double user2Longitude = 107.7049;
+      double user2Latitude = 21.421923;
+      double user2Longitude = 39.826447;
 
       double distance = calculateHaversineDistance(
         position.latitude,

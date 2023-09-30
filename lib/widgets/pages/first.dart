@@ -19,63 +19,65 @@ class FirstWidget extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Text(
-                  '${today.fullDate()} H.',
-                  style: textStyle(fontSize: 20.0, color: ColorSys.darkBlue),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Text(
+                    '${today.fullDate()} H.',
+                    style: textStyle(fontSize: 20.0, color: ColorSys.darkBlue),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 50.0),
-            Center(
-              child: AnalogClock(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  border: Border.all(width: 4.0, color: ColorSys.primary),
-                  color: ColorSys.lightPrimary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 7,
-                      blurRadius: 7,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+              const SizedBox(height: 50.0),
+              Center(
+                child: AnalogClock(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    border: Border.all(width: 4.0, color: ColorSys.primary),
+                    color: ColorSys.lightPrimary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 7,
+                        blurRadius: 7,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  datetime: DateTime.now(),
+                  isLive: true,
+                  hourHandColor: Colors.white,
+                  minuteHandColor: Colors.white,
+                  numberColor: Colors.white,
+                  secondHandColor: Colors.red,
+                  showSecondHand: true,
+                  showNumbers: true,
+                  showTicks: false,
+                  textScaleFactor: 1.2,
+                  showDigitalClock: false,
+                  digitalClockColor: Colors.white,
                 ),
-                datetime: DateTime.now(),
-                isLive: true,
-                hourHandColor: Colors.white,
-                minuteHandColor: Colors.white,
-                numberColor: Colors.white,
-                secondHandColor: Colors.red,
-                showSecondHand: true,
-                showNumbers: true,
-                showTicks: false,
-                textScaleFactor: 1.2,
-                showDigitalClock: false,
-                digitalClockColor: Colors.white,
               ),
-            ),
-            const SizedBox(height: 70.0),
-            _buildCountryWidget(
-              country: 'Saudi Arabia',
-              city: 'Mecca',
-              timeZone: 'Asia/Riyadh',
-            ),
-            const SizedBox(height: 25.0),
-            _buildCountryWidget(
-              country: 'Indonesia',
-              city: 'Bandung',
-              timeZone: 'Asia/Jakarta',
-            ),
-          ],
+              const SizedBox(height: 70.0),
+              _buildCountryWidget(
+                country: 'Saudi Arabia',
+                city: 'Mecca',
+                timeZone: 'Asia/Riyadh',
+              ),
+              const SizedBox(height: 25.0),
+              _buildCountryWidget(
+                country: 'Indonesia',
+                city: 'Bandung',
+                timeZone: 'Asia/Jakarta',
+              ),
+            ],
+          ),
         ),
       ),
     );
