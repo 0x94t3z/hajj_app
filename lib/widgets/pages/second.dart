@@ -33,9 +33,12 @@ class _SecondWidgetState extends State<SecondWidget> {
       );
 
       // Update the map camera to center around the user's location.
-      mapController?.animateCamera(CameraUpdate.newLatLng(
-        LatLng(position.latitude, position.longitude),
-      ));
+      mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(
+          LatLng(position.latitude, position.longitude),
+          16.0,
+        ),
+      );
 
       setState(() {
         currentPosition = position;
@@ -78,67 +81,83 @@ class _SecondWidgetState extends State<SecondWidget> {
       ),
       padding: const EdgeInsets.all(25.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Stack(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: SizedBox(
+                        height: 130.0,
+                        width: 120.0,
+                        child: MapboxMap(
+                          onMapCreated: _onMapCreated,
+                          initialCameraPosition: const CameraPosition(
+                            target: LatLng(21.422627, 39.826115),
+                            zoom: 14.0,
+                          ),
+                          accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: 8.0,
+                right: 8.0,
+                child: FloatingActionButton(
+                  backgroundColor: Colors.white,
+                  mini: true,
+                  child: const Icon(
+                    Iconsax.location,
+                    color: ColorSys.darkBlue,
+                  ),
+                  onPressed: () => _getUserLocation(),
+                ),
+              ),
+            ],
+          ),
           Flexible(
-            child: Align(
-              alignment: Alignment.centerLeft,
+            child: Container(
+              margin: const EdgeInsets.only(left: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                        20.0), // Adjust the border radius as needed
-                    child: SizedBox(
-                      height: 120.0,
-                      width: 120.0,
-                      child: MapboxMap(
-                        onMapCreated: _onMapCreated,
-                        initialCameraPosition: const CameraPosition(
-                          target: LatLng(21.422627, 39.826115),
-                          zoom: 14.0,
-                        ),
-                        accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
+                  Text(
+                    'Your Location',
+                    style: textStyle(fontSize: 14, color: ColorSys.darkBlue),
+                  ),
+                  Text(
+                    'Meca, Saudi Arabia',
+                    style: textStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: ColorSys.darkBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 30.0),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _getUserLocation();
+                    },
+                    icon: const Icon(Iconsax.radar_2),
+                    label: const Text('Find Officers'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorSys.darkBlue,
+                      textStyle: const TextStyle(fontSize: 14),
+                      fixedSize: const Size(150, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Your Location',
-                  style: textStyle(fontSize: 14, color: ColorSys.darkBlue),
-                ),
-                Text(
-                  'Meca, Saudi Arabia',
-                  style: textStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: ColorSys.darkBlue,
-                  ),
-                ),
-                const SizedBox(height: 20.0),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _getUserLocation();
-                  },
-                  icon: const Icon(Iconsax.radar_2),
-                  label: const Text('Find Officers'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorSys.darkBlue,
-                    textStyle: const TextStyle(fontSize: 14),
-                    fixedSize: const Size(150, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
         ],
