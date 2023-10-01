@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hajj_app/screens/features/finding/maps.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:hajj_app/screens/presentation/introduction.dart';
 import 'package:hajj_app/screens/auth/login.dart';
@@ -75,7 +76,7 @@ class HajjApp extends StatelessWidget {
         '/forgot': (context) => const ForgotPasswordScreen(),
         '/home': (context) => const HomeScreen(),
         '/find_me': (context) => const FindMeScreen(),
-        '/finding': (context) => const FindMeScreen(),
+        '/find_officers': (context) => const MapScreen(),
         '/search': (context) => const SearchScreen(),
         '/settings': (context) => const SettingScreen(),
         '/edit': (context) => const EditScreen(),

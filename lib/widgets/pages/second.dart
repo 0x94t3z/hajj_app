@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geocoding/geocoding.dart';
 
 class SecondWidget extends StatefulWidget {
   const SecondWidget({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class SecondWidget extends StatefulWidget {
 class _SecondWidgetState extends State<SecondWidget> {
   MapboxMapController? mapController;
   Position? currentPosition;
+  String locationName = 'Meca, Saudi Arabia';
 
   @override
   void initState() {
@@ -31,6 +33,23 @@ class _SecondWidgetState extends State<SecondWidget> {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      // Get the location name based on the coordinates
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      // Extract the location name
+      if (placemarks.isNotEmpty) {
+        String retrievedLocationName =
+            placemarks.first.name ?? 'Unknown Location';
+        setState(() {
+          locationName = retrievedLocationName;
+        });
+      } else {
+        print('No location name found for the coordinates.');
+      }
 
       // Update the map camera to center around the user's location.
       mapController?.animateCamera(
@@ -108,7 +127,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                 ),
               ),
               Positioned(
-                bottom: 8.0,
+                bottom: 10.0,
                 right: 8.0,
                 child: FloatingActionButton(
                   backgroundColor: Colors.white,
@@ -129,21 +148,21 @@ class _SecondWidgetState extends State<SecondWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Your Location',
+                    'Your location',
                     style: textStyle(fontSize: 14, color: ColorSys.darkBlue),
                   ),
                   Text(
-                    'Meca, Saudi Arabia',
+                    locationName,
                     style: textStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: ColorSys.darkBlue,
                     ),
                   ),
-                  const SizedBox(height: 30.0),
+                  const SizedBox(height: 20.0),
                   ElevatedButton.icon(
                     onPressed: () {
-                      _getUserLocation();
+                      Navigator.pushNamed(context, '/find_officers');
                     },
                     icon: const Icon(Iconsax.radar_2),
                     label: const Text('Find Officers'),
