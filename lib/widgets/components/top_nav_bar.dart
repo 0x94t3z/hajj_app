@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/screens/features/finding/maps.dart';
 
 class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onSettingsTap;
@@ -25,7 +26,12 @@ class TopNavBar extends StatelessWidget implements PreferredSizeWidget {
             Icons.menu,
             color: ColorSys.darkBlue,
           ),
-          onPressed: onMapTap,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const MapScreen()),
+            );
+          },
         ),
         actions: <Widget>[
           Padding(

@@ -46,7 +46,7 @@ class _IntroductionState extends State<Introduction> {
               onTap: navigateToLogin,
               child: Text(
                 'Skip',
-                style: textStyle(fontSize: 18),
+                style: textStyle(fontSize: 16),
               ),
             ),
           )

@@ -75,6 +75,7 @@ class HajjApp extends StatelessWidget {
         '/forgot': (context) => const ForgotPasswordScreen(),
         '/home': (context) => const HomeScreen(),
         '/find_me': (context) => const FindMeScreen(),
+        '/finding': (context) => const FindMeScreen(),
         '/search': (context) => const SearchScreen(),
         '/settings': (context) => const SettingScreen(),
         '/edit': (context) => const EditScreen(),

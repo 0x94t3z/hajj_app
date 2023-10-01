@@ -13,7 +13,7 @@ class ColorSys {
 TextStyle titleTextStyle() {
   return GoogleFonts.montserrat(
     color: ColorSys.primary,
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: FontWeight.bold,
   );
 }

@@ -28,7 +28,7 @@ class FirstWidget extends StatelessWidget {
                   padding: const EdgeInsets.all(18.0),
                   child: Text(
                     '${today.fullDate()} H.',
-                    style: textStyle(fontSize: 20.0, color: ColorSys.darkBlue),
+                    style: textStyle(fontSize: 18.0, color: ColorSys.darkBlue),
                   ),
                 ),
               ),

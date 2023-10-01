@@ -136,8 +136,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
                     : const Text(
                         'Save Changes',
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
               ),
