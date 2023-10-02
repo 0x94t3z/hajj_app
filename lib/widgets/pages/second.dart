@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/animation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
@@ -156,8 +155,50 @@ class _SecondWidgetState extends State<SecondWidget> {
                           ),
                           const SizedBox(height: 30.0),
                           ElevatedButton.icon(
+                            // onPressed: () {
+                            //   Navigator.pushNamed(context, '/find_officers');
+                            // },
                             onPressed: () {
-                              Navigator.pushNamed(context, '/find_officers');
+                              showModalBottomSheet(
+                                backgroundColor: Colors.transparent,
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Container(
+                                    margin: const EdgeInsets.all(30.0),
+                                    decoration: BoxDecoration(
+                                      color: ColorSys.primary,
+                                      borderRadius: BorderRadius.circular(25.0),
+                                    ),
+                                    child: Stack(
+                                      children: [
+                                        const SizedBox(
+                                          height: 600,
+                                        ),
+                                        Positioned(
+                                          top: 16,
+                                          right: 16,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color:
+                                                  Colors.white.withOpacity(0.1),
+                                            ),
+                                            child: IconButton(
+                                              icon: const Icon(
+                                                Icons.close,
+                                                color: Colors.white,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
                             },
                             icon: const Icon(Iconsax.radar_2),
                             label: const Text('Find Officers'),
