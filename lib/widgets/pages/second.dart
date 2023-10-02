@@ -5,6 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:animate_do/animate_do.dart';
 
 class SecondWidget extends StatefulWidget {
   const SecondWidget({Key? key}) : super(key: key);
@@ -177,20 +178,43 @@ class _SecondWidgetState extends State<SecondWidget> {
                                         Positioned(
                                           top: 16,
                                           right: 16,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color:
-                                                  Colors.white.withOpacity(0.1),
-                                            ),
-                                            child: IconButton(
-                                              icon: const Icon(
-                                                Icons.close,
-                                                color: Colors.white,
+                                          child: FadeInUp(
+                                            delay: const Duration(
+                                                milliseconds: 100),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                color: Colors.white
+                                                    .withOpacity(0.1),
                                               ),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                              },
+                                              child: IconButton(
+                                                icon: const Icon(
+                                                  Icons.close,
+                                                  color: Colors.white,
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        FadeInUp(
+                                          delay:
+                                              const Duration(milliseconds: 300),
+                                          child: Align(
+                                            alignment: Alignment.topCenter,
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 30.0),
+                                              child: Text(
+                                                "Finding Officers",
+                                                style: textStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
