@@ -71,7 +71,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
                   labelText: 'New Name',
                   labelStyle: textStyle(fontSize: 14),
                   focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: ColorSys.primary),
+                    borderSide: BorderSide(color: ColorSys.lightPrimary),
                   ),
                 ),
               ),
@@ -116,7 +116,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 16), // Adjust padding
                   foregroundColor: Colors.white,
-                  backgroundColor: ColorSys.lightPrimary,
+                  backgroundColor: ColorSys.darkBlue,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.0),

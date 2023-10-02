@@ -55,14 +55,17 @@ class FourthWidget extends StatelessWidget {
                     Text(
                       'Muhamad Taopik',
                       style: textStyle(
-                          fontSize: 24,
-                          color: ColorSys.primary,
-                          fontWeight: FontWeight.bold),
+                        fontSize: 24,
+                        color: ColorSys.darkBlue,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'muhamadtaopik007@gmail.com',
-                      style: textStyle(fontSize: 14),
+                      style: textStyle(
+                        fontSize: 14,
+                      ),
                     ),
                     const SizedBox(height: 30),
                     Padding(
@@ -71,7 +74,9 @@ class FourthWidget extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'General',
-                          style: textStyle(fontSize: 14),
+                          style: textStyle(
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -91,21 +96,21 @@ class FourthWidget extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Iconsax.notification,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Notification',
                                   style: textStyle(
                                     fontSize: 14,
-                                    color: ColorSys.primary,
+                                    color: ColorSys.darkBlue,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const Spacer(),
                                 const Icon(
                                   Iconsax.arrow_right_3,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                               ],
                             ),
@@ -125,14 +130,14 @@ class FourthWidget extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Iconsax.translate,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Language',
                                   style: textStyle(
                                     fontSize: 14,
-                                    color: ColorSys.primary,
+                                    color: ColorSys.darkBlue,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -146,7 +151,7 @@ class FourthWidget extends StatelessWidget {
                                 ),
                                 const Icon(
                                   Iconsax.arrow_right_3,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                               ],
                             ),
@@ -181,18 +186,18 @@ class FourthWidget extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Iconsax.flag,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                                 const SizedBox(width: 8),
                                 Text('Notices',
                                     style: textStyle(
                                         fontSize: 14,
-                                        color: ColorSys.primary,
+                                        color: ColorSys.darkBlue,
                                         fontWeight: FontWeight.bold)),
                                 const Spacer(),
                                 const Icon(
                                   Iconsax.arrow_right_3,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                               ],
                             ),
@@ -210,18 +215,18 @@ class FourthWidget extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Iconsax.shield_tick,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                                 const SizedBox(width: 8),
                                 Text('Terms and Policies',
                                     style: textStyle(
                                         fontSize: 14,
-                                        color: ColorSys.primary,
+                                        color: ColorSys.darkBlue,
                                         fontWeight: FontWeight.bold)),
                                 const Spacer(),
                                 const Icon(
                                   Iconsax.arrow_right_3,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                               ],
                             ),
@@ -239,14 +244,14 @@ class FourthWidget extends StatelessWidget {
                               children: [
                                 const Icon(
                                   Iconsax.info_circle,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'App Version',
                                   style: textStyle(
                                       fontSize: 14,
-                                      color: ColorSys.primary,
+                                      color: ColorSys.darkBlue,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 const Spacer(),
@@ -257,7 +262,7 @@ class FourthWidget extends StatelessWidget {
                                 ),
                                 const Icon(
                                   Iconsax.arrow_right_3,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                 ),
                               ],
                             ),
@@ -279,14 +284,14 @@ class FourthWidget extends StatelessWidget {
                           children: [
                             const Icon(
                               Iconsax.logout,
-                              color: ColorSys.primary,
+                              color: ColorSys.darkBlue,
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Logout',
                               style: textStyle(
                                   fontSize: 14,
-                                  color: ColorSys.primary,
+                                  color: ColorSys.darkBlue,
                                   fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -299,7 +304,7 @@ class FourthWidget extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.center,
                         child: Text(
-                          packageInfo?.version ?? 'N/A',
+                          'Version ${packageInfo?.version ?? 'N/A'}',
                           style: textStyle(fontSize: 14),
                         ),
                       ),

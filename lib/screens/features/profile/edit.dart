@@ -51,7 +51,7 @@ class _EditScreenState extends State<EditScreen> {
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: ColorSys.lightPrimary,
+                backgroundColor: ColorSys.darkBlue,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25.0),
@@ -62,9 +62,9 @@ class _EditScreenState extends State<EditScreen> {
                 child: Text(
                   'Change Image',
                   style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -88,7 +88,7 @@ class _EditScreenState extends State<EditScreen> {
                           'Name',
                           style: textStyle(
                               fontSize: 14,
-                              color: ColorSys.primary,
+                              color: ColorSys.darkBlue,
                               fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
@@ -100,7 +100,7 @@ class _EditScreenState extends State<EditScreen> {
                         ),
                         const Icon(
                           Iconsax.arrow_right_3,
-                          color: ColorSys.primary,
+                          color: ColorSys.darkBlue,
                         ),
                       ],
                     ),
@@ -120,7 +120,7 @@ class _EditScreenState extends State<EditScreen> {
                           'Email',
                           style: textStyle(
                               fontSize: 14,
-                              color: ColorSys.primary,
+                              color: ColorSys.darkBlue,
                               fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
