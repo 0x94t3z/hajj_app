@@ -115,7 +115,7 @@ class _SecondWidgetState extends State<SecondWidget> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 70.0),
+            const SizedBox(height: 300.0),
             Container(
               height: 180.0,
               margin: const EdgeInsets.symmetric(horizontal: 20.0),

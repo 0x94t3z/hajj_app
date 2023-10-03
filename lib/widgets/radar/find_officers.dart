@@ -217,6 +217,38 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
     ),
   };
 
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 10000),
+    );
+
+    // Add a listener to the controller to detect when the animations are done.
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        // Animation is completed, navigate to MapScreen
+        Navigator.of(context).pushReplacementNamed('/find_officers');
+      }
+    });
+
+    // Start the animations when the widget is initialized
+    _startAnimations();
+  }
+
+  void _startAnimations() {
+    // Start your animations here using _controller.forward()
+    animationsMap['textOnPageLoadAnimation']!.controller = _controller;
+    animationsMap['containerOnPageLoadAnimation1']!.controller = _controller;
+    // Add more animations as needed
+
+    // Start all animations
+    _controller.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -250,7 +282,9 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                           child: Text(
                             'Finding Officers',
                             style: textStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ).animateOnPageLoad(
                               animationsMap['textOnPageLoadAnimation']!),
                         ),
@@ -261,19 +295,11 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                             width: 60.0,
                             height: 2.0,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF22282F),
-                              borderRadius: BorderRadius.circular(4.0),
+                              color: ColorSys.lightPrimary,
+                              borderRadius: BorderRadius.circular(8.0),
                             ),
                           ).animateOnPageLoad(
                               animationsMap['containerOnPageLoadAnimation1']!),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Container(
-                            width: 60.0,
-                            height: 2.0,
-                            color: Colors.grey,
-                          ),
                         ),
                         SizedBox(
                           width: double.infinity,
@@ -318,7 +344,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                                 width: 50.0,
                                 height: 50.0,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFFFFA86D),
+                                  color: ColorSys.radarMap,
                                   shape: BoxShape.circle,
                                 ),
                               ).animateOnPageLoad(animationsMap[
@@ -330,7 +356,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                                   width: 16.0,
                                   height: 16.0,
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFFFA86D),
+                                    color: ColorSys.radarMap,
                                     shape: BoxShape.circle,
                                   ),
                                 ).animateOnPageLoad(animationsMap[
@@ -343,7 +369,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                                   width: 16.0,
                                   height: 16.0,
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFFFA86D),
+                                    color: ColorSys.radarMap,
                                     shape: BoxShape.circle,
                                   ),
                                 ).animateOnPageLoad(animationsMap[
@@ -358,8 +384,8 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                       alignment: const AlignmentDirectional(1.0, -1.0),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.black,
-                          backgroundColor: const Color(0xFF18191B),
+                          foregroundColor: ColorSys.primary,
+                          backgroundColor: ColorSys.lightPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),
@@ -383,5 +409,11 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Dispose the controller when not needed
+    super.dispose();
   }
 }
