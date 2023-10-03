@@ -1,11 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hajj_app/widgets/radar/find_officers.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:animate_do/animate_do.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class SecondWidget extends StatefulWidget {
   const SecondWidget({Key? key}) : super(key: key);
@@ -19,6 +21,43 @@ class _SecondWidgetState extends State<SecondWidget> {
   MapboxMapController? mapController;
   Position? currentPosition;
   String locationName = 'Meca, Saudi Arabia';
+
+  final animationsMap = {
+    'containerOnPageLoadAnimation5': AnimationInfo(
+      trigger: AnimationTrigger.onPageLoad,
+      effects: [
+        VisibilityEffect(duration: 600.ms),
+        ScaleEffect(
+          curve: Curves.easeOut,
+          delay: 600.ms,
+          duration: 400.ms,
+          begin: const Offset(2.0, 2.0),
+          end: const Offset(1.0, 1.0),
+        ),
+        FadeEffect(
+          curve: Curves.easeOut,
+          delay: 600.ms,
+          duration: 400.ms,
+          begin: 0.0,
+          end: 1.0,
+        ),
+        BlurEffect(
+          curve: Curves.easeOut,
+          delay: 600.ms,
+          duration: 400.ms,
+          begin: const Offset(10.0, 10.0),
+          end: const Offset(0.0, 0.0),
+        ),
+        MoveEffect(
+          curve: Curves.easeOut,
+          delay: 600.ms,
+          duration: 400.ms,
+          begin: const Offset(0.0, 70.0),
+          end: const Offset(0.0, 0.0),
+        ),
+      ],
+    ),
+  };
 
   @override
   void initState() {
@@ -161,65 +200,22 @@ class _SecondWidgetState extends State<SecondWidget> {
                             // },
                             onPressed: () {
                               showModalBottomSheet(
+                                isScrollControlled: true,
                                 backgroundColor: Colors.transparent,
                                 context: context,
                                 builder: (BuildContext context) {
-                                  return Container(
-                                    margin: const EdgeInsets.all(30.0),
-                                    decoration: BoxDecoration(
-                                      color: ColorSys.primary,
-                                      borderRadius: BorderRadius.circular(25.0),
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        const SizedBox(
-                                          height: 600,
-                                        ),
-                                        Positioned(
-                                          top: 16,
-                                          right: 16,
-                                          child: FadeInUp(
-                                            delay: const Duration(
-                                                milliseconds: 100),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.white
-                                                    .withOpacity(0.1),
-                                              ),
-                                              child: IconButton(
-                                                icon: const Icon(
-                                                  Icons.close,
-                                                  color: Colors.white,
-                                                ),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        FadeInUp(
-                                          delay:
-                                              const Duration(milliseconds: 300),
-                                          child: Align(
-                                            alignment: Alignment.topCenter,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 30.0),
-                                              child: Text(
-                                                "Finding Officers",
-                                                style: textStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  return BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                        sigmaX: 48, sigmaY: 48),
+                                    child: Padding(
+                                      padding:
+                                          MediaQuery.of(context).viewInsets,
+                                      child: const SizedBox(
+                                        height: double.infinity,
+                                        child: FindOficcersWidget(),
+                                      ),
+                                    ).animateOnPageLoad(animationsMap[
+                                        'containerOnPageLoadAnimation5']!),
                                   );
                                 },
                               );
