@@ -271,7 +271,7 @@ class FourthWidget extends StatelessWidget {
                       ],
                     ),
                     const Divider(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     InkWell(
                       onTap: () {
                         Navigator.pushReplacementNamed(context, '/login');
@@ -298,14 +298,14 @@ class FourthWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       child: Align(
                         alignment: Alignment.center,
                         child: Text(
-                          'Version ${packageInfo?.version ?? 'N/A'}',
-                          style: textStyle(fontSize: 14),
+                          '  Version ${packageInfo?.version ?? 'N/A'}',
+                          style: textStyle(fontSize: 12),
                         ),
                       ),
                     ),

@@ -29,13 +29,13 @@ class BottomNavBar extends StatelessWidget {
           selectedColor: ColorSys.darkBlue,
         ),
         SalomonBottomBarItem(
-          icon: const Icon(Iconsax.routing),
+          icon: const Icon(Iconsax.radar_1),
           title: const Text("Find Me"),
           selectedColor: ColorSys.darkBlue,
         ),
         SalomonBottomBarItem(
-          icon: const Icon(Iconsax.arrow),
-          title: const Text("Search"),
+          icon: const Icon(Iconsax.profile_2user),
+          title: const Text("Contact"),
           selectedColor: ColorSys.darkBlue,
         ),
         SalomonBottomBarItem(
