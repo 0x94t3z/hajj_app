@@ -93,7 +93,7 @@ class FirstWidget extends StatelessWidget {
 
     return Container(
       height: 100.0,
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
+      margin: const EdgeInsets.symmetric(horizontal: 25.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25.0),

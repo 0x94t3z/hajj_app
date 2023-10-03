@@ -139,15 +139,22 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             top: 80.0,
-            left: 16.0,
+            left: 25.0,
             child: InkWell(
               onTap: () {
                 Navigator.of(context).pop();
               },
-              child: const Icon(
-                Iconsax.arrow_left_2,
-                color: ColorSys.darkBlue,
-                size: 30.0,
+              child: Container(
+                padding: const EdgeInsets.all(10.0),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: const Icon(
+                  Iconsax.arrow_left_2,
+                  color: ColorSys.darkBlue,
+                  size: 30.0,
+                ),
               ),
             ),
           ),

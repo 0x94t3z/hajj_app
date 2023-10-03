@@ -166,7 +166,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                           backgroundColor: Colors.white,
                           mini: true,
                           child: const Icon(
-                            Iconsax.location,
+                            Iconsax.gps,
                             color: ColorSys.darkBlue,
                           ),
                           onPressed: () => _getUserLocation(),
