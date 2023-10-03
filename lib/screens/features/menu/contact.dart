@@ -5,15 +5,15 @@ import 'package:hajj_app/widgets/pages/second.dart';
 import 'package:hajj_app/widgets/pages/third.dart';
 import 'package:hajj_app/widgets/pages/fourth.dart';
 
-class SearchScreen extends StatefulWidget {
-  const SearchScreen({Key? key}) : super(key: key);
+class ContactScreen extends StatefulWidget {
+  const ContactScreen({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _SearchScreenState createState() => _SearchScreenState();
+  _ContactScreenState createState() => _ContactScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _ContactScreenState extends State<ContactScreen> {
   int _currentIndex = 2;
 
   @override
