@@ -13,6 +13,7 @@ class SecondWidget extends StatefulWidget {
   const SecondWidget({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _SecondWidgetState createState() => _SecondWidgetState();
 }
 
@@ -73,11 +74,13 @@ class _SecondWidgetState extends State<SecondWidget> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // Get the location name based on the coordinates
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
 
+      // Extract the location name
       if (placemarks.isNotEmpty) {
         String retrievedLocationName =
             placemarks.first.name ?? 'Unknown Location';
@@ -88,6 +91,7 @@ class _SecondWidgetState extends State<SecondWidget> {
         print('No location name found for the coordinates.');
       }
 
+      // Update the map camera to center around the user's location.
       mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(position.latitude, position.longitude),
@@ -99,6 +103,7 @@ class _SecondWidgetState extends State<SecondWidget> {
         currentPosition = position;
       });
     } catch (e) {
+      // Handle any errors that may occur when getting the location.
       print(e.toString());
     }
   }
@@ -178,9 +183,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                           Text(
                             'Your location',
                             style: textStyle(
-                              fontSize: 14,
-                              color: ColorSys.darkBlue,
-                            ),
+                                fontSize: 14, color: ColorSys.darkBlue),
                           ),
                           Text(
                             locationName,
@@ -192,6 +195,9 @@ class _SecondWidgetState extends State<SecondWidget> {
                           ),
                           const SizedBox(height: 30.0),
                           ElevatedButton.icon(
+                            // onPressed: () {
+                            //   Navigator.pushNamed(context, '/find_officers');
+                            // },
                             onPressed: () {
                               showModalBottomSheet(
                                 isScrollControlled: true,
@@ -232,191 +238,144 @@ class _SecondWidgetState extends State<SecondWidget> {
                 ],
               ),
             ),
+            // IF USER == PILGRIM
             const SizedBox(height: 30.0),
-            Expanded(
-              child: ListView(
-                scrollDirection: Axis.horizontal,
+            Container(
+              height: 180.0,
+              margin: const EdgeInsets.symmetric(horizontal: 20.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 3,
+                    blurRadius: 3,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(25.0),
+              child: Row(
                 children: [
-                  buildUserList(
-                    name: 'Muhamad Taopik',
-                    distance: '1 Km',
-                    duration: '10 Min',
-                    backgroundColor: Colors.white,
-                    buttonColor: ColorSys.darkBlue,
-                    buttonText: 'Go',
-                    buttonIcon: Iconsax.direct_up,
+                  Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(25.0),
+                              child: SizedBox(
+                                height: 130.0,
+                                width: 120.0,
+                                child: Image.network(
+                                  'https://avatars.githubusercontent.com/u/52822242?v=4',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 20.0),
-                  buildUserList(
-                    name: 'User 2 Name',
-                    distance: '2 Km',
-                    duration: '15 Min',
-                    backgroundColor: Colors.white,
-                    buttonColor: ColorSys.darkBlue,
-                    buttonText: 'Go',
-                    buttonIcon: Iconsax.direct_up,
-                  ),
-                  const SizedBox(width: 20.0),
-                  buildUserList(
-                    name: 'User 3 Name',
-                    distance: '3 Km',
-                    duration: '20 Min',
-                    backgroundColor: Colors.white,
-                    buttonColor: ColorSys.darkBlue,
-                    buttonText: 'Go',
-                    buttonIcon: Iconsax.direct_up,
+                  Flexible(
+                    child: Container(
+                      margin: const EdgeInsets.only(left: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Muhamad Taopik',
+                            style: textStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: ColorSys.darkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 5.0),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.directions_walk,
+                                size: 14.0,
+                                color: ColorSys.darkBlue,
+                              ),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                '1 Km',
+                                style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.darkBlue,
+                                ),
+                              ),
+                              const SizedBox(width: 10.0),
+                              const Icon(
+                                Iconsax.clock,
+                                size: 14.0,
+                                color: ColorSys.darkBlue,
+                              ),
+                              const SizedBox(width: 4.0),
+                              Text(
+                                '10 Min',
+                                style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.darkBlue,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30.0),
+                          Row(
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () {},
+                                icon: const Center(
+                                  child: Icon(Iconsax.direct_up),
+                                ),
+                                label: const Text('Go'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ColorSys.darkBlue,
+                                  textStyle: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  fixedSize: const Size(90, 50),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10.0), // Adjust the spacing
+                              ElevatedButton.icon(
+                                onPressed: () {},
+                                icon: const Icon(Iconsax.danger),
+                                label: const Text('Help'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  textStyle: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  fixedSize: const Size(100, 50),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25.0),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // Helper function to build user-specific widgets
-  Widget buildUserList({
-    required String name,
-    required String distance,
-    required String duration,
-    required Color backgroundColor,
-    required Color buttonColor,
-    required String buttonText,
-    required IconData buttonIcon,
-  }) {
-    return Container(
-      height: 180.0,
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(25.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 3,
-            blurRadius: 3,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(25.0),
-      child: Row(
-        children: [
-          Stack(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(25.0),
-                      child: SizedBox(
-                        height: 130.0,
-                        width: 120.0,
-                        child: Image.network(
-                          'https://avatars.githubusercontent.com/u/52822242?v=4',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Flexible(
-            child: Container(
-              margin: const EdgeInsets.only(left: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: textStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: ColorSys.darkBlue,
-                    ),
-                  ),
-                  const SizedBox(height: 5.0),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.directions_walk,
-                        size: 14.0,
-                        color: ColorSys.darkBlue,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        distance,
-                        style: textStyle(
-                          fontSize: 14,
-                          color: ColorSys.darkBlue,
-                        ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      const Icon(
-                        Iconsax.clock,
-                        size: 14.0,
-                        color: ColorSys.darkBlue,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        duration,
-                        style: textStyle(
-                          fontSize: 14,
-                          color: ColorSys.darkBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30.0),
-                  Row(
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Center(
-                          child: Icon(Iconsax.direct_up),
-                        ),
-                        label: Text(buttonText),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          fixedSize: const Size(90, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10.0), // Adjust the spacing
-                      ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Iconsax.danger),
-                        label: const Text('Help'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          fixedSize: const Size(100, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
