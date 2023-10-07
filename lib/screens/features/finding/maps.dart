@@ -10,15 +10,23 @@ class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _MapScreenState createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
   MapboxMapController? mapController;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   double degreesToRadians(double degrees) {
@@ -29,11 +37,13 @@ class _MapScreenState extends State<MapScreen> {
       double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371; // Radius of the Earth in kilometers
 
+    // Convert latitude and longitude from degrees to radians
     final double lat1Rad = degreesToRadians(lat1);
     final double lon1Rad = degreesToRadians(lon1);
     final double lat2Rad = degreesToRadians(lat2);
     final double lon2Rad = degreesToRadians(lon2);
 
+    // Haversine formula
     final double dlon = lon2Rad - lon1Rad;
     final double dlat = lat2Rad - lat1Rad;
     final double a = math.pow(math.sin(dlat / 2), 2) +
@@ -41,7 +51,7 @@ class _MapScreenState extends State<MapScreen> {
     final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     final double distance = earthRadius * c;
 
-    return distance;
+    return distance; // Distance in kilometers
   }
 
   void _onMapCreated(MapboxMapController controller) {
@@ -54,6 +64,7 @@ class _MapScreenState extends State<MapScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // Coordinates of user 2 (you can replace these with the second user's coordinates)
       double user2Latitude = 21.421923;
       double user2Longitude = 39.826447;
 
@@ -64,16 +75,20 @@ class _MapScreenState extends State<MapScreen> {
         user2Longitude,
       );
 
+      // Calculate a midpoint along the road between your location and user 2's location
       double midPointLatitude = (position.latitude + user2Latitude) / 2;
       double midPointLongitude = (position.longitude + user2Longitude) / 2;
 
+      // Update the map camera to center around the midpoint and zoom in.
       mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(
-          LatLng(midPointLatitude, midPointLongitude),
-          16.0,
+          LatLng(midPointLatitude,
+              midPointLongitude), // Use midpoint as the target
+          16.0, // Zoom level
         ),
       );
 
+      // Add a line between your location and user 2's location
       mapController?.addLine(
         LineOptions(
           geometry: [
@@ -86,6 +101,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
       );
 
+      // Add symbols for both your location and user 2's location
       mapController?.addSymbols([
         SymbolOptions(
           geometry: LatLng(position.latitude, position.longitude),
@@ -99,6 +115,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ]);
 
+      // Display the distance between your location and user 2's location
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
@@ -106,6 +123,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
       );
     } catch (e) {
+      // Handle any errors that may occur when getting the location.
       print(e.toString());
     }
   }
@@ -121,7 +139,7 @@ class _MapScreenState extends State<MapScreen> {
   }) {
     return Container(
       width: 390.0,
-      height: 180.0,
+      height: 200.0,
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -148,7 +166,7 @@ class _MapScreenState extends State<MapScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(25.0),
                       child: SizedBox(
-                        height: 130.0,
+                        height: 122.0,
                         width: 120.0,
                         child: Image.network(
                           'https://avatars.githubusercontent.com/u/52822242?v=4',
@@ -259,101 +277,121 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: Stack(
-              children: [
-                MapboxMap(
-                  styleString: MapboxStyles.MAPBOX_STREETS,
-                  accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
-                  onMapCreated: _onMapCreated,
-                  myLocationRenderMode: MyLocationRenderMode.NORMAL,
-                  myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(21.422627, 39.826115),
-                    zoom: 14.0,
-                  ),
-                ),
-                Positioned(
-                  top: 80.0,
-                  left: 25.0,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(10.0),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: const Icon(
-                        Iconsax.arrow_left_2,
-                        color: ColorSys.darkBlue,
-                        size: 30.0,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+          MapboxMap(
+            styleString: MapboxStyles.MAPBOX_STREETS,
+            accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
+            onMapCreated: _onMapCreated,
+            myLocationRenderMode: MyLocationRenderMode.NORMAL,
+            myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
+            initialCameraPosition: const CameraPosition(
+              target: LatLng(21.422627, 39.826115),
+              zoom: 14.0,
             ),
           ),
-          // Wrap the Positioned widget and its child in a Stack
-          Stack(
-            children: [
-              Container(
-                height: 220.0,
-                color: Colors.transparent,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    buildUserList(
-                      name: 'Muhamad Taopik',
-                      distance: '1 Km',
-                      duration: '10 Min',
-                      backgroundColor: Colors.white,
-                      buttonColor: ColorSys.darkBlue,
-                      buttonText: 'Go',
-                      buttonIcon: Iconsax.direct_up,
-                    ),
-                    const SizedBox(width: 20.0),
-                    buildUserList(
-                      name: 'Imam Firdaus',
-                      distance: '2 Km',
-                      duration: '15 Min',
-                      backgroundColor: Colors.white,
-                      buttonColor: ColorSys.darkBlue,
-                      buttonText: 'Go',
-                      buttonIcon: Iconsax.direct_up,
-                    ),
-                    const SizedBox(width: 20.0),
-                    buildUserList(
-                      name: 'Ilham Fadlulrohman',
-                      distance: '3 Km',
-                      duration: '20 Min',
-                      backgroundColor: Colors.white,
-                      buttonColor: ColorSys.darkBlue,
-                      buttonText: 'Go',
-                      buttonIcon: Iconsax.direct_up,
-                    ),
-                  ],
+          Positioned(
+            top: 60.0,
+            left: 25.0,
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(10.0),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                ),
+                child: const Icon(
+                  Iconsax.arrow_left_2,
+                  color: ColorSys.darkBlue,
+                  size: 30.0,
                 ),
               ),
-            ],
+            ),
+          ),
+          Positioned(
+            bottom: 20.0,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              width: 390.0,
+              height: 212.0,
+              child: PageView(
+                controller: _pageController,
+                scrollDirection: Axis.horizontal,
+                children: [
+                  SizedBox(
+                    height: 212.0,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        buildUserList(
+                          name: 'Muhamad Taopik',
+                          distance: '1 Km',
+                          duration: '10 Min',
+                          backgroundColor: Colors.white,
+                          buttonColor: ColorSys.darkBlue,
+                          buttonText: 'Go',
+                          buttonIcon: Iconsax.direct_up,
+                        ),
+                        buildUserList(
+                          name: 'Imam Firdaus',
+                          distance: '2 Km',
+                          duration: '15 Min',
+                          backgroundColor: Colors.white,
+                          buttonColor: ColorSys.darkBlue,
+                          buttonText: 'Go',
+                          buttonIcon: Iconsax.direct_up,
+                        ),
+                        buildUserList(
+                          name: 'Ilham Fadhlurahman',
+                          distance: '3 Km',
+                          duration: '20 Min',
+                          backgroundColor: Colors.white,
+                          buttonColor: ColorSys.darkBlue,
+                          buttonText: 'Go',
+                          buttonIcon: Iconsax.direct_up,
+                        ),
+                        buildUserList(
+                          name: 'Ikhsan Khoreul',
+                          distance: '4 Km',
+                          duration: '25 Min',
+                          backgroundColor: Colors.white,
+                          buttonColor: ColorSys.darkBlue,
+                          buttonText: 'Go',
+                          buttonIcon: Iconsax.direct_up,
+                        ),
+                        buildUserList(
+                          name: 'Fauzan',
+                          distance: '5 Km',
+                          duration: '30 Min',
+                          backgroundColor: Colors.white,
+                          buttonColor: ColorSys.darkBlue,
+                          buttonText: 'Go',
+                          buttonIcon: Iconsax.direct_up,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 220.0,
+            right: 25.0,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              child: const Icon(
+                Iconsax.location,
+                color: ColorSys.darkBlue,
+              ),
+              onPressed: () => _getUserLocation(),
+            ),
           ),
         ],
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: FloatingActionButton(
-          backgroundColor: Colors.white,
-          child: const Icon(
-            Iconsax.location,
-            color: ColorSys.darkBlue,
-          ),
-          onPressed: () => _getUserLocation(),
-        ),
       ),
     );
   }
