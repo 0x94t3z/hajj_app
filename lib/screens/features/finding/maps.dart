@@ -136,6 +136,7 @@ class _MapScreenState extends State<MapScreen> {
     required Color buttonColor,
     required String buttonText,
     required IconData buttonIcon,
+    required String imageUrl,
   }) {
     return Container(
       width: 390.0,
@@ -169,7 +170,7 @@ class _MapScreenState extends State<MapScreen> {
                         height: 122.0,
                         width: 120.0,
                         child: Image.network(
-                          'https://avatars.githubusercontent.com/u/52822242?v=4',
+                          imageUrl,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -335,6 +336,8 @@ class _MapScreenState extends State<MapScreen> {
                           buttonColor: ColorSys.darkBlue,
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
+                          imageUrl:
+                              'https://avatars.githubusercontent.com/u/52822242?v=4',
                         ),
                         buildUserList(
                           name: 'Imam Firdaus',
@@ -344,6 +347,8 @@ class _MapScreenState extends State<MapScreen> {
                           buttonColor: ColorSys.darkBlue,
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
+                          imageUrl:
+                              'https://instagram.fbdo9-1.fna.fbcdn.net/v/t51.2885-19/372516336_247370194944369_1994460987512356006_n.jpg?stp=dst-jpg_s320x320&_nc_ht=instagram.fbdo9-1.fna.fbcdn.net&_nc_cat=109&_nc_ohc=FMhK5B7lz6QAX9plV9J&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfDQML2pJ6DisAy1zPvlJsklJESbVtaGb2wpLAr5Cm9DRw&oe=65266515&_nc_sid=8b3546',
                         ),
                         buildUserList(
                           name: 'Ilham Fadhlurahman',
@@ -353,6 +358,8 @@ class _MapScreenState extends State<MapScreen> {
                           buttonColor: ColorSys.darkBlue,
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
+                          imageUrl:
+                              'https://instagram.fbdo9-1.fna.fbcdn.net/v/t51.2885-19/330850473_752285232911741_8289984473251204414_n.jpg?stp=dst-jpg_s320x320&_nc_ht=instagram.fbdo9-1.fna.fbcdn.net&_nc_cat=105&_nc_ohc=5ybP9VVm-cIAX_Z9zcK&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfB-JN4IJ-KJWuCHmcVtgXureVeR4oV7rDV_dqU5m1Glpg&oe=65278491&_nc_sid=8b3546',
                         ),
                         buildUserList(
                           name: 'Ikhsan Khoreul',
@@ -362,6 +369,8 @@ class _MapScreenState extends State<MapScreen> {
                           buttonColor: ColorSys.darkBlue,
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
+                          imageUrl:
+                              'https://scontent-cgk1-1.cdninstagram.com/v/t51.2885-19/44884218_345707102882519_2446069589734326272_n.jpg?_nc_ht=scontent-cgk1-1.cdninstagram.com&_nc_cat=1&_nc_ohc=tzrtV3LSSLgAX9s5ATd&edm=AAAAAAABAAAA&ccb=7-5&ig_cache_key=YW5vbnltb3VzX3Byb2ZpbGVfcGlj.2-ccb7-5&oh=00_AfDC0LgGAC__SAo1PYoPWVDSp9LqAGLsLQjk5VBKqtWs-Q&oe=6526050F&_nc_sid=000000',
                         ),
                         buildUserList(
                           name: 'Fauzan',
@@ -371,6 +380,8 @@ class _MapScreenState extends State<MapScreen> {
                           buttonColor: ColorSys.darkBlue,
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
+                          imageUrl:
+                              'https://instagram.fbdo9-1.fna.fbcdn.net/v/t51.2885-19/15625170_561345284073104_1985069073154703360_a.jpg?stp=dst-jpg_s320x320&_nc_ht=instagram.fbdo9-1.fna.fbcdn.net&_nc_cat=108&_nc_ohc=USGF8GztAHoAX-I0NpE&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfAiegGSNwqaKYjWQAJFdbPleJZAMpAdvltnwoa7BA193A&oe=652754C6&_nc_sid=8b3546',
                         ),
                       ],
                     ),
@@ -380,7 +391,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            bottom: 220.0,
+            bottom: 225.0,
             right: 25.0,
             child: FloatingActionButton(
               backgroundColor: Colors.white,
