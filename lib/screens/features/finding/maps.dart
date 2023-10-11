@@ -31,29 +31,30 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  double degreesToRadians(double degrees) {
-    return degrees * (math.pi / 180);
-  }
-
   double calculateHaversineDistance(
       double lat1, double lon1, double lat2, double lon2) {
-    const double earthRadius = 6371; // Radius of the Earth in kilometers
+    const double radiusOfEarth = 6371; // Earth's radius in kilometers
+    const double degreesToRadians = 0.01745329252; // Approximately pi / 180
 
     // Convert latitude and longitude from degrees to radians
-    final double lat1Rad = degreesToRadians(lat1);
-    final double lon1Rad = degreesToRadians(lon1);
-    final double lat2Rad = degreesToRadians(lat2);
-    final double lon2Rad = degreesToRadians(lon2);
+    final double lat1Rad = lat1 * degreesToRadians;
+    final double lon1Rad = lon1 * degreesToRadians;
+    final double lat2Rad = lat2 * degreesToRadians;
+    final double lon2Rad = lon2 * degreesToRadians;
 
     // Haversine formula
-    final double dlon = lon2Rad - lon1Rad;
-    final double dlat = lat2Rad - lat1Rad;
-    final double a = math.pow(math.sin(dlat / 2), 2) +
-        math.cos(lat1Rad) * math.cos(lat2Rad) * math.pow(math.sin(dlon / 2), 2);
+    final double dLat = lat2Rad - lat1Rad;
+    final double dLon = lon2Rad - lon1Rad;
+    final double a = (math.sin(dLat / 2) * math.sin(dLat / 2)) +
+        (math.cos(lat1Rad) *
+            math.cos(lat2Rad) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2));
     final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    final double distance = earthRadius * c;
 
-    return distance; // Distance in kilometers
+    // Calculate the distance
+    final double distance = radiusOfEarth * c;
+    return distance;
   }
 
   void _onMapCreated(MapboxMapController controller) {
@@ -152,17 +153,16 @@ class _MapScreenState extends State<MapScreen> {
             ),
           );
 
-          // // Calculate the distance using the Haversine formula
-          // double distance = calculateHaversineDistance(
-          //   position.longitude,
-          //   position.latitude,
-          //   user2Latitude,
-          //   user2Longitude,
-          // );
+          // Calculate the distance using the Haversine formula
+          double distance = calculateHaversineDistance(
+            position.latitude,
+            position.longitude,
+            user2Latitude,
+            user2Longitude,
+          );
 
           // Display the distance to the destination
-          double distance =
-              routes[0]['distance'] / 1000.0; // Convert to kilometers
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
