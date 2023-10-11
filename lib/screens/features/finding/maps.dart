@@ -105,8 +105,8 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(position.latitude, position.longitude),
-              iconImage:
-                  "your-starting-icon-image", // Replace with your starting icon image
+              // iconImage: "assets/images/one.png",
+              iconSize: 0.3,
               textField: "You",
             ),
           );
@@ -114,13 +114,13 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(user2Latitude, user2Longitude),
-              iconImage:
-                  "your-destination-icon-image", // Replace with your destination icon image
+              // iconImage: "assets/images/two.png",
+              iconSize: 0.3,
               textField: "Officer",
             ),
           );
 
-          // Update the map camera to fit the route with padding
+          // Update the map camera to fit the route
           mapController?.animateCamera(
             CameraUpdate.newLatLngBounds(
               LatLngBounds(
