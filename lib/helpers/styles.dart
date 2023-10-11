@@ -37,7 +37,6 @@ TextStyle textStyle({double? fontSize, Color? color, FontWeight? fontWeight}) {
 }
 
 // Flutter Flow Animation
-
 enum AnimationTrigger {
   onPageLoad,
   onActionTrigger,
@@ -65,7 +64,9 @@ void createAnimation(AnimationInfo animation, TickerProvider vsync) {
 }
 
 void setupAnimations(Iterable<AnimationInfo> animations, TickerProvider vsync) {
-  animations.forEach((animation) => createAnimation(animation, vsync));
+  for (var animation in animations) {
+    createAnimation(animation, vsync);
+  }
 }
 
 extension AnimatedWidgetExtension on Widget {

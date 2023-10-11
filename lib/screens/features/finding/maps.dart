@@ -5,6 +5,8 @@ import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'dart:math' as math;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -64,66 +66,117 @@ class _MapScreenState extends State<MapScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // Coordinates of user 2 (you can replace these with the second user's coordinates)
+      // Coordinates of the destination (user2's location)
       double user2Latitude = 21.421923;
       double user2Longitude = 39.826447;
 
-      double distance = calculateHaversineDistance(
-        position.latitude,
-        position.longitude,
-        user2Latitude,
-        user2Longitude,
-      );
+      // Your Mapbox API token
+      String mapboxApiToken = dotenv.env['MAPBOX_SECRET_KEY']!;
 
-      // Calculate a midpoint along the road between your location and user 2's location
-      double midPointLatitude = (position.latitude + user2Latitude) / 2;
-      double midPointLongitude = (position.longitude + user2Longitude) / 2;
-
-      // Update the map camera to center around the midpoint and zoom in.
-      mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng(midPointLatitude,
-              midPointLongitude), // Use midpoint as the target
-          16.0, // Zoom level
+      // Make a request to the Mapbox Directions API
+      final response = await http.get(
+        Uri.parse(
+          'https://api.mapbox.com/directions/v5/mapbox/walking/${position.longitude},${position.latitude};$user2Longitude,$user2Latitude?geometries=geojson&access_token=$mapboxApiToken',
         ),
       );
 
-      // Add a line between your location and user 2's location
-      mapController?.addLine(
-        LineOptions(
-          geometry: [
-            LatLng(position.latitude, position.longitude),
-            LatLng(user2Latitude, user2Longitude),
-          ],
-          lineJoin: "round",
-          lineColor: "#478395",
-          lineWidth: 4.0,
-        ),
-      );
+      if (response.statusCode == 200) {
+        // Parse the response JSON to get the route coordinates
+        final Map<String, dynamic> data = json.decode(response.body);
+        List<dynamic> routes = data['routes'];
+        if (routes.isNotEmpty) {
+          List<dynamic> coordinates = routes[0]['geometry']['coordinates'];
 
-      // Add symbols for both your location and user 2's location
-      mapController?.addSymbols([
-        SymbolOptions(
-          geometry: LatLng(position.latitude, position.longitude),
-          iconImage: 'assets/images/one.png',
-          iconSize: 0.3,
-        ),
-        SymbolOptions(
-          geometry: LatLng(user2Latitude, user2Longitude),
-          iconImage: 'assets/images/two.png',
-          iconSize: 0.3,
-        ),
-      ]);
+          // Extract and draw the route coordinates on the map
+          List<LatLng> routeCoordinates = coordinates.map((coord) {
+            return LatLng(coord[1], coord[0]);
+          }).toList();
 
-      // Display the distance between your location and user 2's location
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Distance to User 2: ${distance.toStringAsFixed(2)} km'),
-        ),
-      );
+          mapController?.addLine(
+            LineOptions(
+              geometry: routeCoordinates,
+              lineJoin: "round",
+              lineColor: "#478395",
+              lineWidth: 4.0,
+            ),
+          );
+
+          // Add markers at the starting and destination points
+          mapController?.addSymbol(
+            SymbolOptions(
+              geometry: LatLng(position.latitude, position.longitude),
+              iconImage:
+                  "your-starting-icon-image", // Replace with your starting icon image
+              textField: "You",
+            ),
+          );
+
+          mapController?.addSymbol(
+            SymbolOptions(
+              geometry: LatLng(user2Latitude, user2Longitude),
+              iconImage:
+                  "your-destination-icon-image", // Replace with your destination icon image
+              textField: "Officer",
+            ),
+          );
+
+          // Update the map camera to fit the route with padding
+          mapController?.animateCamera(
+            CameraUpdate.newLatLngBounds(
+              LatLngBounds(
+                southwest: LatLng(
+                  routeCoordinates
+                      .reduce((min, current) =>
+                          min.latitude < current.latitude ? min : current)
+                      .latitude,
+                  routeCoordinates
+                      .reduce((min, current) =>
+                          min.longitude < current.longitude ? min : current)
+                      .longitude,
+                ),
+                northeast: LatLng(
+                  routeCoordinates
+                      .reduce((max, current) =>
+                          max.latitude > current.latitude ? max : current)
+                      .latitude,
+                  routeCoordinates
+                      .reduce((max, current) =>
+                          max.longitude > current.longitude ? max : current)
+                      .longitude,
+                ),
+              ),
+              left: 50.0,
+              right: 50.0,
+              top: 50.0,
+              bottom: 50.0,
+            ),
+          );
+
+          // // Calculate the distance using the Haversine formula
+          // double distance = calculateHaversineDistance(
+          //   position.longitude,
+          //   position.latitude,
+          //   user2Latitude,
+          //   user2Longitude,
+          // );
+
+          // Display the distance to the destination
+          double distance =
+              routes[0]['distance'] / 1000.0; // Convert to kilometers
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Distance to Destination: ${distance.toStringAsFixed(2)} km'),
+            ),
+          );
+        } else {
+          print('No route found');
+        }
+      } else {
+        print('Failed to load route');
+      }
     } catch (e) {
-      // Handle any errors that may occur when getting the location.
+      // Handle any errors that may occur when getting the location or route.
       print(e.toString());
     }
   }
@@ -348,7 +401,7 @@ class _MapScreenState extends State<MapScreen> {
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
                           imageUrl:
-                              'https://instagram.fbdo9-1.fna.fbcdn.net/v/t51.2885-19/372516336_247370194944369_1994460987512356006_n.jpg?stp=dst-jpg_s320x320&_nc_ht=instagram.fbdo9-1.fna.fbcdn.net&_nc_cat=109&_nc_ohc=FMhK5B7lz6QAX9plV9J&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfDQML2pJ6DisAy1zPvlJsklJESbVtaGb2wpLAr5Cm9DRw&oe=65266515&_nc_sid=8b3546',
+                              'https://avatars.githubusercontent.com/u/65115314?v=4',
                         ),
                         buildUserList(
                           name: 'Ilham Fadhlurahman',
@@ -359,7 +412,7 @@ class _MapScreenState extends State<MapScreen> {
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
                           imageUrl:
-                              'https://instagram.fbdo9-1.fna.fbcdn.net/v/t51.2885-19/330850473_752285232911741_8289984473251204414_n.jpg?stp=dst-jpg_s320x320&_nc_ht=instagram.fbdo9-1.fna.fbcdn.net&_nc_cat=105&_nc_ohc=5ybP9VVm-cIAX_Z9zcK&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfB-JN4IJ-KJWuCHmcVtgXureVeR4oV7rDV_dqU5m1Glpg&oe=65278491&_nc_sid=8b3546',
+                              'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
                         ),
                         buildUserList(
                           name: 'Ikhsan Khoreul',
@@ -370,7 +423,7 @@ class _MapScreenState extends State<MapScreen> {
                           buttonText: 'Go',
                           buttonIcon: Iconsax.direct_up,
                           imageUrl:
-                              'https://scontent-cgk1-1.cdninstagram.com/v/t51.2885-19/44884218_345707102882519_2446069589734326272_n.jpg?_nc_ht=scontent-cgk1-1.cdninstagram.com&_nc_cat=1&_nc_ohc=tzrtV3LSSLgAX9s5ATd&edm=AAAAAAABAAAA&ccb=7-5&ig_cache_key=YW5vbnltb3VzX3Byb2ZpbGVfcGlj.2-ccb7-5&oh=00_AfDC0LgGAC__SAo1PYoPWVDSp9LqAGLsLQjk5VBKqtWs-Q&oe=6526050F&_nc_sid=000000',
+                              'https://avatars.githubusercontent.com/u/64008898?v=4',
                         ),
                         buildUserList(
                           name: 'Fauzan',
