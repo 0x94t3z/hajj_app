@@ -224,7 +224,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500000),
+      duration: const Duration(milliseconds: 15000),
     );
 
     // Add a listener to the controller to detect when the animations are done.
