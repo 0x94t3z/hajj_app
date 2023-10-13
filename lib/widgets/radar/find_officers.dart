@@ -224,7 +224,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 10000),
+      duration: const Duration(milliseconds: 1500000),
     );
 
     // Add a listener to the controller to detect when the animations are done.
@@ -262,10 +262,10 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFF000000),
+                color: ColorSys.backgroundMap,
                 borderRadius: BorderRadius.circular(40.0),
                 border: Border.all(
-                  color: const Color(0xFF18191B),
+                  color: ColorSys.backgroundMap,
                   width: 2.0,
                 ),
               ),
@@ -283,19 +283,20 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                             'Finding Officers',
                             style: textStyle(
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: ColorSys.darkBlue,
                                 fontWeight: FontWeight.bold),
                           ).animateOnPageLoad(
                               animationsMap['textOnPageLoadAnimation']!),
                         ),
+                        // const SizedBox(height: 8.0),
                         Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 8.0, 0.0, 0.0),
+                              0.0, 08.0, 0.0, 0.0),
                           child: Container(
                             width: 60.0,
-                            height: 2.0,
+                            height: 3.0,
                             decoration: BoxDecoration(
-                              color: ColorSys.lightPrimary,
+                              color: ColorSys.cirlceMap,
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ).animateOnPageLoad(
@@ -313,7 +314,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.grey,
+                                    color: ColorSys.cirlceMap,
                                     width: 2.0,
                                   ),
                                 ),
@@ -324,7 +325,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.grey,
+                                    color: ColorSys.cirlceMap,
                                     width: 2.0,
                                   ),
                                 ),
@@ -335,7 +336,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.grey,
+                                    color: ColorSys.cirlceMap,
                                     width: 2.0,
                                   ),
                                 ),
@@ -384,8 +385,8 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                       alignment: const AlignmentDirectional(1.0, -1.0),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          foregroundColor: ColorSys.primary,
-                          backgroundColor: ColorSys.lightPrimary,
+                          foregroundColor: ColorSys.moreDarkBlue,
+                          backgroundColor: ColorSys.darkBlue,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),
                           ),

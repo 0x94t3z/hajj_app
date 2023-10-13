@@ -9,6 +9,8 @@ class ColorSys {
   static const Color lightBlue = Color.fromRGBO(163, 192, 201, 1);
   static const Color darkBlue = Color.fromRGBO(71, 131, 149, 1);
   static const Color moreDarkBlue = Color.fromRGBO(30, 55, 70, 70);
+  static const Color backgroundMap = Color.fromRGBO(236, 231, 228, 1);
+  static const Color cirlceMap = Color.fromRGBO(225, 219, 215, 1);
   static const Color radarMap = Color.fromRGBO(255, 168, 109, 1);
 }
 
