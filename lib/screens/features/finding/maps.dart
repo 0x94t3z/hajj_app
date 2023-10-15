@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
+import 'package:hajj_app/screens/features/finding/users.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
-import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -12,17 +13,86 @@ class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _MapScreenState createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
   MapboxMapController? mapController;
   final PageController _pageController = PageController();
+  List<User> users = [];
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize the list of users with their initial data
+    users = [
+      User(
+        name: 'Muhamad Taopik',
+        distance: '0 Km',
+        duration: '10 Min',
+        backgroundColor: Colors.white,
+        buttonColor: ColorSys.darkBlue,
+        buttonText: 'Go',
+        buttonIcon: Iconsax.direct_up,
+        imageUrl: 'https://avatars.githubusercontent.com/u/52822242?v=4',
+        latitude: 21.422627,
+        longitude: 39.826115,
+      ),
+      User(
+        name: 'Imam Firdaus',
+        distance: '0 Km',
+        duration: '15 Min',
+        backgroundColor: Colors.white,
+        buttonColor: ColorSys.darkBlue,
+        buttonText: 'Go',
+        buttonIcon: Iconsax.direct_up,
+        imageUrl: 'https://avatars.githubusercontent.com/u/65115314?v=4',
+        latitude: 21.423797,
+        longitude: 39.825303,
+      ),
+      User(
+        name: 'Ilham Fadhlurahman',
+        distance: '0 Km',
+        duration: '20 Min',
+        backgroundColor: Colors.white,
+        buttonColor: ColorSys.darkBlue,
+        buttonText: 'Go',
+        buttonIcon: Iconsax.direct_up,
+        imageUrl:
+            'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
+        latitude: 21.421034,
+        longitude: 39.825859,
+      ),
+      User(
+        name: 'Ikhsan Khoreul',
+        distance: '0 Km',
+        duration: '25 Min',
+        backgroundColor: Colors.white,
+        buttonColor: ColorSys.darkBlue,
+        buttonText: 'Go',
+        buttonIcon: Iconsax.direct_up,
+        imageUrl: 'https://avatars.githubusercontent.com/u/64008898?v=4',
+        latitude: 21.421835,
+        longitude: 39.826029,
+      ),
+      User(
+        name: 'Fauzan',
+        distance: '0 Km',
+        duration: '30 Min',
+        backgroundColor: Colors.white,
+        buttonColor: ColorSys.darkBlue,
+        buttonText: 'Go',
+        buttonIcon: Iconsax.direct_up,
+        imageUrl:
+            'https://i.pinimg.com/564x/c6/3f/72/c63f724ff95d6d869cac725215559fff.jpg',
+        latitude: 21.421515,
+        longitude: 39.827269,
+      ),
+    ];
+
+    // Start a timer to update user distances periodically
+    _getCurrentPosition();
   }
 
   @override
@@ -31,45 +101,144 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
-  double calculateHaversineDistance(
-      double lat1, double lon1, double lat2, double lon2) {
-    const double radiusOfEarth = 6371; // Earth's radius in kilometers
-    const double degreesToRadians = 0.01745329252; // Approximately pi / 180
-
-    // Convert latitude and longitude from degrees to radians
-    final double lat1Rad = lat1 * degreesToRadians;
-    final double lon1Rad = lon1 * degreesToRadians;
-    final double lat2Rad = lat2 * degreesToRadians;
-    final double lon2Rad = lon2 * degreesToRadians;
-
-    // Haversine formula
-    final double dLat = lat2Rad - lat1Rad;
-    final double dLon = lon2Rad - lon1Rad;
-    final double a = (math.sin(dLat / 2) * math.sin(dLat / 2)) +
-        (math.cos(lat1Rad) *
-            math.cos(lat2Rad) *
-            math.sin(dLon / 2) *
-            math.sin(dLon / 2));
-    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-
-    // Calculate the distance
-    final double distance = radiusOfEarth * c;
-    return distance;
-  }
-
   void _onMapCreated(MapboxMapController controller) {
     mapController = controller;
   }
 
-  Future<void> _getUserLocation() async {
+  // List<User> users = [
+  //   User(
+  //     name: 'Muhamad Taopik',
+  //     distance: user.distance,
+  //     duration: '10 Min',
+  //     backgroundColor: Colors.white,
+  //     buttonColor: ColorSys.darkBlue,
+  //     buttonText: 'Go',
+  //     buttonIcon: Iconsax.direct_up,
+  //     imageUrl: 'https://avatars.githubusercontent.com/u/52822242?v=4',
+  //     latitude: 21.422627,
+  //     longitude: 39.826115,
+  //   ),
+  //   User(
+  //     name: 'Imam Firdaus',
+  //     distance: user.distance,
+  //     duration: '15 Min',
+  //     backgroundColor: Colors.white,
+  //     buttonColor: ColorSys.darkBlue,
+  //     buttonText: 'Go',
+  //     buttonIcon: Iconsax.direct_up,
+  //     imageUrl: 'https://avatars.githubusercontent.com/u/65115314?v=4',
+  //     latitude: 21.423797,
+  //     longitude: 39.825303,
+  //   ),
+  //   User(
+  //     name: 'Ilham Fadhlurahman',
+  //     distance: user.distance,
+  //     duration: '20 Min',
+  //     backgroundColor: Colors.white,
+  //     buttonColor: ColorSys.darkBlue,
+  //     buttonText: 'Go',
+  //     buttonIcon: Iconsax.direct_up,
+  //     imageUrl:
+  //         'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
+  //     latitude: 21.421034,
+  //     longitude: 39.825859,
+  //   ),
+  //   User(
+  //     name: 'Ikhsan Khoreul',
+  //     distance: user.distance,
+  //     duration: '25 Min',
+  //     backgroundColor: Colors.white,
+  //     buttonColor: ColorSys.darkBlue,
+  //     buttonText: 'Go',
+  //     buttonIcon: Iconsax.direct_up,
+  //     imageUrl: 'https://avatars.githubusercontent.com/u/64008898?v=4',
+  //     latitude: 21.421835,
+  //     longitude: 39.826029,
+  //   ),
+  //   User(
+  //     name: 'Fauzan',
+  //     distance: user.distance,
+  //     duration: '30 Min',
+  //     backgroundColor: Colors.white,
+  //     buttonColor: ColorSys.darkBlue,
+  //     buttonText: 'Go',
+  //     buttonIcon: Iconsax.direct_up,
+  //     imageUrl:
+  //         'https://i.pinimg.com/564x/c6/3f/72/c63f724ff95d6d869cac725215559fff.jpg',
+  //     latitude: 21.421515,
+  //     longitude: 39.827269,
+  //   ),
+  // ];
+
+  Future<void> _updateUserDistances() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // Coordinates of the destination (user2's location)
-      double user2Latitude = 21.421923;
-      double user2Longitude = 39.826447;
+      for (var user in users) {
+        double distance = calculateHaversineDistance(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.distance = '${distance.toStringAsFixed(2)} Km';
+      }
+
+      // Trigger a rebuild of the UI to reflect the updated distances
+      setState(() {});
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> _getCurrentPosition() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Calculate distances for all users and update the list
+      for (var user in users) {
+        double distance = calculateHaversineDistance(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.distance = '${distance.toStringAsFixed(2)} Km';
+      }
+
+      // Sort the users list by distance, with the closest user first
+      users.sort((a, b) {
+        double distanceA = double.parse(a.distance.split(' ')[0]);
+        double distanceB = double.parse(b.distance.split(' ')[0]);
+        return distanceA.compareTo(distanceB);
+      });
+
+      // Start a timer to update user distances periodically
+      _updateUserDistances();
+
+      // Trigger a rebuild of the UI to reflect the updated distances and sorting
+      setState(() {});
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> _getUserLocation(User user) async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Clear existing route lines
+      mapController?.clearLines();
+
+      // Coordinates of the destination (user's location)
+      double userLatitude = user.latitude;
+      double userLongitude = user.longitude;
 
       // Your Mapbox API token
       String mapboxApiToken = dotenv.env['MAPBOX_SECRET_KEY']!;
@@ -77,7 +246,7 @@ class _MapScreenState extends State<MapScreen> {
       // Make a request to the Mapbox Directions API
       final response = await http.get(
         Uri.parse(
-          'https://api.mapbox.com/directions/v5/mapbox/walking/${position.longitude},${position.latitude};$user2Longitude,$user2Latitude?geometries=geojson&access_token=$mapboxApiToken',
+          'https://api.mapbox.com/directions/v5/mapbox/walking/${position.longitude},${position.latitude};$userLongitude,$userLatitude?geometries=geojson&access_token=$mapboxApiToken',
         ),
       );
 
@@ -106,7 +275,6 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(position.latitude, position.longitude),
-              // iconImage: "assets/images/one.png",
               iconSize: 0.3,
               textField: "You",
             ),
@@ -114,8 +282,7 @@ class _MapScreenState extends State<MapScreen> {
 
           mapController?.addSymbol(
             SymbolOptions(
-              geometry: LatLng(user2Latitude, user2Longitude),
-              // iconImage: "assets/images/two.png",
+              geometry: LatLng(userLatitude, userLongitude),
               iconSize: 0.3,
               textField: "Officer",
             ),
@@ -153,16 +320,14 @@ class _MapScreenState extends State<MapScreen> {
             ),
           );
 
-          // Calculate the distance using the Haversine formula
           double distance = calculateHaversineDistance(
             position.latitude,
             position.longitude,
-            user2Latitude,
-            user2Longitude,
+            user.latitude,
+            user.longitude,
           );
 
           // Display the distance to the destination
-          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -176,27 +341,17 @@ class _MapScreenState extends State<MapScreen> {
         print('Failed to load route');
       }
     } catch (e) {
-      // Handle any errors that may occur when getting the location or route.
       print(e.toString());
     }
   }
 
-  Widget buildUserList({
-    required String name,
-    required String distance,
-    required String duration,
-    required Color backgroundColor,
-    required Color buttonColor,
-    required String buttonText,
-    required IconData buttonIcon,
-    required String imageUrl,
-  }) {
+  Widget buildUserList(User user) {
     return Container(
       width: 390.0,
       height: 200.0,
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: user.backgroundColor,
         borderRadius: BorderRadius.circular(25.0),
         boxShadow: [
           BoxShadow(
@@ -223,7 +378,7 @@ class _MapScreenState extends State<MapScreen> {
                         height: 122.0,
                         width: 120.0,
                         child: Image.network(
-                          imageUrl,
+                          user.imageUrl,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -240,7 +395,7 @@ class _MapScreenState extends State<MapScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    user.name,
                     style: textStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -257,7 +412,7 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       const SizedBox(width: 4.0),
                       Text(
-                        distance,
+                        user.distance,
                         style: textStyle(
                           fontSize: 14,
                           color: ColorSys.darkBlue,
@@ -271,7 +426,7 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       const SizedBox(width: 4.0),
                       Text(
-                        duration,
+                        user.duration,
                         style: textStyle(
                           fontSize: 14,
                           color: ColorSys.darkBlue,
@@ -283,13 +438,13 @@ class _MapScreenState extends State<MapScreen> {
                   Row(
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () => _getUserLocation(user),
                         icon: const Center(
                           child: Icon(Iconsax.direct_up),
                         ),
-                        label: Text(buttonText),
+                        label: Text(user.buttonText),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
+                          backgroundColor: user.buttonColor,
                           textStyle: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -380,63 +535,12 @@ class _MapScreenState extends State<MapScreen> {
                     height: 212.0,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: [
-                        buildUserList(
-                          name: 'Muhamad Taopik',
-                          distance: '1 Km',
-                          duration: '10 Min',
-                          backgroundColor: Colors.white,
-                          buttonColor: ColorSys.darkBlue,
-                          buttonText: 'Go',
-                          buttonIcon: Iconsax.direct_up,
-                          imageUrl:
-                              'https://avatars.githubusercontent.com/u/52822242?v=4',
-                        ),
-                        buildUserList(
-                          name: 'Imam Firdaus',
-                          distance: '2 Km',
-                          duration: '15 Min',
-                          backgroundColor: Colors.white,
-                          buttonColor: ColorSys.darkBlue,
-                          buttonText: 'Go',
-                          buttonIcon: Iconsax.direct_up,
-                          imageUrl:
-                              'https://avatars.githubusercontent.com/u/65115314?v=4',
-                        ),
-                        buildUserList(
-                          name: 'Ilham Fadhlurahman',
-                          distance: '3 Km',
-                          duration: '20 Min',
-                          backgroundColor: Colors.white,
-                          buttonColor: ColorSys.darkBlue,
-                          buttonText: 'Go',
-                          buttonIcon: Iconsax.direct_up,
-                          imageUrl:
-                              'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
-                        ),
-                        buildUserList(
-                          name: 'Ikhsan Khoreul',
-                          distance: '4 Km',
-                          duration: '25 Min',
-                          backgroundColor: Colors.white,
-                          buttonColor: ColorSys.darkBlue,
-                          buttonText: 'Go',
-                          buttonIcon: Iconsax.direct_up,
-                          imageUrl:
-                              'https://avatars.githubusercontent.com/u/64008898?v=4',
-                        ),
-                        buildUserList(
-                          name: 'Fauzan',
-                          distance: '5 Km',
-                          duration: '30 Min',
-                          backgroundColor: Colors.white,
-                          buttonColor: ColorSys.darkBlue,
-                          buttonText: 'Go',
-                          buttonIcon: Iconsax.direct_up,
-                          imageUrl:
-                              'https://instagram.fbdo9-1.fna.fbcdn.net/v/t51.2885-19/15625170_561345284073104_1985069073154703360_a.jpg?stp=dst-jpg_s320x320&_nc_ht=instagram.fbdo9-1.fna.fbcdn.net&_nc_cat=108&_nc_ohc=USGF8GztAHoAX-I0NpE&edm=AOQ1c0wBAAAA&ccb=7-5&oh=00_AfAiegGSNwqaKYjWQAJFdbPleJZAMpAdvltnwoa7BA193A&oe=652754C6&_nc_sid=8b3546',
-                        ),
-                      ],
+                      children: users.map((user) {
+                        return InkWell(
+                          onTap: () => _getUserLocation(user),
+                          child: buildUserList(user),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
@@ -452,7 +556,8 @@ class _MapScreenState extends State<MapScreen> {
                 Iconsax.location,
                 color: ColorSys.darkBlue,
               ),
-              onPressed: () => _getUserLocation(),
+              onPressed: () => _getUserLocation(
+                  users[0]), // Set an initial user to load directions
             ),
           ),
         ],

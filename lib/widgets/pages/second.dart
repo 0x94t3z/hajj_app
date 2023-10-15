@@ -195,9 +195,6 @@ class _SecondWidgetState extends State<SecondWidget> {
                           ),
                           const SizedBox(height: 30.0),
                           ElevatedButton.icon(
-                            // onPressed: () {
-                            //   Navigator.pushNamed(context, '/find_officers');
-                            // },
                             onPressed: () {
                               showModalBottomSheet(
                                 isScrollControlled: true,
