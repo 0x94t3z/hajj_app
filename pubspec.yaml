@@ -87,6 +87,7 @@ flutter:
   assets:
     - .env
     - assets/fonts/
+    - assets/images/icons8-walking-100.png
     - assets/images/emoji-happy.png
     - assets/images/one.png
     - assets/images/two.png

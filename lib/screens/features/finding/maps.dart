@@ -8,7 +8,6 @@ import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:typed_data';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -176,53 +175,11 @@ class _MapScreenState extends State<MapScreen> {
         16.0,
       ));
 
-      // Add markers [ICON] at the starting points
-      mapController?.addCircle(
-        CircleOptions(
-          geometry: LatLng(position.latitude, position.longitude),
-          circleRadius: 50,
-          circleColor: '#478395',
-          circleOpacity: 0,
-          circleStrokeColor: '#478395',
-          circleStrokeOpacity: 1,
-          circleStrokeWidth: 5,
-        ),
-      );
-
-      // Define the URL of the image you want to use
-      // const imageUrl =
-      //     'https://avatars.githubusercontent.com/u/52822242?v=4'; // Replace with the actual URL
-
-      // // Fetch the image from the internet
-      // final imageResponse = await http.get(Uri.parse(imageUrl));
-
-      // if (imageResponse.statusCode == 200) {
-      //   // Convert the image response to Uint8List
-      //   final Uint8List imageUint8List =
-      //       Uint8List.fromList(imageResponse.bodyBytes);
-
-      //   // Add the image as an icon to the map
-      //   mapController?.addImage(
-      //     'custom-icon', // Provide a unique name for the icon
-      //     imageUint8List, // The image Uint8List
-      //   );
-
-      //   // Now you can use this 'custom-icon' as the iconImage in SymbolOptions
-      //   mapController?.addSymbol(
-      //     SymbolOptions(
-      //       geometry: LatLng(position.latitude, position.longitude),
-      //       iconImage: 'custom-icon', // Use the icon name you defined
-      //       iconSize: 0.3,
-      //     ),
-      //   );
-      // }
-
-      // Add the image as an icon to the map
+      // Add markers [IMAGE] at the starting points
       mapController?.addSymbol(
         SymbolOptions(
           geometry: LatLng(position.latitude, position.longitude),
-          iconImage:
-              'assets/images/emoji-happy.png', // Use the icon name you defined
+          iconImage: 'marker-11',
           iconSize: 3,
         ),
       );
@@ -276,11 +233,15 @@ class _MapScreenState extends State<MapScreen> {
             ),
           );
 
+          // Clear existing symbols
+          mapController?.clearSymbols();
+
           // Add markers at the starting and destination points
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(position.latitude, position.longitude),
-              iconSize: 0.3,
+              iconImage: 'marker-11',
+              iconSize: 3,
               textField: "You",
             ),
           );
@@ -288,8 +249,10 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(userLatitude, userLongitude),
-              iconSize: 0.3,
+              iconImage: 'police-11',
+              iconSize: 3,
               textField: "Officer",
+              iconColor: '#478395',
             ),
           );
 
