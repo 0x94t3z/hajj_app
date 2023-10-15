@@ -8,11 +8,13 @@ import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:typed_data';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _MapScreenState createState() => _MapScreenState();
 }
 
@@ -105,71 +107,6 @@ class _MapScreenState extends State<MapScreen> {
     mapController = controller;
   }
 
-  // List<User> users = [
-  //   User(
-  //     name: 'Muhamad Taopik',
-  //     distance: user.distance,
-  //     duration: '10 Min',
-  //     backgroundColor: Colors.white,
-  //     buttonColor: ColorSys.darkBlue,
-  //     buttonText: 'Go',
-  //     buttonIcon: Iconsax.direct_up,
-  //     imageUrl: 'https://avatars.githubusercontent.com/u/52822242?v=4',
-  //     latitude: 21.422627,
-  //     longitude: 39.826115,
-  //   ),
-  //   User(
-  //     name: 'Imam Firdaus',
-  //     distance: user.distance,
-  //     duration: '15 Min',
-  //     backgroundColor: Colors.white,
-  //     buttonColor: ColorSys.darkBlue,
-  //     buttonText: 'Go',
-  //     buttonIcon: Iconsax.direct_up,
-  //     imageUrl: 'https://avatars.githubusercontent.com/u/65115314?v=4',
-  //     latitude: 21.423797,
-  //     longitude: 39.825303,
-  //   ),
-  //   User(
-  //     name: 'Ilham Fadhlurahman',
-  //     distance: user.distance,
-  //     duration: '20 Min',
-  //     backgroundColor: Colors.white,
-  //     buttonColor: ColorSys.darkBlue,
-  //     buttonText: 'Go',
-  //     buttonIcon: Iconsax.direct_up,
-  //     imageUrl:
-  //         'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
-  //     latitude: 21.421034,
-  //     longitude: 39.825859,
-  //   ),
-  //   User(
-  //     name: 'Ikhsan Khoreul',
-  //     distance: user.distance,
-  //     duration: '25 Min',
-  //     backgroundColor: Colors.white,
-  //     buttonColor: ColorSys.darkBlue,
-  //     buttonText: 'Go',
-  //     buttonIcon: Iconsax.direct_up,
-  //     imageUrl: 'https://avatars.githubusercontent.com/u/64008898?v=4',
-  //     latitude: 21.421835,
-  //     longitude: 39.826029,
-  //   ),
-  //   User(
-  //     name: 'Fauzan',
-  //     distance: user.distance,
-  //     duration: '30 Min',
-  //     backgroundColor: Colors.white,
-  //     buttonColor: ColorSys.darkBlue,
-  //     buttonText: 'Go',
-  //     buttonIcon: Iconsax.direct_up,
-  //     imageUrl:
-  //         'https://i.pinimg.com/564x/c6/3f/72/c63f724ff95d6d869cac725215559fff.jpg',
-  //     latitude: 21.421515,
-  //     longitude: 39.827269,
-  //   ),
-  // ];
-
   Future<void> _updateUserDistances() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
@@ -227,7 +164,75 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _getUserLocation(User user) async {
+  Future<void> _getUserLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Update the map camera to center around the user's location.
+      mapController?.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(position.latitude, position.longitude),
+        16.0,
+      ));
+
+      // Add markers [ICON] at the starting points
+      mapController?.addCircle(
+        CircleOptions(
+          geometry: LatLng(position.latitude, position.longitude),
+          circleRadius: 50,
+          circleColor: '#478395',
+          circleOpacity: 0,
+          circleStrokeColor: '#478395',
+          circleStrokeOpacity: 1,
+          circleStrokeWidth: 5,
+        ),
+      );
+
+      // Define the URL of the image you want to use
+      // const imageUrl =
+      //     'https://avatars.githubusercontent.com/u/52822242?v=4'; // Replace with the actual URL
+
+      // // Fetch the image from the internet
+      // final imageResponse = await http.get(Uri.parse(imageUrl));
+
+      // if (imageResponse.statusCode == 200) {
+      //   // Convert the image response to Uint8List
+      //   final Uint8List imageUint8List =
+      //       Uint8List.fromList(imageResponse.bodyBytes);
+
+      //   // Add the image as an icon to the map
+      //   mapController?.addImage(
+      //     'custom-icon', // Provide a unique name for the icon
+      //     imageUint8List, // The image Uint8List
+      //   );
+
+      //   // Now you can use this 'custom-icon' as the iconImage in SymbolOptions
+      //   mapController?.addSymbol(
+      //     SymbolOptions(
+      //       geometry: LatLng(position.latitude, position.longitude),
+      //       iconImage: 'custom-icon', // Use the icon name you defined
+      //       iconSize: 0.3,
+      //     ),
+      //   );
+      // }
+
+      // Add the image as an icon to the map
+      mapController?.addSymbol(
+        SymbolOptions(
+          geometry: LatLng(position.latitude, position.longitude),
+          iconImage:
+              'assets/images/emoji-happy.png', // Use the icon name you defined
+          iconSize: 3,
+        ),
+      );
+    } catch (e) {
+      // Handle any errors that may occur when getting the location.
+      print(e.toString());
+    }
+  }
+
+  Future<void> _getUserDirection(User user) async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -328,10 +333,11 @@ class _MapScreenState extends State<MapScreen> {
           );
 
           // Display the distance to the destination
+          // ignore: use_build_context_synchronously
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Distance to Destination: ${distance.toStringAsFixed(2)} km'),
+                  'Distance to Destination: ${distance.toStringAsFixed(2)} Km'),
             ),
           );
         } else {
@@ -438,7 +444,7 @@ class _MapScreenState extends State<MapScreen> {
                   Row(
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () => _getUserLocation(user),
+                        onPressed: () => _getUserDirection(user),
                         icon: const Center(
                           child: Icon(Iconsax.direct_up),
                         ),
@@ -537,7 +543,7 @@ class _MapScreenState extends State<MapScreen> {
                       scrollDirection: Axis.horizontal,
                       children: users.map((user) {
                         return InkWell(
-                          onTap: () => _getUserLocation(user),
+                          onTap: () => _getUserDirection(user),
                           child: buildUserList(user),
                         );
                       }).toList(),
@@ -556,8 +562,7 @@ class _MapScreenState extends State<MapScreen> {
                 Iconsax.location,
                 color: ColorSys.darkBlue,
               ),
-              onPressed: () => _getUserLocation(
-                  users[0]), // Set an initial user to load directions
+              onPressed: () => _getUserLocation(),
             ),
           ),
         ],

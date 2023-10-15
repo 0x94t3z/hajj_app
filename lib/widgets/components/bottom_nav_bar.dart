@@ -34,7 +34,7 @@ class BottomNavBar extends StatelessWidget {
           selectedColor: ColorSys.darkBlue,
         ),
         SalomonBottomBarItem(
-          icon: const Icon(Iconsax.profile_2user),
+          icon: const Icon(Iconsax.star_1),
           title: const Text("Contact"),
           selectedColor: ColorSys.darkBlue,
         ),
