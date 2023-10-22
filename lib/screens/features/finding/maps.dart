@@ -169,6 +169,12 @@ class _MapScreenState extends State<MapScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // Clear existing route lines
+      mapController?.clearLines();
+
+      // Clear existing symbols
+      mapController?.clearSymbols();
+
       // Update the map camera to center around the user's location.
       mapController?.animateCamera(CameraUpdate.newLatLngZoom(
         LatLng(position.latitude, position.longitude),
