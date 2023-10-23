@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
 import 'package:hajj_app/screens/features/finding/users.dart';
@@ -20,80 +21,22 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   MapboxMapController? mapController;
   final PageController _pageController = PageController();
-  List<User> users = [];
+  List<User> users = initializeUsers();
+  // late MapBoxOptions _navigationOption;
+  // double? distanceRemaining, durationRemaining;
+  // MapBoxNavigationViewController? _controller;
+  // final bool isMultipleStop = false;
+  // String? instruction = "";
+  // bool routeBuilt = false;
+  // bool isNavigating = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize the list of users with their initial data
-    users = [
-      User(
-        name: 'Muhamad Taopik',
-        distance: '0 Km',
-        duration: '10 Min',
-        backgroundColor: Colors.white,
-        buttonColor: ColorSys.darkBlue,
-        buttonText: 'Go',
-        buttonIcon: Iconsax.direct_up,
-        imageUrl: 'https://avatars.githubusercontent.com/u/52822242?v=4',
-        latitude: 21.422627,
-        longitude: 39.826115,
-      ),
-      User(
-        name: 'Imam Firdaus',
-        distance: '0 Km',
-        duration: '15 Min',
-        backgroundColor: Colors.white,
-        buttonColor: ColorSys.darkBlue,
-        buttonText: 'Go',
-        buttonIcon: Iconsax.direct_up,
-        imageUrl: 'https://avatars.githubusercontent.com/u/65115314?v=4',
-        latitude: 21.423797,
-        longitude: 39.825303,
-      ),
-      User(
-        name: 'Ilham Fadhlurahman',
-        distance: '0 Km',
-        duration: '20 Min',
-        backgroundColor: Colors.white,
-        buttonColor: ColorSys.darkBlue,
-        buttonText: 'Go',
-        buttonIcon: Iconsax.direct_up,
-        imageUrl:
-            'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
-        latitude: 21.421034,
-        longitude: 39.825859,
-      ),
-      User(
-        name: 'Ikhsan Khoreul',
-        distance: '0 Km',
-        duration: '25 Min',
-        backgroundColor: Colors.white,
-        buttonColor: ColorSys.darkBlue,
-        buttonText: 'Go',
-        buttonIcon: Iconsax.direct_up,
-        imageUrl: 'https://avatars.githubusercontent.com/u/64008898?v=4',
-        latitude: 21.421835,
-        longitude: 39.826029,
-      ),
-      User(
-        name: 'Fauzan',
-        distance: '0 Km',
-        duration: '30 Min',
-        backgroundColor: Colors.white,
-        buttonColor: ColorSys.darkBlue,
-        buttonText: 'Go',
-        buttonIcon: Iconsax.direct_up,
-        imageUrl:
-            'https://i.pinimg.com/564x/c6/3f/72/c63f724ff95d6d869cac725215559fff.jpg',
-        latitude: 21.421515,
-        longitude: 39.827269,
-      ),
-    ];
-
     // Start a timer to update user distances periodically
     _getCurrentPosition();
+    // MapBoxNavigation.instance.registerRouteEventListener(_onRouteEvent);
   }
 
   @override
@@ -194,6 +137,97 @@ class _MapScreenState extends State<MapScreen> {
       print(e.toString());
     }
   }
+
+  // Future<void> _onRouteEvent(RouteEvent e) async {
+  //   distanceRemaining = await MapBoxNavigation.instance.getDistanceRemaining();
+  //   durationRemaining = await MapBoxNavigation.instance.getDurationRemaining();
+
+  //   switch (e.eventType) {
+  //     case MapBoxEvent.progress_change:
+  //       var progressEvent = e.data as RouteProgressEvent;
+  //       if (progressEvent.currentStepInstruction != null) {
+  //         instruction = progressEvent.currentStepInstruction;
+  //       }
+  //       break;
+  //     case MapBoxEvent.route_building:
+  //     case MapBoxEvent.route_built:
+  //       setState(() {
+  //         routeBuilt = true;
+  //       });
+  //       break;
+  //     case MapBoxEvent.route_build_failed:
+  //       setState(() {
+  //         routeBuilt = false;
+  //       });
+  //       break;
+  //     case MapBoxEvent.navigation_running:
+  //       setState(() {
+  //         isNavigating = true;
+  //       });
+  //       break;
+  //     case MapBoxEvent.on_arrival:
+  //       if (!isMultipleStop) {
+  //         await Future.delayed(const Duration(seconds: 3));
+  //         await _controller?.finishNavigation();
+  //       } else {}
+  //       break;
+  //     case MapBoxEvent.navigation_finished:
+  //     case MapBoxEvent.navigation_cancelled:
+  //       setState(() {
+  //         routeBuilt = false;
+  //         isNavigating = false;
+  //       });
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   setState(() {});
+  // }
+
+  // Future<void> _getUserNavigation(User user) async {
+  //   try {
+  //     Position position = await Geolocator.getCurrentPosition(
+  //       desiredAccuracy: LocationAccuracy.high,
+  //     );
+
+  //     // _navigationOption = MapBoxOptions(
+  //     //   zoom: 18.0,
+  //     //   voiceInstructionsEnabled: true,
+  //     //   bannerInstructionsEnabled: true,
+  //     //   mode: MapBoxNavigationMode.drivingWithTraffic,
+  //     //   isOptimized: true,
+  //     //   units: VoiceUnits.metric,
+  //     //   simulateRoute: true,
+  //     //   language: "en",
+  //     // );
+
+  //     // Create waypoints for navigation using the user's latitude and longitude
+  //     final origin = WayPoint(
+  //       name: "Current Location",
+  //       latitude: position.latitude,
+  //       longitude: position.longitude,
+  //       isSilent: true,
+  //     );
+
+  //     final destination = WayPoint(
+  //       name: "Destination",
+  //       latitude: user.latitude,
+  //       longitude: user.longitude,
+  //       isSilent: false,
+  //     );
+
+  //     // Create a list of waypoints
+  //     List<WayPoint> wayPoints = [origin, destination];
+
+  //     // Start navigation with the created waypoints
+  //     MapBoxNavigation.instance.startNavigation(
+  //       wayPoints: wayPoints,
+  //       // options: _navigationOption,
+  //     );
+  //   } catch (e) {
+  //     print(e.toString());
+  //   }
+  // }
 
   Future<void> _getUserDirection(User user) async {
     try {
@@ -413,7 +447,9 @@ class _MapScreenState extends State<MapScreen> {
                   Row(
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () => _getUserDirection(user),
+                        onPressed: () {
+                          // _getUserNavigation(user);
+                        },
                         icon: const Center(
                           child: Icon(Iconsax.direct_up),
                         ),
