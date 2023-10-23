@@ -51,6 +51,7 @@ dependencies:
   geocoding: ^2.1.0
   flutter_animate: ^4.2.0+1
   http: ^1.1.0
+  # flutter_mapbox_navigation: ^0.2.2
 
 
 
@@ -68,7 +69,7 @@ dev_dependencies:
 
 
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: "ic_launcher"
   ios: true
   image_path: "assets/icon/icon.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
