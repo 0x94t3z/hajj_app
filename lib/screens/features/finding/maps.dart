@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:flutter_mapbox_navigation/flutter_mapbox_navigation.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
 import 'package:hajj_app/screens/features/finding/users.dart';
@@ -48,6 +48,22 @@ class _MapScreenState extends State<MapScreen> {
   void _onMapCreated(MapboxMapController controller) {
     mapController = controller;
   }
+
+  // void openMaps(
+  //     double startLat, double startLng, double stopLat, double stopLng) async {
+  //   final String appleMapsUrl =
+  //       "http://maps.apple.com/?saddr=$startLat,$startLng&daddr=$stopLat,$stopLng";
+  //   final String googleMapsUrl =
+  //       "comgooglemaps://?saddr=$startLat,$startLng&daddr=$stopLat,$stopLng";
+
+  //   if (await canLaunch(appleMapsUrl)) {
+  //     await launch(appleMapsUrl);
+  //   } else if (await canLaunch(googleMapsUrl)) {
+  //     await launch(googleMapsUrl);
+  //   } else {
+  //     throw 'Could not launch any mapping app';
+  //   }
+  // }
 
   Future<void> _updateUserDistances() async {
     try {
@@ -138,98 +154,7 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // Future<void> _onRouteEvent(RouteEvent e) async {
-  //   distanceRemaining = await MapBoxNavigation.instance.getDistanceRemaining();
-  //   durationRemaining = await MapBoxNavigation.instance.getDurationRemaining();
-
-  //   switch (e.eventType) {
-  //     case MapBoxEvent.progress_change:
-  //       var progressEvent = e.data as RouteProgressEvent;
-  //       if (progressEvent.currentStepInstruction != null) {
-  //         instruction = progressEvent.currentStepInstruction;
-  //       }
-  //       break;
-  //     case MapBoxEvent.route_building:
-  //     case MapBoxEvent.route_built:
-  //       setState(() {
-  //         routeBuilt = true;
-  //       });
-  //       break;
-  //     case MapBoxEvent.route_build_failed:
-  //       setState(() {
-  //         routeBuilt = false;
-  //       });
-  //       break;
-  //     case MapBoxEvent.navigation_running:
-  //       setState(() {
-  //         isNavigating = true;
-  //       });
-  //       break;
-  //     case MapBoxEvent.on_arrival:
-  //       if (!isMultipleStop) {
-  //         await Future.delayed(const Duration(seconds: 3));
-  //         await _controller?.finishNavigation();
-  //       } else {}
-  //       break;
-  //     case MapBoxEvent.navigation_finished:
-  //     case MapBoxEvent.navigation_cancelled:
-  //       setState(() {
-  //         routeBuilt = false;
-  //         isNavigating = false;
-  //       });
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  //   setState(() {});
-  // }
-
-  // Future<void> _getUserNavigation(User user) async {
-  //   try {
-  //     Position position = await Geolocator.getCurrentPosition(
-  //       desiredAccuracy: LocationAccuracy.high,
-  //     );
-
-  //     // _navigationOption = MapBoxOptions(
-  //     //   zoom: 18.0,
-  //     //   voiceInstructionsEnabled: true,
-  //     //   bannerInstructionsEnabled: true,
-  //     //   mode: MapBoxNavigationMode.drivingWithTraffic,
-  //     //   isOptimized: true,
-  //     //   units: VoiceUnits.metric,
-  //     //   simulateRoute: true,
-  //     //   language: "en",
-  //     // );
-
-  //     // Create waypoints for navigation using the user's latitude and longitude
-  //     final origin = WayPoint(
-  //       name: "Current Location",
-  //       latitude: position.latitude,
-  //       longitude: position.longitude,
-  //       isSilent: true,
-  //     );
-
-  //     final destination = WayPoint(
-  //       name: "Destination",
-  //       latitude: user.latitude,
-  //       longitude: user.longitude,
-  //       isSilent: false,
-  //     );
-
-  //     // Create a list of waypoints
-  //     List<WayPoint> wayPoints = [origin, destination];
-
-  //     // Start navigation with the created waypoints
-  //     MapBoxNavigation.instance.startNavigation(
-  //       wayPoints: wayPoints,
-  //       // options: _navigationOption,
-  //     );
-  //   } catch (e) {
-  //     print(e.toString());
-  //   }
-  // }
-
-  Future<void> _getUserDirection(User user) async {
+  Future<void> _getRouteDirection(User user) async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -354,6 +279,32 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _getUserDirection(User user) async {
+    try {
+      // Coordinates of the destination (user's location)
+      double userLatitude = user.latitude;
+      double userLongitude = user.longitude;
+
+      final String query =
+          "$userLatitude,$userLongitude"; // Destination coordinates
+
+      // Use Apple Maps on iOS and Google Maps on Android
+      final String appleMapsUrl = "https://maps.apple.com/?daddr=$query";
+      final String googleMapsUrl =
+          "https://www.google.com/maps/dir/?api=1&destination=$query";
+
+      if (await canLaunch(appleMapsUrl)) {
+        await launch(appleMapsUrl);
+      } else if (await canLaunch(googleMapsUrl)) {
+        await launch(googleMapsUrl);
+      } else {
+        throw 'Could not launch maps.';
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Widget buildUserList(User user) {
     return Container(
       width: 390.0,
@@ -448,7 +399,7 @@ class _MapScreenState extends State<MapScreen> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: () {
-                          // _getUserNavigation(user);
+                          _getUserDirection(user);
                         },
                         icon: const Center(
                           child: Icon(Iconsax.direct_up),
@@ -548,7 +499,7 @@ class _MapScreenState extends State<MapScreen> {
                       scrollDirection: Axis.horizontal,
                       children: users.map((user) {
                         return InkWell(
-                          onTap: () => _getUserDirection(user),
+                          onTap: () => _getRouteDirection(user),
                           child: buildUserList(user),
                         );
                       }).toList(),

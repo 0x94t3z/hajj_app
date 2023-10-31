@@ -52,7 +52,8 @@ List<User> initializeUsers() {
       buttonColor: ColorSys.darkBlue,
       buttonText: 'Go',
       buttonIcon: Iconsax.direct_up,
-      imageUrl: 'https://avatars.githubusercontent.com/u/65115314?v=4',
+      imageUrl:
+          'https://raw.githubusercontent.com/imamfirdaus-if/sewakamarkost/main/assets/teams/ImamFirdaus.png',
       latitude: 21.423797,
       longitude: 39.825303,
     ),
@@ -77,7 +78,8 @@ List<User> initializeUsers() {
       buttonColor: ColorSys.darkBlue,
       buttonText: 'Go',
       buttonIcon: Iconsax.direct_up,
-      imageUrl: 'https://avatars.githubusercontent.com/u/64008898?v=4',
+      imageUrl:
+          'https://raw.githubusercontent.com/imamfirdaus-if/sewakamarkost/main/assets/teams/IkhsanKhoerul.png',
       latitude: 21.421835,
       longitude: 39.826029,
     ),
