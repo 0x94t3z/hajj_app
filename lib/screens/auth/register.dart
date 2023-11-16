@@ -5,6 +5,7 @@ import 'package:hajj_app/screens/auth/login.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/helpers/strings.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -18,6 +19,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int activeIndex = 2;
   late Timer _timer;
   bool _isLoading = false;
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
+  Future<void> registerWithEmailAndPassword() async {
+    try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // Update the user's display name
+      await userCredential.user!.updateDisplayName(nameController.text.trim());
+
+      // Registration successful - Navigate to the next screen or perform actions accordingly
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    } catch (e) {
+      // Handle registration errors here
+      print('Error occurred during registration: $e');
+      // Show a snackbar or display an error message to the user
+    }
+  }
 
   @override
   void initState() {
@@ -124,6 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             FadeInDown(
               delay: const Duration(milliseconds: 400),
               child: TextField(
+                controller: nameController,
                 cursorColor: ColorSys.primary,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0.0),
@@ -166,6 +195,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             FadeInDown(
               delay: const Duration(milliseconds: 400),
               child: TextField(
+                controller: emailController,
                 cursorColor: ColorSys.primary,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0.0),
@@ -208,6 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             FadeInDown(
               delay: const Duration(milliseconds: 400),
               child: TextField(
+                controller: passwordController,
                 cursorColor: ColorSys.primary,
                 obscureText: true, // Set this to true to hide the input text
                 decoration: InputDecoration(
@@ -257,19 +288,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _isLoading = true;
                   });
 
-                  Future.delayed(const Duration(seconds: 2), () {
+                  // Call the registration method and handle registration
+                  registerWithEmailAndPassword().then((_) {
                     setState(() {
                       _isLoading = false;
                     });
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                    );
+                  }).catchError((error) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    // Handle registration error, show a snackbar, or display an error message
+                    print("Registration error: $error");
                   });
                 },
                 color: ColorSys.darkBlue,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
                 padding:
                     const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                 child: _isLoading

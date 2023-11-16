@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hajj_app/models/users.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
-import 'package:hajj_app/screens/features/finding/users.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:http/http.dart' as http;
@@ -48,22 +48,6 @@ class _MapScreenState extends State<MapScreen> {
   void _onMapCreated(MapboxMapController controller) {
     mapController = controller;
   }
-
-  // void openMaps(
-  //     double startLat, double startLng, double stopLat, double stopLng) async {
-  //   final String appleMapsUrl =
-  //       "http://maps.apple.com/?saddr=$startLat,$startLng&daddr=$stopLat,$stopLng";
-  //   final String googleMapsUrl =
-  //       "comgooglemaps://?saddr=$startLat,$startLng&daddr=$stopLat,$stopLng";
-
-  //   if (await canLaunch(appleMapsUrl)) {
-  //     await launch(appleMapsUrl);
-  //   } else if (await canLaunch(googleMapsUrl)) {
-  //     await launch(googleMapsUrl);
-  //   } else {
-  //     throw 'Could not launch any mapping app';
-  //   }
-  // }
 
   Future<void> _updateUserDistances() async {
     try {
