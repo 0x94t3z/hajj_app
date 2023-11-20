@@ -54,6 +54,7 @@ dependencies:
   url_launcher: ^6.2.1
   firebase_core: ^2.22.0
   firebase_auth: ^4.14.0
+  firebase_database: ^10.3.4
   # flutter_mapbox_navigation: ^0.2.2
 
 

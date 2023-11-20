@@ -1,6 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/helpers/styles.dart';
@@ -26,6 +30,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> registerWithEmailAndPassword() async {
     try {
+      // Fetching current location
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Creating user account with email and password
       UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -35,6 +45,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Update the user's display name
       await userCredential.user!.updateDisplayName(nameController.text.trim());
 
+      // Additional: Save longitude and latitude to Realtime Database
+      DatabaseReference usersRef =
+          FirebaseDatabase.instance.ref().child('users');
+      usersRef.child(userCredential.user!.uid).set({
+        'displayName': nameController.text.trim(),
+        'email': emailController.text.trim(),
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+      });
+
+      // Registration successful - Show success message using SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registration successful!'),
+        ),
+      );
+
       // Registration successful - Navigate to the next screen or perform actions accordingly
       Navigator.push(
         context,
@@ -42,8 +69,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } catch (e) {
       // Handle registration errors here
-      print('Error occurred during registration: $e');
-      // Show a snackbar or display an error message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error occurred during registration: $e'),
+        ),
+      );
     }
   }
 

@@ -115,7 +115,7 @@ class _SecondWidgetState extends State<SecondWidget> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 300.0),
+            const SizedBox(height: 20.0),
             Container(
               height: 180.0,
               margin: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -145,7 +145,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                               borderRadius: BorderRadius.circular(20.0),
                               child: SizedBox(
                                 height: 130.0,
-                                width: 120.0,
+                                width: 130.0,
                                 child: MapboxMap(
                                   onMapCreated: _onMapCreated,
                                   initialCameraPosition: const CameraPosition(
@@ -237,140 +237,140 @@ class _SecondWidgetState extends State<SecondWidget> {
             ),
             // IF USER == PILGRIM
             const SizedBox(height: 30.0),
-            Container(
-              height: 180.0,
-              margin: const EdgeInsets.symmetric(horizontal: 20.0),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 3,
-                    blurRadius: 3,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(25.0),
-              child: Row(
-                children: [
-                  Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(25.0),
-                              child: SizedBox(
-                                height: 130.0,
-                                width: 120.0,
-                                child: Image.network(
-                                  'https://avatars.githubusercontent.com/u/52822242?v=4',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Flexible(
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Muhamad Taopik',
-                            style: textStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: ColorSys.darkBlue,
-                            ),
-                          ),
-                          const SizedBox(height: 5.0),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.directions_walk,
-                                size: 14.0,
-                                color: ColorSys.darkBlue,
-                              ),
-                              const SizedBox(width: 4.0),
-                              Text(
-                                '1 Km',
-                                style: textStyle(
-                                  fontSize: 14,
-                                  color: ColorSys.darkBlue,
-                                ),
-                              ),
-                              const SizedBox(width: 10.0),
-                              const Icon(
-                                Iconsax.clock,
-                                size: 14.0,
-                                color: ColorSys.darkBlue,
-                              ),
-                              const SizedBox(width: 4.0),
-                              Text(
-                                '10 Min',
-                                style: textStyle(
-                                  fontSize: 14,
-                                  color: ColorSys.darkBlue,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30.0),
-                          Row(
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: const Center(
-                                  child: Icon(Iconsax.direct_up),
-                                ),
-                                label: const Text('Go'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorSys.darkBlue,
-                                  textStyle: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  fixedSize: const Size(90, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10.0), // Adjust the spacing
-                              ElevatedButton.icon(
-                                onPressed: () {},
-                                icon: const Icon(Iconsax.danger),
-                                label: const Text('Help'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  textStyle: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  fixedSize: const Size(100, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25.0),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   height: 180.0,
+            //   margin: const EdgeInsets.symmetric(horizontal: 20.0),
+            //   decoration: BoxDecoration(
+            //     color: Colors.white,
+            //     borderRadius: BorderRadius.circular(25.0),
+            //     boxShadow: [
+            //       BoxShadow(
+            //         color: Colors.grey.withOpacity(0.2),
+            //         spreadRadius: 3,
+            //         blurRadius: 3,
+            //         offset: const Offset(0, 3),
+            //       ),
+            //     ],
+            //   ),
+            //   padding: const EdgeInsets.all(25.0),
+            //   child: Row(
+            //     children: [
+            //       Stack(
+            //         children: [
+            //           Align(
+            //             alignment: Alignment.centerLeft,
+            //             child: Column(
+            //               crossAxisAlignment: CrossAxisAlignment.start,
+            //               children: [
+            //                 ClipRRect(
+            //                   borderRadius: BorderRadius.circular(25.0),
+            //                   child: SizedBox(
+            //                     height: 130.0,
+            //                     width: 120.0,
+            //                     child: Image.network(
+            //                       'https://avatars.githubusercontent.com/u/52822242?v=4',
+            //                       fit: BoxFit.cover,
+            //                     ),
+            //                   ),
+            //                 ),
+            //               ],
+            //             ),
+            //           ),
+            //         ],
+            //       ),
+            //       Flexible(
+            //         child: Container(
+            //           margin: const EdgeInsets.only(left: 16.0),
+            //           child: Column(
+            //             crossAxisAlignment: CrossAxisAlignment.start,
+            //             children: [
+            //               Text(
+            //                 'Muhamad Taopik',
+            //                 style: textStyle(
+            //                   fontSize: 16,
+            //                   fontWeight: FontWeight.bold,
+            //                   color: ColorSys.darkBlue,
+            //                 ),
+            //               ),
+            //               const SizedBox(height: 5.0),
+            //               Row(
+            //                 children: [
+            //                   const Icon(
+            //                     Icons.directions_walk,
+            //                     size: 14.0,
+            //                     color: ColorSys.darkBlue,
+            //                   ),
+            //                   const SizedBox(width: 4.0),
+            //                   Text(
+            //                     '1 Km',
+            //                     style: textStyle(
+            //                       fontSize: 14,
+            //                       color: ColorSys.darkBlue,
+            //                     ),
+            //                   ),
+            //                   const SizedBox(width: 10.0),
+            //                   const Icon(
+            //                     Iconsax.clock,
+            //                     size: 14.0,
+            //                     color: ColorSys.darkBlue,
+            //                   ),
+            //                   const SizedBox(width: 4.0),
+            //                   Text(
+            //                     '10 Min',
+            //                     style: textStyle(
+            //                       fontSize: 14,
+            //                       color: ColorSys.darkBlue,
+            //                     ),
+            //                   ),
+            //                 ],
+            //               ),
+            //               const SizedBox(height: 30.0),
+            //               Row(
+            //                 children: [
+            //                   ElevatedButton.icon(
+            //                     onPressed: () {},
+            //                     icon: const Center(
+            //                       child: Icon(Iconsax.direct_up),
+            //                     ),
+            //                     label: const Text('Go'),
+            //                     style: ElevatedButton.styleFrom(
+            //                       backgroundColor: ColorSys.darkBlue,
+            //                       textStyle: const TextStyle(
+            //                         fontSize: 14,
+            //                         fontWeight: FontWeight.bold,
+            //                       ),
+            //                       fixedSize: const Size(90, 50),
+            //                       shape: RoundedRectangleBorder(
+            //                         borderRadius: BorderRadius.circular(25.0),
+            //                       ),
+            //                     ),
+            //                   ),
+            //                   const SizedBox(width: 10.0), // Adjust the spacing
+            //                   ElevatedButton.icon(
+            //                     onPressed: () {},
+            //                     icon: const Icon(Iconsax.danger),
+            //                     label: const Text('Help'),
+            //                     style: ElevatedButton.styleFrom(
+            //                       backgroundColor: Colors.red,
+            //                       textStyle: const TextStyle(
+            //                         fontSize: 14,
+            //                         fontWeight: FontWeight.bold,
+            //                       ),
+            //                       fixedSize: const Size(100, 50),
+            //                       shape: RoundedRectangleBorder(
+            //                         borderRadius: BorderRadius.circular(25.0),
+            //                       ),
+            //                     ),
+            //                   ),
+            //                 ],
+            //               ),
+            //             ],
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
