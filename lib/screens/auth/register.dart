@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hajj_app/screens/auth/login.dart';
@@ -44,15 +45,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Update the user's display name
       await userCredential.user!.updateDisplayName(nameController.text.trim());
+      String userId = userCredential.user!.uid;
 
-      // Additional: Save longitude and latitude to Realtime Database
+      // Get the download URL for the default image from Firebase Storage
+      Reference storageRef =
+          FirebaseStorage.instance.ref().child('images/default_profile.jpeg');
+      String imageUrl = await storageRef.getDownloadURL();
+
+      // Additional: Save longitude and latitude to Realtime Database along with imageUrl
       DatabaseReference usersRef =
           FirebaseDatabase.instance.ref().child('users');
-      usersRef.child(userCredential.user!.uid).set({
+      usersRef.child(userId).set({
+        'userId': userId,
         'displayName': nameController.text.trim(),
         'email': emailController.text.trim(),
         'latitude': position.latitude,
         'longitude': position.longitude,
+        'imageUrl': imageUrl,
       });
 
       // Registration successful - Show success message using SnackBar
