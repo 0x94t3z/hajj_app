@@ -1,5 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -26,7 +25,7 @@ void main() async {
   await dotenv.load();
 
   initializeApp().then((_) {
-    runApp(HajjApp());
+    runApp(const HajjApp());
   });
 }
 
@@ -70,12 +69,10 @@ Future<void> getCurrentLocation() async {
 }
 
 class HajjApp extends StatelessWidget {
-  HajjApp({super.key});
-  final LocationService _locationService = LocationService();
+  const HajjApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    _locationService.startTrackingLocation('userId');
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: '/introduction',
@@ -92,33 +89,5 @@ class HajjApp extends StatelessWidget {
         '/edit': (context) => const EditScreen(),
       },
     );
-  }
-}
-
-class LocationService {
-  final _dbRef = FirebaseDatabase.instance
-      .ref()
-      .child('users'); // Reference to your Firebase path
-
-  void startTrackingLocation(String userId) {
-    const LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 10,
-    );
-
-    Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-      (Position position) {
-        _updateFirebaseLocation(userId, position.latitude, position.longitude);
-      },
-      onError: (error) => print('Error: $error'),
-    );
-  }
-
-  void _updateFirebaseLocation(
-      String userId, double latitude, double longitude) {
-    _dbRef.child(userId).update({
-      'latitude': latitude,
-      'longitude': longitude,
-    });
   }
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
@@ -273,8 +274,18 @@ class FourthWidget extends StatelessWidget {
                     const Divider(),
                     const SizedBox(height: 20),
                     InkWell(
-                      onTap: () {
-                        Navigator.pushReplacementNamed(context, '/login');
+                      onTap: () async {
+                        // Perform Firebase sign-out
+                        try {
+                          await FirebaseAuth.instance.signOut();
+                          // Navigate to the login screen after successfully logging out
+                          // ignore: use_build_context_synchronously
+                          Navigator.pushReplacementNamed(context, '/login');
+                        } catch (e) {
+                          // Handle sign-out errors, if any
+                          print("Error while logging out: $e");
+                          // Display error message or take appropriate action
+                        }
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(

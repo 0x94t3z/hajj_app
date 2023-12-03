@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/screens/auth/forgot.dart';
@@ -17,6 +18,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   int activeIndex = 1;
   late Timer _timer;
   bool _isLoading = false;
@@ -94,6 +98,37 @@ class _LoginScreenState extends State<LoginScreen> {
         },
       ),
     );
+  }
+
+  void _loginUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // If the user is successfully authenticated, navigate to the home screen
+      if (userCredential.user != null) {
+        // Successfully signed in
+        print('User ID: ${userCredential.user?.uid}');
+        print('User Email: ${userCredential.user?.email}');
+
+        // ignore: use_build_context_synchronously
+        _navigateToHomeScreen(context);
+      }
+    } catch (e) {
+      // Handle authentication errors here
+      print("Error: $e");
+      // Display error message to the user if needed
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -183,6 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
             FadeInDown(
               delay: const Duration(milliseconds: 400),
               child: TextField(
+                controller: _emailController,
                 cursorColor: ColorSys.primary,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0.0),
@@ -225,6 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
             FadeInDown(
               delay: const Duration(milliseconds: 400),
               child: TextField(
+                controller: _passwordController,
                 cursorColor: ColorSys.primary,
                 obscureText: true, // Set this to true to hide the input text
                 decoration: InputDecoration(
@@ -295,10 +332,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   });
 
                   Future.delayed(const Duration(seconds: 2), () {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    _navigateToHomeScreen(context);
+                    // setState(() {
+                    //   _isLoading = false;
+                    // });
+                    _loginUser();
                     // Navigator.push(
                     //     context,
                     //     MaterialPageRoute(

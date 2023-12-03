@@ -59,6 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'userId': userId,
         'displayName': nameController.text.trim(),
         'email': emailController.text.trim(),
+        'roles': 'jemaah haji',
         'latitude': position.latitude,
         'longitude': position.longitude,
         'imageUrl': imageUrl,

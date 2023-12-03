@@ -21,7 +21,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   MapboxMapController? mapController;
   final PageController _pageController = PageController();
-  List<User> users = initializeUsers();
+  List<User> users = [];
   // late MapBoxOptions _navigationOption;
   // double? distanceRemaining, durationRemaining;
   // MapBoxNavigationViewController? _controller;
@@ -36,7 +36,8 @@ class _MapScreenState extends State<MapScreen> {
 
     // Start a timer to update user distances periodically
     _getCurrentPosition();
-    // MapBoxNavigation.instance.registerRouteEventListener(_onRouteEvent);
+    // Call a method to fetch or initialize users when the screen loads
+    fetchData();
   }
 
   @override
@@ -49,13 +50,71 @@ class _MapScreenState extends State<MapScreen> {
     mapController = controller;
   }
 
+  Future<void> fetchData() async {
+    // Fetch or initialize users here, such as from Firebase or any other source
+    Map<String, List<User>> usersMap =
+        await fetchUsersFromFirebase(); // Assuming you have a method to fetch users from Firebase
+
+    List<User> petugasHaji =
+        usersMap['petugasHaji'] ?? []; // Extract the list of users
+
+    setState(() {
+      users = petugasHaji;
+    });
+  }
+
+  Future<String> getRouteDuration(double originLatitude, double originLongitude,
+      double destinationLatitude, double destinationLongitude) async {
+    try {
+      // Your Mapbox API token
+      String mapboxApiToken = dotenv.env['MAPBOX_SECRET_KEY']!;
+
+      final response = await http.get(
+        Uri.parse(
+          'https://api.mapbox.com/directions/v5/mapbox/walking/$originLongitude,$originLatitude;$destinationLongitude,$destinationLatitude?geometries=geojson&access_token=$mapboxApiToken',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        List<dynamic> routes = data['routes'];
+
+        if (routes.isNotEmpty) {
+          // Extracting duration from the API response
+          double durationInSeconds = routes[0]['duration'].toDouble();
+
+          // Converting duration from seconds to minutes as a double
+          double durationInMinutes = durationInSeconds / 60;
+
+          // Convert durationInMinutes to an int before converting to a string
+          int durationInMinutesInt = durationInMinutes.toInt();
+
+          // Returning duration as a string rounded to 2 decimal places
+          return durationInMinutesInt.toString();
+        } else {
+          print('No routes found');
+          return 'N/A';
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}');
+        return 'N/A';
+      }
+    } catch (e) {
+      print('Error fetching route duration: $e');
+      return 'N/A';
+    }
+  }
+
   Future<void> _updateUserDistances() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      for (var user in users) {
+      Map<String, List<User>> usersMap = await fetchUsersFromFirebase();
+      List<User> allUsers = usersMap['petugasHaji'] ?? [];
+
+      for (var user in allUsers) {
         double distance = calculateHaversineDistance(
           position.latitude,
           position.longitude,
@@ -63,10 +122,25 @@ class _MapScreenState extends State<MapScreen> {
           user.longitude,
         );
         user.distance = '${distance.toStringAsFixed(2)} Km';
+
+        String duration = await getRouteDuration(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.duration = '$duration Min';
       }
 
-      // Trigger a rebuild of the UI to reflect the updated distances
-      setState(() {});
+      allUsers.sort((a, b) {
+        double distanceA = double.parse(a.distance.split(' ')[0]);
+        double distanceB = double.parse(b.distance.split(' ')[0]);
+        return distanceA.compareTo(distanceB);
+      });
+
+      setState(() {
+        users = allUsers;
+      });
     } catch (e) {
       print(e.toString());
     }
@@ -290,12 +364,16 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget buildUserList(User user) {
+    // Check if the user.roles is 'jemaah haji'
+    // if (user.roles != 'petugas haji') {
+    //   return const SizedBox(); // Return an empty widget or null if the condition doesn't match
+    // }
     return Container(
       width: 390.0,
       height: 200.0,
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
       decoration: BoxDecoration(
-        color: user.backgroundColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(25.0),
         boxShadow: [
           BoxShadow(
@@ -388,9 +466,9 @@ class _MapScreenState extends State<MapScreen> {
                         icon: const Center(
                           child: Icon(Iconsax.direct_up),
                         ),
-                        label: Text(user.buttonText),
+                        label: const Text('Go'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: user.buttonColor,
+                          backgroundColor: ColorSys.darkBlue,
                           textStyle: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -431,6 +509,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //  List<User> filteredUsers = users.where((user) => user.roles == 'petugas haji').toList();
     return Scaffold(
       body: Stack(
         children: [

@@ -1,102 +1,66 @@
-import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/styles.dart';
-import 'package:iconsax/iconsax.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class User {
+  final String userId;
   final String name;
   String distance;
-  final String duration;
-  final Color backgroundColor;
-  final Color buttonColor;
-  final String buttonText;
-  final IconData buttonIcon;
+  String duration;
+  final String roles;
   final String imageUrl;
   final double latitude;
   final double longitude;
 
   User({
+    required this.userId,
     required this.name,
     required this.distance,
     required this.duration,
-    required this.backgroundColor,
-    required this.buttonColor,
-    required this.buttonText,
-    required this.buttonIcon,
+    required this.roles,
     required this.imageUrl,
     required this.latitude,
     required this.longitude,
   });
+
+  factory User.fromMap(Map<String, dynamic> data) {
+    return User(
+      userId: data['userId'] ?? '',
+      name: data['displayName'] ?? '',
+      distance: '0 Km',
+      duration: '10 Mins',
+      roles: data['roles'] ?? '',
+      imageUrl: data['imageUrl'] ?? '',
+      latitude: data['latitude'] ?? 0.0,
+      longitude: data['longitude'] ?? 0.0,
+    );
+  }
 }
 
-List<User> initializeUsers() {
-  // Initialize the list of users with their initial data
-  List<User> users = [
-    User(
-      name: 'Muhamad Taopik',
-      distance: '0 Km',
-      duration: '10 Min',
-      backgroundColor: Colors.white,
-      buttonColor: ColorSys.darkBlue,
-      buttonText: 'Go',
-      buttonIcon: Iconsax.direct_up,
-      imageUrl:
-          'https://www.upwork.com/profile-portraits/c1zSnFOuQiSndrhY4MYKOJ81UMHqFq4uSoNrQ12NpLI2-gwhJMyE7YWso8ZNZXHR22',
-      latitude: 21.422627,
-      longitude: 39.826115,
-    ),
-    User(
-      name: 'Imam Firdaus',
-      distance: '0 Km',
-      duration: '15 Min',
-      backgroundColor: Colors.white,
-      buttonColor: ColorSys.darkBlue,
-      buttonText: 'Go',
-      buttonIcon: Iconsax.direct_up,
-      imageUrl:
-          'https://raw.githubusercontent.com/imamfirdaus-if/sewakamarkost/main/assets/teams/ImamFirdaus.png',
-      latitude: 21.423797,
-      longitude: 39.825303,
-    ),
-    User(
-      name: 'Ilham Fadhlurahman',
-      distance: '0 Km',
-      duration: '20 Min',
-      backgroundColor: Colors.white,
-      buttonColor: ColorSys.darkBlue,
-      buttonText: 'Go',
-      buttonIcon: Iconsax.direct_up,
-      imageUrl:
-          'https://ugc.production.linktr.ee/17BkMbInQs600WGFE5cv_ml7ui23Oxne18rwt?io=true&size=avatar',
-      latitude: 21.421034,
-      longitude: 39.825859,
-    ),
-    User(
-      name: 'Ikhsan Khoreul',
-      distance: '0 Km',
-      duration: '25 Min',
-      backgroundColor: Colors.white,
-      buttonColor: ColorSys.darkBlue,
-      buttonText: 'Go',
-      buttonIcon: Iconsax.direct_up,
-      imageUrl:
-          'https://raw.githubusercontent.com/imamfirdaus-if/sewakamarkost/main/assets/teams/IkhsanKhoerul.png',
-      latitude: 21.421835,
-      longitude: 39.826029,
-    ),
-    User(
-      name: 'Fauzan',
-      distance: '0 Km',
-      duration: '30 Min',
-      backgroundColor: Colors.white,
-      buttonColor: ColorSys.darkBlue,
-      buttonText: 'Go',
-      buttonIcon: Iconsax.direct_up,
-      imageUrl:
-          'https://i.pinimg.com/564x/c6/3f/72/c63f724ff95d6d869cac725215559fff.jpg',
-      latitude: 21.421515,
-      longitude: 39.827269,
-    ),
-  ];
+Future<Map<String, List<User>>> fetchUsersFromFirebase() async {
+  final databaseReference = FirebaseDatabase.instance.ref();
+  DatabaseEvent event =
+      await databaseReference.child('users').once(); // Await directly here
 
-  return users;
+  List<User> allUsers = []; // Fetch all users
+
+  Map<dynamic, dynamic>? values =
+      event.snapshot.value as Map<dynamic, dynamic>?;
+
+  if (values != null) {
+    values.forEach((key, value) {
+      allUsers.add(User.fromMap(Map<String, dynamic>.from(value)));
+    });
+  }
+
+  // Filter users with role 'jemaah haji'
+  List<User> jemaahHaji =
+      allUsers.where((user) => user.roles == 'jemaah haji').toList();
+
+  // Filter users with role 'petugas haji'
+  List<User> petugasHaji =
+      allUsers.where((user) => user.roles == 'petugas haji').toList();
+
+  return {
+    'jemaahHaji': jemaahHaji,
+    'petugasHaji': petugasHaji,
+  };
 }
