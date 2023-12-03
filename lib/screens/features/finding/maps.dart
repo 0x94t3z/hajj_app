@@ -509,7 +509,8 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //  List<User> filteredUsers = users.where((user) => user.roles == 'petugas haji').toList();
+    // Filter and get the five nearest users
+    List<User> nearestUsers = users.take(5).toList();
     return Scaffold(
       body: Stack(
         children: [
@@ -560,7 +561,7 @@ class _MapScreenState extends State<MapScreen> {
                     height: 212.0,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: users.map((user) {
+                      children: nearestUsers.map((user) {
                         return InkWell(
                           onTap: () => _getRouteDirection(user),
                           child: buildUserList(user),
