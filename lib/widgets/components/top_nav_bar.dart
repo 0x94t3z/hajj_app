@@ -43,7 +43,7 @@ class _TopNavBarState extends State<TopNavBar> {
       var userData = snapshot.value;
       if (userData != null && userData is Map) {
         // Process the retrieved data
-        print("User data: $userData");
+        // print("User data: $userData");
         setState(() {
           imageUrl = userData['imageUrl'] as String? ??
               ''; // Cast and handle null case
@@ -89,7 +89,7 @@ class _TopNavBarState extends State<TopNavBar> {
                   image: DecorationImage(
                     image: imageUrl.isNotEmpty
                         ? NetworkImage(imageUrl)
-                        : const AssetImage('assets/images/one.png')
+                        : const AssetImage('assets/images/default_profile.jpeg')
                             as ImageProvider, // Specify the type explicitly
                     fit: BoxFit.cover,
                   ),

@@ -94,8 +94,11 @@ flutter:
   assets:
     - .env
     - assets/fonts/
-    - assets/images/icons8-walking-100.png
-    - assets/images/emoji-happy.png
+    - assets/images/pilgrim.png
+    - assets/images/male.png
+    - assets/images/officer.png
+    - assets/images/location_pin.png
+    - assets/images/default_profile.jpeg
     - assets/images/one.png
     - assets/images/two.png
     - assets/images/three.png

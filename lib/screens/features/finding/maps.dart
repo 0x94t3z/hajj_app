@@ -202,8 +202,17 @@ class _MapScreenState extends State<MapScreen> {
       mapController?.addSymbol(
         SymbolOptions(
           geometry: LatLng(position.latitude, position.longitude),
-          iconImage: 'marker-11',
-          iconSize: 3,
+          iconImage: ('assets/images/location_pin.png'),
+          fontNames: ['DIN Offc Pro Bold', 'Arial Unicode MS Regular'],
+          textField: 'My Location',
+          textSize: 12.5,
+          textOffset: const Offset(0, 0.8),
+          textAnchor: 'top',
+          textColor: '#000000',
+          textHaloBlur: 1,
+          textHaloColor: '#ffffff',
+          textHaloWidth: 0.8,
+          iconSize: 0.8,
         ),
       );
     } catch (e) {
@@ -263,19 +272,34 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(position.latitude, position.longitude),
-              iconImage: 'marker-11',
-              iconSize: 3,
-              textField: "You",
+              iconImage: ('assets/images/pilgrim.png'),
+              fontNames: ['DIN Offc Pro Bold', 'Arial Unicode MS Regular'],
+              textField: 'My Location',
+              textSize: 12.5,
+              textOffset: const Offset(0, 0.8),
+              textAnchor: 'top',
+              textColor: '#000000',
+              textHaloBlur: 1,
+              textHaloColor: '#ffffff',
+              textHaloWidth: 0.8,
+              iconSize: 0.8,
             ),
           );
 
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(userLatitude, userLongitude),
-              iconImage: 'police-11',
-              iconSize: 3,
-              textField: "Officer",
-              iconColor: '#478395',
+              iconImage: ('assets/images/officer.png'),
+              fontNames: ['DIN Offc Pro Bold', 'Arial Unicode MS Regular'],
+              textField: 'Officer',
+              textSize: 12.5,
+              textOffset: const Offset(0, -2.0),
+              textAnchor: 'top',
+              textColor: '#000000',
+              textHaloBlur: 1,
+              textHaloColor: '#ffffff',
+              textHaloWidth: 0.8,
+              iconSize: 0.8,
             ),
           );
 
