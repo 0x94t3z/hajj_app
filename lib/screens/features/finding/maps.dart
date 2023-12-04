@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -21,7 +23,7 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   MapboxMapController? mapController;
   final PageController _pageController = PageController();
-  List<User> users = [];
+  List<UserModel> users = [];
   // late MapBoxOptions _navigationOption;
   // double? distanceRemaining, durationRemaining;
   // MapBoxNavigationViewController? _controller;
@@ -52,15 +54,75 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> fetchData() async {
     // Fetch or initialize users here, such as from Firebase or any other source
-    Map<String, List<User>> usersMap =
-        await fetchUsersFromFirebase(); // Assuming you have a method to fetch users from Firebase
+    Map<String, List<UserModel>> usersMap =
+        await fetchModelsFromFirebase(); // Use fetchModelsFromFirebase
 
-    List<User> petugasHaji =
+    List<UserModel> petugasHaji =
         usersMap['petugasHaji'] ?? []; // Extract the list of users
 
     setState(() {
       users = petugasHaji;
     });
+  }
+
+  Future<void> _updateUserLocation(double latitude, double longitude) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        DatabaseReference userRef =
+            FirebaseDatabase.instance.ref().child('users/${currentUser.uid}');
+        await userRef.update({
+          'latitude': latitude,
+          'longitude': longitude,
+        });
+        print('User location updated successfully.');
+      } else {
+        print('User is not authenticated.');
+      }
+    } catch (e) {
+      print('Error updating user location: $e');
+    }
+  }
+
+  Future<void> _updateUserDistances() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      Map<String, List<UserModel>> usersMap = await fetchModelsFromFirebase();
+      List<UserModel> allUsers = usersMap['petugasHaji'] ?? [];
+
+      for (var user in allUsers) {
+        double distance = calculateHaversineDistance(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.distance = '${distance.toStringAsFixed(2)} Km';
+
+        String duration = await getRouteDuration(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.duration = '$duration Min';
+      }
+
+      allUsers.sort((a, b) {
+        double distanceA = double.parse(a.distance.split(' ')[0]);
+        double distanceB = double.parse(b.distance.split(' ')[0]);
+        return distanceA.compareTo(distanceB);
+      });
+
+      setState(() {
+        users = allUsers;
+      });
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   Future<String> getRouteDuration(double originLatitude, double originLongitude,
@@ -105,52 +167,14 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _updateUserDistances() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      Map<String, List<User>> usersMap = await fetchUsersFromFirebase();
-      List<User> allUsers = usersMap['petugasHaji'] ?? [];
-
-      for (var user in allUsers) {
-        double distance = calculateHaversineDistance(
-          position.latitude,
-          position.longitude,
-          user.latitude,
-          user.longitude,
-        );
-        user.distance = '${distance.toStringAsFixed(2)} Km';
-
-        String duration = await getRouteDuration(
-          position.latitude,
-          position.longitude,
-          user.latitude,
-          user.longitude,
-        );
-        user.duration = '$duration Min';
-      }
-
-      allUsers.sort((a, b) {
-        double distanceA = double.parse(a.distance.split(' ')[0]);
-        double distanceB = double.parse(b.distance.split(' ')[0]);
-        return distanceA.compareTo(distanceB);
-      });
-
-      setState(() {
-        users = allUsers;
-      });
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
   Future<void> _getCurrentPosition() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      // Update current user's location in Firebase Realtime Database
+      await _updateUserLocation(position.latitude, position.longitude);
 
       // Calculate distances for all users and update the list
       for (var user in users) {
@@ -185,6 +209,9 @@ class _MapScreenState extends State<MapScreen> {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      // Update current user's location in Firebase Realtime Database
+      await _updateUserLocation(position.latitude, position.longitude);
 
       // Clear existing route lines
       mapController?.clearLines();
@@ -221,11 +248,14 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _getRouteDirection(User user) async {
+  Future<void> _getRouteDirection(UserModel user) async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      // Update current user's location in Firebase Realtime Database
+      await _updateUserLocation(position.latitude, position.longitude);
 
       // Clear existing route lines
       mapController?.clearLines();
@@ -361,7 +391,7 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _getUserDirection(User user) async {
+  Future<void> _getUserDirection(UserModel user) async {
     try {
       // Coordinates of the destination (user's location)
       double userLatitude = user.latitude;
@@ -387,7 +417,7 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Widget buildUserList(User user) {
+  Widget buildUserList(UserModel user) {
     // Check if the user.roles is 'jemaah haji'
     // if (user.roles != 'petugas haji') {
     //   return const SizedBox(); // Return an empty widget or null if the condition doesn't match
@@ -534,7 +564,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     // Filter and get the five nearest users
-    List<User> nearestUsers = users.take(5).toList();
+    List<UserModel> nearestUsers = users.take(5).toList();
     return Scaffold(
       body: Stack(
         children: [

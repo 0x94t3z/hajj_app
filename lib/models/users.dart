@@ -1,6 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 
-class User {
+class UserModel {
   final String userId;
   final String name;
   String distance;
@@ -10,7 +10,7 @@ class User {
   final double latitude;
   final double longitude;
 
-  User({
+  UserModel({
     required this.userId,
     required this.name,
     required this.distance,
@@ -21,8 +21,8 @@ class User {
     required this.longitude,
   });
 
-  factory User.fromMap(Map<String, dynamic> data) {
-    return User(
+  factory UserModel.fromMap(Map<String, dynamic> data) {
+    return UserModel(
       userId: data['userId'] ?? '',
       name: data['displayName'] ?? '',
       distance: '0 Km',
@@ -35,28 +35,28 @@ class User {
   }
 }
 
-Future<Map<String, List<User>>> fetchUsersFromFirebase() async {
+Future<Map<String, List<UserModel>>> fetchModelsFromFirebase() async {
   final databaseReference = FirebaseDatabase.instance.ref();
   DatabaseEvent event =
       await databaseReference.child('users').once(); // Await directly here
 
-  List<User> allUsers = []; // Fetch all users
+  List<UserModel> allUsers = []; // Fetch all users
 
   Map<dynamic, dynamic>? values =
       event.snapshot.value as Map<dynamic, dynamic>?;
 
   if (values != null) {
     values.forEach((key, value) {
-      allUsers.add(User.fromMap(Map<String, dynamic>.from(value)));
+      allUsers.add(UserModel.fromMap(Map<String, dynamic>.from(value)));
     });
   }
 
   // Filter users with role 'jemaah haji'
-  List<User> jemaahHaji =
+  List<UserModel> jemaahHaji =
       allUsers.where((user) => user.roles == 'jemaah haji').toList();
 
   // Filter users with role 'petugas haji'
-  List<User> petugasHaji =
+  List<UserModel> petugasHaji =
       allUsers.where((user) => user.roles == 'petugas haji').toList();
 
   return {
