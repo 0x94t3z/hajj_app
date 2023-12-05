@@ -51,13 +51,13 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase() async {
     });
   }
 
-  // Filter users with role 'jemaah haji'
+  // Filter users with role 'Jemaah Haji'
   List<UserModel> jemaahHaji =
-      allUsers.where((user) => user.roles == 'jemaah haji').toList();
+      allUsers.where((user) => user.roles == 'Jemaah Haji').toList();
 
-  // Filter users with role 'petugas haji'
+  // Filter users with role 'Petugas Haji'
   List<UserModel> petugasHaji =
-      allUsers.where((user) => user.roles == 'petugas haji').toList();
+      allUsers.where((user) => user.roles == 'Petugas Haji').toList();
 
   return {
     'jemaahHaji': jemaahHaji,

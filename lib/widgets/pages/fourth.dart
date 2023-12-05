@@ -33,19 +33,14 @@ class _FourthWidgetState extends State<FourthWidget> {
       DataSnapshot snapshot = event.snapshot;
       var userData = snapshot.value;
       if (userData != null && userData is Map) {
-        // Process the retrieved data
-        // print("User data: $userData");
         setState(() {
-          imageUrl = userData['imageUrl'] as String? ??
-              ''; // Cast and handle null case
+          imageUrl = userData['imageUrl'] as String? ?? '';
         });
       } else {
-        // Handle cases where data is not available or not in the expected format
         print("No data available or data not in the expected format");
       }
     }).catchError((error) {
       print("Error fetching data: $error");
-      // Handle error if needed
     });
   }
 
@@ -55,7 +50,7 @@ class _FourthWidgetState extends State<FourthWidget> {
 
     if (user != null) {
       // Assuming user data structure is similar to the real-time database structure
-      String displayName = user.displayName ?? "";
+      String name = user.displayName ?? "";
       String email = user.email ?? "";
 
       return FutureBuilder<PackageInfo>(
@@ -102,20 +97,19 @@ class _FourthWidgetState extends State<FourthWidget> {
                           shape: BoxShape.circle,
                           color: Colors.grey,
                         ),
-                        child: imageUrl.isNotEmpty
-                            ? CircleAvatar(
-                                radius: 60,
-                                backgroundImage: NetworkImage(imageUrl),
-                              )
-                            : const CircleAvatar(
-                                radius: 60,
-                                backgroundImage: AssetImage(
-                                    'assets/images/default_profile.jpeg'),
-                              ),
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundImage: imageUrl.isNotEmpty
+                              ? NetworkImage(imageUrl)
+                              : null,
+                          backgroundColor: imageUrl.isNotEmpty
+                              ? Colors.transparent
+                              : Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        displayName,
+                        name,
                         style: textStyle(
                           fontSize: 24,
                           color: ColorSys.darkBlue,
@@ -157,46 +151,12 @@ class _FourthWidgetState extends State<FourthWidget> {
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Iconsax.notification,
+                                    Iconsax.profile_tick,
                                     color: ColorSys.darkBlue,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Notification',
-                                    style: textStyle(
-                                      fontSize: 14,
-                                      color: ColorSys.darkBlue,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  const Icon(
-                                    Iconsax.arrow_right_3,
-                                    color: ColorSys.darkBlue,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const Divider(), // Add a Divider here
-                          InkWell(
-                            onTap: () {
-                              // Handle for onTap here
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 10.0,
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Iconsax.translate,
-                                    color: ColorSys.darkBlue,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Language',
+                                    'Status',
                                     style: textStyle(
                                       fontSize: 14,
                                       color: ColorSys.darkBlue,
@@ -206,7 +166,7 @@ class _FourthWidgetState extends State<FourthWidget> {
                                   const Spacer(),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'English',
+                                    'Jemaah Haji',
                                     style: textStyle(
                                       fontSize: 14,
                                     ),
@@ -221,13 +181,47 @@ class _FourthWidgetState extends State<FourthWidget> {
                           ),
                         ],
                       ),
+                      const Divider(),
+                      InkWell(
+                        onTap: () {
+                          // Handle for onTap here
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 10.0,
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Iconsax.unlock,
+                                color: ColorSys.darkBlue,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Change Password',
+                                style: textStyle(
+                                  fontSize: 14,
+                                  color: ColorSys.darkBlue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Spacer(),
+                              const Icon(
+                                Iconsax.arrow_right_3,
+                                color: ColorSys.darkBlue,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 30),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Support',
+                            'About',
                             style: textStyle(
                               fontSize: 14,
                             ),

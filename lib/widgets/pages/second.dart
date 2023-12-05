@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/widgets/radar/find_officers.dart';
@@ -68,11 +70,33 @@ class _SecondWidgetState extends State<SecondWidget> {
     mapController = controller;
   }
 
+  Future<void> _updateUserLocation(double latitude, double longitude) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        DatabaseReference userRef =
+            FirebaseDatabase.instance.ref().child('users/${currentUser.uid}');
+        await userRef.update({
+          'latitude': latitude,
+          'longitude': longitude,
+        });
+        print('User location updated successfully.');
+      } else {
+        print('User is not authenticated.');
+      }
+    } catch (e) {
+      print('Error updating user location: $e');
+    }
+  }
+
   Future<void> _getUserLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+
+      // Update current user's location in Firebase Realtime Database
+      await _updateUserLocation(position.latitude, position.longitude);
 
       // Get the location name based on the coordinates
       List<Placemark> placemarks = await placemarkFromCoordinates(

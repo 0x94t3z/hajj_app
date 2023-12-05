@@ -84,47 +84,6 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _updateUserDistances() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      Map<String, List<UserModel>> usersMap = await fetchModelsFromFirebase();
-      List<UserModel> allUsers = usersMap['petugasHaji'] ?? [];
-
-      for (var user in allUsers) {
-        double distance = calculateHaversineDistance(
-          position.latitude,
-          position.longitude,
-          user.latitude,
-          user.longitude,
-        );
-        user.distance = '${distance.toStringAsFixed(2)} Km';
-
-        String duration = await getRouteDuration(
-          position.latitude,
-          position.longitude,
-          user.latitude,
-          user.longitude,
-        );
-        user.duration = '$duration Min';
-      }
-
-      allUsers.sort((a, b) {
-        double distanceA = double.parse(a.distance.split(' ')[0]);
-        double distanceB = double.parse(b.distance.split(' ')[0]);
-        return distanceA.compareTo(distanceB);
-      });
-
-      setState(() {
-        users = allUsers;
-      });
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
   Future<String> getRouteDuration(double originLatitude, double originLongitude,
       double destinationLatitude, double destinationLongitude) async {
     try {
@@ -164,6 +123,47 @@ class _MapScreenState extends State<MapScreen> {
     } catch (e) {
       print('Error fetching route duration: $e');
       return 'N/A';
+    }
+  }
+
+  Future<void> _updateUserDistances() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      Map<String, List<UserModel>> usersMap = await fetchModelsFromFirebase();
+      List<UserModel> allUsers = usersMap['petugasHaji'] ?? [];
+
+      for (var user in allUsers) {
+        double distance = calculateHaversineDistance(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.distance = '${distance.toStringAsFixed(2)} Km';
+
+        String duration = await getRouteDuration(
+          position.latitude,
+          position.longitude,
+          user.latitude,
+          user.longitude,
+        );
+        user.duration = '$duration Min';
+      }
+
+      allUsers.sort((a, b) {
+        double distanceA = double.parse(a.distance.split(' ')[0]);
+        double distanceB = double.parse(b.distance.split(' ')[0]);
+        return distanceA.compareTo(distanceB);
+      });
+
+      setState(() {
+        users = allUsers;
+      });
+    } catch (e) {
+      print(e.toString());
     }
   }
 
@@ -418,7 +418,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget buildUserList(UserModel user) {
-    // Check if the user.roles is 'jemaah haji'
+    // Check if the user.roles is 'Jemaah Haji'
     // if (user.roles != 'petugas haji') {
     //   return const SizedBox(); // Return an empty widget or null if the condition doesn't match
     // }
