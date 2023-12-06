@@ -25,6 +25,7 @@ class _EditScreenState extends State<EditScreen> {
   void initState() {
     super.initState();
     getData();
+    getLostData();
   }
 
   void getData() async {
@@ -55,6 +56,37 @@ class _EditScreenState extends State<EditScreen> {
     });
   }
 
+  Future<void> getLostData() async {
+    if (Platform.isAndroid) {
+      final ImagePicker picker = ImagePicker();
+      final LostDataResponse response = await picker.retrieveLostData();
+
+      if (response.isEmpty) {
+        return;
+      }
+
+      final List<XFile>? files = response.files;
+      if (files != null) {
+        _handleLostFiles(files);
+      } else {
+        _handleError(response.exception);
+      }
+    }
+  }
+
+  void _handleLostFiles(List<XFile> files) {
+    // Handle lost files here
+    // For instance, update the state with recovered image data
+    setState(() {
+      // Update state with the recovered images from files list
+    });
+  }
+
+  void _handleError(Object? exception) {
+    // Handle error due to lost data
+    print('Error: $exception');
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -83,10 +115,8 @@ class _EditScreenState extends State<EditScreen> {
 
       await userRef.update({'imageUrl': imageUrl});
 
-      // Update the UI by calling setState with the new image URL
-      setState(() {
-        imageUrl = imageUrl;
-      });
+      // Update the UI by calling getData() to refresh the image
+      getData();
     }
   }
 
@@ -108,7 +138,7 @@ class _EditScreenState extends State<EditScreen> {
           leading: IconButton(
             icon: const Icon(Iconsax.arrow_left_2),
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, imageUrl);
             },
           ),
           title: Text(

@@ -71,12 +71,17 @@ class _FourthWidgetState extends State<FourthWidget> {
                   Padding(
                     padding: const EdgeInsets.only(right: 20, top: 20),
                     child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final updatedImageUrl = await Navigator.push<String?>(
                           context,
                           MaterialPageRoute(
                               builder: (context) => const EditScreen()),
                         );
+
+                        // Update the image URL in the state when receiving the updated URL
+                        setState(() {
+                          imageUrl = updatedImageUrl ?? imageUrl;
+                        });
                       },
                       child: Text(
                         'Edit',
