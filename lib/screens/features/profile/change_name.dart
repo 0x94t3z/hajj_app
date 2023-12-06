@@ -1,9 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
 
 class EditNameScreen extends StatefulWidget {
-  const EditNameScreen({Key? key}) : super(key: key);
+  final String initialName;
+  final Function(String) updateName;
+
+  const EditNameScreen({
+    Key? key,
+    required this.initialName,
+    required this.updateName,
+  }) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -12,27 +20,43 @@ class EditNameScreen extends StatefulWidget {
 
 class _EditNameScreenState extends State<EditNameScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final String initialName = 'Muhamad Taopik';
   bool isButtonDisabled = true;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController.text = initialName; // Set initial value here
+    _nameController.text = widget.initialName;
     _nameController.addListener(_onNameChanged);
+  }
+
+  Future<void> _saveChanges() async {
+    String newName = _nameController.text;
+
+    // Update the name in the Realtime Database
+    widget.updateName(newName);
+
+    // Refresh the user data to sync changes with the server
+    try {
+      await FirebaseAuth.instance.currentUser!.reload();
+    } catch (e) {
+      print("Error while reloading user data: $e");
+    }
+
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context, newName);
   }
 
   void _onNameChanged() {
     final newName = _nameController.text;
     setState(() {
-      isButtonDisabled = newName.isEmpty || newName == initialName;
+      isButtonDisabled = newName.isEmpty || newName == widget.initialName;
     });
   }
 
   @override
   void dispose() {
-    _nameController.removeListener(_onNameChanged);
+    // _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     super.dispose();
   }
@@ -89,8 +113,6 @@ class _EditNameScreenState extends State<EditNameScreen> {
                 onPressed: isButtonDisabled || _isLoading
                     ? null
                     : () async {
-                        String newName = _nameController.text;
-
                         // Set isLoading to true to indicate loading
                         setState(() {
                           _isLoading = true;
@@ -104,13 +126,8 @@ class _EditNameScreenState extends State<EditNameScreen> {
                           _isLoading = false;
                         });
 
-                        // Handle the button press with the new name here
-                        // You can access the new name using the `newName` variable
-                        print('New Name: $newName');
-
-                        // Navigate to the SettingScreen using the stored BuildContext reference
-                        // ignore: use_build_context_synchronously
-                        Navigator.pop(context);
+                        // Call the saveChanges method
+                        await _saveChanges();
                       },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
