@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -58,10 +60,32 @@ Future<void> requestPermissions() async {
   _isPermissionRequested = false; // Reset the flag after permission request
 }
 
+Future<void> _updateUserLocation(double latitude, double longitude) async {
+  try {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      DatabaseReference userRef =
+          FirebaseDatabase.instance.ref().child('users/${currentUser.uid}');
+      await userRef.update({
+        'latitude': latitude,
+        'longitude': longitude,
+      });
+      print('User location updated successfully.');
+    } else {
+      print('User is not authenticated.');
+    }
+  } catch (e) {
+    print('Error updating user location: $e');
+  }
+}
+
 Future<void> getCurrentLocation() async {
   Position position = await Geolocator.getCurrentPosition(
     desiredAccuracy: LocationAccuracy.high,
   );
+
+  // Update current user's location in Firebase Realtime Database
+  await _updateUserLocation(position.latitude, position.longitude);
 
   // Print the current location
   print(
