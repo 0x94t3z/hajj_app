@@ -34,18 +34,20 @@ class _EditScreenState extends State<EditScreen> {
         .child(FirebaseAuth.instance.currentUser!.uid);
 
     userRef.once().then((DatabaseEvent event) {
-      DataSnapshot snapshot = event.snapshot;
-      var userData = snapshot.value;
-      if (userData != null && userData is Map) {
-        // Process the retrieved data
-        // print("User data: $userData");
-        setState(() {
-          imageUrl = userData['imageUrl'] as String? ?? '';
-          role = userData['roles'] ?? '';
-        });
-      } else {
-        // Handle cases where data is not available or not in the expected format
-        print("No data available or data not in the expected format");
+      if (mounted) {
+        DataSnapshot snapshot = event.snapshot;
+        var userData = snapshot.value;
+        if (userData != null && userData is Map) {
+          // Process the retrieved data
+          // print("User data: $userData");
+          setState(() {
+            imageUrl = userData['imageUrl'] as String? ?? '';
+            role = userData['roles'] ?? '';
+          });
+        } else {
+          // Handle cases where data is not available or not in the expected format
+          print("No data available or data not in the expected format");
+        }
       }
     }).catchError((error) {
       print("Error fetching data: $error");

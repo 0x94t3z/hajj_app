@@ -39,22 +39,19 @@ class _TopNavBarState extends State<TopNavBar> {
         .child(FirebaseAuth.instance.currentUser!.uid);
 
     userRef.once().then((DatabaseEvent event) {
-      DataSnapshot snapshot = event.snapshot;
-      var userData = snapshot.value;
-      if (userData != null && userData is Map) {
-        // Process the retrieved data
-        // print("User data: $userData");
-        setState(() {
-          imageUrl = userData['imageUrl'] as String? ??
-              ''; // Cast and handle null case
-        });
-      } else {
-        // Handle cases where data is not available or not in the expected format
-        print("No data available or data not in the expected format");
+      if (mounted) {
+        DataSnapshot snapshot = event.snapshot;
+        var userData = snapshot.value;
+        if (userData != null && userData is Map) {
+          setState(() {
+            imageUrl = userData['imageUrl'] as String? ?? '';
+          });
+        } else {
+          print("No data available or data not in the expected format");
+        }
       }
     }).catchError((error) {
       print("Error fetching data: $error");
-      // Handle error if needed
     });
   }
 
@@ -86,13 +83,13 @@ class _TopNavBarState extends State<TopNavBar> {
                 height: 35,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  image: DecorationImage(
-                    image: imageUrl.isNotEmpty
-                        ? NetworkImage(imageUrl)
-                        : const AssetImage('assets/images/default_profile.jpeg')
-                            as ImageProvider, // Specify the type explicitly
-                    fit: BoxFit.cover,
-                  ),
+                  color: imageUrl.isNotEmpty ? null : Colors.white,
+                  image: imageUrl.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(imageUrl),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
                 child: Transform.translate(
                   offset: const Offset(15, -15),

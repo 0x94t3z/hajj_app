@@ -30,14 +30,16 @@ class _FourthWidgetState extends State<FourthWidget> {
         .child(FirebaseAuth.instance.currentUser!.uid);
 
     userRef.once().then((DatabaseEvent event) {
-      DataSnapshot snapshot = event.snapshot;
-      var userData = snapshot.value;
-      if (userData != null && userData is Map) {
-        setState(() {
-          imageUrl = userData['imageUrl'] as String? ?? '';
-        });
-      } else {
-        print("No data available or data not in the expected format");
+      if (mounted) {
+        DataSnapshot snapshot = event.snapshot;
+        var userData = snapshot.value;
+        if (userData != null && userData is Map) {
+          setState(() {
+            imageUrl = userData['imageUrl'] as String? ?? '';
+          });
+        } else {
+          print("No data available or data not in the expected format");
+        }
       }
     }).catchError((error) {
       print("Error fetching data: $error");
