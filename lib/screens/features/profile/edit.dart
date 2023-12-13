@@ -109,8 +109,26 @@ class _EditScreenState extends State<EditScreen> {
 
       // Get a reference to the Firebase Storage location with the random image name
       final storage = FirebaseStorage.instance;
-      final reference = storage.ref().child(
-          'images/${FirebaseAuth.instance.currentUser!.uid}/$randomImageName.jpg');
+      final user = FirebaseAuth.instance.currentUser!;
+      final oldImageReference =
+          storage.ref().child('images/${user.uid}/$_imageUrl');
+
+      // Check if the selected image is the default image
+      final Reference defaultImageReference =
+          FirebaseStorage.instance.ref().child('images/default_profile.jpg');
+      final defaultImageUrl = await defaultImageReference.getDownloadURL();
+
+      if (_imageUrl != defaultImageUrl) {
+        // Delete old image if it's not the default image
+        try {
+          await oldImageReference.delete();
+        } catch (e) {
+          print('No old image found or unable to delete old image: $e');
+        }
+      }
+
+      final reference =
+          storage.ref().child('images/${user.uid}/$randomImageName.jpg');
 
       // Upload the file to Firebase Storage
       await reference.putFile(File(pickedFile.path));
@@ -119,10 +137,8 @@ class _EditScreenState extends State<EditScreen> {
       var imageUrl = await reference.getDownloadURL();
 
       // Update the user's profile image URL in the Realtime Database
-      DatabaseReference userRef = FirebaseDatabase.instance
-          .ref()
-          .child("users")
-          .child(FirebaseAuth.instance.currentUser!.uid);
+      DatabaseReference userRef =
+          FirebaseDatabase.instance.ref().child("users").child(user.uid);
 
       await userRef.update({'imageUrl': imageUrl});
 

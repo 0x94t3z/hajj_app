@@ -58,6 +58,8 @@ dependencies:
   firebase_storage: ^11.5.3
   image_picker: ^1.0.4
   random_string: ^2.3.1
+  csv: ^5.1.1
+  path: ^1.8.3
   # flutter_mapbox_navigation: ^0.2.2
 
 
@@ -100,10 +102,11 @@ flutter:
     - assets/images/male.png
     - assets/images/officer.png
     - assets/images/location_pin.png
-    - assets/images/default_profile.jpeg
+    - assets/images/default_profile.jpg
     - assets/images/one.png
     - assets/images/two.png
     - assets/images/three.png
+    - assets/data/table_1.csv
 
   # web:
   #   generate: true

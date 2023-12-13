@@ -14,6 +14,7 @@ import 'package:hajj_app/screens/features/menu/home.dart';
 import 'package:hajj_app/screens/features/menu/find_me.dart';
 import 'package:hajj_app/screens/features/menu/contact.dart';
 import 'package:hajj_app/screens/features/menu/settings.dart';
+// import 'package:hajj_app/services/user_service.dart';
 
 import 'firebase_options.dart';
 
@@ -24,6 +25,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // await importDataFromCSVToFirebase();
   await dotenv.load();
 
   initializeApp().then((_) {

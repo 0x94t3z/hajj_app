@@ -50,3 +50,6 @@ app.*.map.json
 # Firebase configuration files
 /android/app/google-services.json
 /ios/Runner/GoogleService-Info.plist
+
+# Ignore data directory within assets in hajj_app project
+/assets/data/

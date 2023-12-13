@@ -49,7 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Get the download URL for the default image from Firebase Storage
       Reference storageRef =
-          FirebaseStorage.instance.ref().child('images/default_profile.jpeg');
+          FirebaseStorage.instance.ref().child('images/default_profile.jpg');
       String imageUrl = await storageRef.getDownloadURL();
 
       // Additional: Save longitude and latitude to Realtime Database along with imageUrl
