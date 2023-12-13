@@ -25,83 +25,106 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // await importDataFromCSVToFirebase();
   await dotenv.load();
 
-  initializeApp().then((_) {
-    runApp(const HajjApp());
-  });
+  runApp(const HajjApp());
 }
 
-bool _isPermissionRequested = false; // Flag to track permission request status
+class HajjApp extends StatefulWidget {
+  const HajjApp({Key? key}) : super(key: key);
 
-Future<void> initializeApp() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  LocationPermission permission = await Geolocator.checkPermission();
+  @override
+  // ignore: library_private_types_in_public_api
+  _HajjAppState createState() => _HajjAppState();
+}
 
-  if (permission == LocationPermission.always ||
-      permission == LocationPermission.whileInUse) {
-    print('Location permission already granted');
-    getCurrentLocation(); // Call the function to print current location
-  } else if (!_isPermissionRequested) {
-    await requestPermissions();
+class _HajjAppState extends State<HajjApp> {
+  bool isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoginStatus();
   }
-}
 
-Future<void> requestPermissions() async {
-  _isPermissionRequested = true; // Set flag to indicate permission request
-  LocationPermission permission = await Geolocator.requestPermission();
+  Future<void> checkLoginStatus() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    User? user = auth.currentUser;
 
-  if (permission == LocationPermission.always ||
-      permission == LocationPermission.whileInUse) {
-    print('Location permission granted');
-    getCurrentLocation(); // Call the function to print current location
-  } else {
-    print('Location permission denied');
-  }
-  _isPermissionRequested = false; // Reset the flag after permission request
-}
-
-Future<void> _updateUserLocation(double latitude, double longitude) async {
-  try {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      DatabaseReference userRef =
-          FirebaseDatabase.instance.ref().child('users/${currentUser.uid}');
-      await userRef.update({
-        'latitude': latitude,
-        'longitude': longitude,
+    if (user != null) {
+      setState(() {
+        isLoggedIn = true;
       });
-      print('User location updated successfully.');
-    } else {
-      print('User is not authenticated.');
     }
-  } catch (e) {
-    print('Error updating user location: $e');
   }
-}
 
-Future<void> getCurrentLocation() async {
-  Position position = await Geolocator.getCurrentPosition(
-    desiredAccuracy: LocationAccuracy.high,
-  );
+  bool _isPermissionRequested =
+      false; // Flag to track permission request status
 
-  // Update current user's location in Firebase Realtime Database
-  await _updateUserLocation(position.latitude, position.longitude);
+  Future<void> initializeApp() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    LocationPermission permission = await Geolocator.checkPermission();
 
-  // Print the current location
-  print(
-      'Current Latitude: ${position.latitude} Longitude: ${position.longitude}');
-}
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      print('Location permission already granted');
+      getCurrentLocation(); // Call the function to print current location
+    } else if (!_isPermissionRequested) {
+      await requestPermissions();
+    }
+  }
 
-class HajjApp extends StatelessWidget {
-  const HajjApp({super.key});
+  Future<void> requestPermissions() async {
+    _isPermissionRequested = true; // Set flag to indicate permission request
+    LocationPermission permission = await Geolocator.requestPermission();
+
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      print('Location permission granted');
+      getCurrentLocation(); // Call the function to print current location
+    } else {
+      print('Location permission denied');
+    }
+    _isPermissionRequested = false; // Reset the flag after permission request
+  }
+
+  Future<void> _updateUserLocation(double latitude, double longitude) async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        DatabaseReference userRef =
+            FirebaseDatabase.instance.ref().child('users/${currentUser.uid}');
+        await userRef.update({
+          'latitude': latitude,
+          'longitude': longitude,
+        });
+        print('User location updated successfully.');
+      } else {
+        print('User is not authenticated.');
+      }
+    } catch (e) {
+      print('Error updating user location: $e');
+    }
+  }
+
+  Future<void> getCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    // Update current user's location in Firebase Realtime Database
+    await _updateUserLocation(position.latitude, position.longitude);
+
+    // Print the current location
+    print(
+        'Current Latitude: ${position.latitude} Longitude: ${position.longitude}');
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/introduction',
+      initialRoute: isLoggedIn ? '/home' : '/introduction',
       routes: {
         '/introduction': (context) => const Introduction(),
         '/login': (context) => const LoginScreen(),
