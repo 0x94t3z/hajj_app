@@ -111,23 +111,49 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // If the user is successfully authenticated, navigate to the home screen
       if (userCredential.user != null) {
-        // Successfully signed in
         print('User ID: ${userCredential.user?.uid}');
         print('User Email: ${userCredential.user?.email}');
-
-        // ignore: use_build_context_synchronously
         _navigateToHomeScreen(context);
       }
-    } catch (e) {
-      // Handle authentication errors here
-      print("Error: $e");
-      // Display error message to the user if needed
-    } finally {
+    } on FirebaseAuthException catch (e) {
       setState(() {
         _isLoading = false;
       });
+      if (e.code == 'wrong-password') {
+        // Handle incorrect password
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text('Login Failed'),
+            content: Text('The password is incorrect. Please try again.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else if (e.code == 'user-not-found') {
+        // Handle user not found
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text('Login Failed'),
+            content: Text('No user found for that email.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Handle other errors
+        print("Error: ${e.message}");
+      }
     }
   }
 

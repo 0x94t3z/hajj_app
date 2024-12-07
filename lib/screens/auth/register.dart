@@ -84,6 +84,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           content: Text('Error occurred during registration: $e'),
         ),
       );
+      print('Error occurred during registration: $e');
     }
   }
 

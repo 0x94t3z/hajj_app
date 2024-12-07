@@ -92,8 +92,7 @@ class FirstWidget extends StatelessWidget {
     final formattedTime = DateFormat('h:mm a').format(now);
 
     return Container(
-      height: 100.0,
-      margin: const EdgeInsets.symmetric(horizontal: 25.0),
+      margin: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25.0),
@@ -106,21 +105,23 @@ class FirstWidget extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(25.0),
+      padding: const EdgeInsets.all(22.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
+          Expanded(
+            flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   country,
                   style: textStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: ColorSys.darkBlue),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: ColorSys.darkBlue,
+                  ),
                 ),
                 Text(
                   city,
@@ -129,12 +130,19 @@ class FirstWidget extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            formattedTime,
-            style: textStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: ColorSys.darkBlue),
+          Expanded(
+            flex: 1,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                formattedTime,
+                style: textStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: ColorSys.darkBlue,
+                ),
+              ),
+            ),
           ),
         ],
       ),
