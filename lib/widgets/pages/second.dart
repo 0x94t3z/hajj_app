@@ -139,9 +139,9 @@ class _SecondWidgetState extends State<SecondWidget> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 30.0),
             Container(
-              height: 180.0,
+              height: 500.0,
               margin: const EdgeInsets.symmetric(horizontal: 20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -155,32 +155,26 @@ class _SecondWidgetState extends State<SecondWidget> {
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(25.0),
-              child: Row(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Map Layout
                   Stack(
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(20.0),
-                              child: SizedBox(
-                                height: 130.0,
-                                width: 130.0,
-                                child: MapboxMap(
-                                  onMapCreated: _onMapCreated,
-                                  initialCameraPosition: const CameraPosition(
-                                    target: LatLng(21.422627, 39.826115),
-                                    zoom: 14.0,
-                                  ),
-                                  accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
-                                ),
-                              ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20.0),
+                        child: SizedBox(
+                          height: 300.0,
+                          width: double.infinity,
+                          child: MapboxMap(
+                            onMapCreated: _onMapCreated,
+                            initialCameraPosition: const CameraPosition(
+                              target: LatLng(21.422627, 39.826115),
+                              zoom: 14.0,
                             ),
-                          ],
+                            accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
+                          ),
                         ),
                       ),
                       Positioned(
@@ -192,73 +186,72 @@ class _SecondWidgetState extends State<SecondWidget> {
                           child: const Icon(
                             Iconsax.gps,
                             color: ColorSys.darkBlue,
+                            // size: 40.0,
                           ),
                           onPressed: () => _getUserLocation(),
                         ),
                       ),
                     ],
                   ),
-                  Flexible(
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Your location',
-                            style: textStyle(
-                                fontSize: 14, color: ColorSys.darkBlue),
-                          ),
-                          Text(
-                            locationName,
-                            style: textStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: ColorSys.darkBlue,
-                            ),
-                          ),
-                          const SizedBox(height: 30.0),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              showModalBottomSheet(
-                                isScrollControlled: true,
-                                backgroundColor: Colors.transparent,
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return BackdropFilter(
-                                    filter: ImageFilter.blur(
-                                        sigmaX: 48, sigmaY: 48),
-                                    child: Padding(
-                                      padding:
-                                          MediaQuery.of(context).viewInsets,
-                                      child: const SizedBox(
-                                        height: double.infinity,
-                                        child: FindOficcersWidget(),
-                                      ),
-                                    ).animateOnPageLoad(animationsMap[
-                                        'containerOnPageLoadAnimation5']!),
-                                  );
-                                },
-                              );
-                            },
-                            icon: const Icon(Iconsax.radar_2),
-                            label: const Text('Find Officers'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ColorSys.darkBlue,
-                              textStyle: const TextStyle(fontSize: 14),
-                              fixedSize: const Size(150, 50),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
+                  const SizedBox(height: 16.0),
+                  // Text Section
+                  Text(
+                    'Your location',
+                    style: textStyle(fontSize: 14, color: ColorSys.darkBlue),
+                  ),
+                  Text(
+                    locationName,
+                    style: textStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: ColorSys.darkBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 46.0),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        context: context,
+                        builder: (BuildContext context) {
+                          return BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 48, sigmaY: 48),
+                            child: Padding(
+                              padding: MediaQuery.of(context).viewInsets,
+                              child: const SizedBox(
+                                height: double.infinity,
+                                child: FindOficcersWidget(),
                               ),
+                            ).animateOnPageLoad(
+                              animationsMap['containerOnPageLoadAnimation5']!,
                             ),
-                          ),
-                        ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(
+                      Iconsax.radar_2,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Find Officers',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorSys.darkBlue,
+                      textStyle: const TextStyle(fontSize: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
                       ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 12.0),
                     ),
                   ),
                 ],
               ),
             ),
+
             // IF USER == PILGRIM
             const SizedBox(height: 30.0),
             // Container(
@@ -287,17 +280,34 @@ class _SecondWidgetState extends State<SecondWidget> {
             //               crossAxisAlignment: CrossAxisAlignment.start,
             //               children: [
             //                 ClipRRect(
-            //                   borderRadius: BorderRadius.circular(25.0),
+            //                   borderRadius: BorderRadius.circular(20.0),
             //                   child: SizedBox(
             //                     height: 130.0,
-            //                     width: 120.0,
-            //                     child: Image.network(
-            //                       'https://avatars.githubusercontent.com/u/52822242?v=4',
-            //                       fit: BoxFit.cover,
+            //                     width: 130.0,
+            //                     child: MapboxMap(
+            //                       onMapCreated: _onMapCreated,
+            //                       initialCameraPosition: const CameraPosition(
+            //                         target: LatLng(21.422627, 39.826115),
+            //                         zoom: 14.0,
+            //                       ),
+            //                       accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
             //                     ),
             //                   ),
             //                 ),
             //               ],
+            //             ),
+            //           ),
+            //           Positioned(
+            //             bottom: 10.0,
+            //             right: 8.0,
+            //             child: FloatingActionButton(
+            //               backgroundColor: Colors.white,
+            //               mini: true,
+            //               child: const Icon(
+            //                 Iconsax.gps,
+            //                 color: ColorSys.darkBlue,
+            //               ),
+            //               onPressed: () => _getUserLocation(),
             //             ),
             //           ),
             //         ],
@@ -309,84 +319,59 @@ class _SecondWidgetState extends State<SecondWidget> {
             //             crossAxisAlignment: CrossAxisAlignment.start,
             //             children: [
             //               Text(
-            //                 'Muhamad Taopik',
+            //                 'Your location',
+            //                 style: textStyle(
+            //                     fontSize: 14, color: ColorSys.darkBlue),
+            //               ),
+            //               Text(
+            //                 locationName,
             //                 style: textStyle(
             //                   fontSize: 16,
             //                   fontWeight: FontWeight.bold,
             //                   color: ColorSys.darkBlue,
             //                 ),
             //               ),
-            //               const SizedBox(height: 5.0),
-            //               Row(
-            //                 children: [
-            //                   const Icon(
-            //                     Icons.directions_walk,
-            //                     size: 14.0,
-            //                     color: ColorSys.darkBlue,
-            //                   ),
-            //                   const SizedBox(width: 4.0),
-            //                   Text(
-            //                     '1 Km',
-            //                     style: textStyle(
-            //                       fontSize: 14,
-            //                       color: ColorSys.darkBlue,
-            //                     ),
-            //                   ),
-            //                   const SizedBox(width: 10.0),
-            //                   const Icon(
-            //                     Iconsax.clock,
-            //                     size: 14.0,
-            //                     color: ColorSys.darkBlue,
-            //                   ),
-            //                   const SizedBox(width: 4.0),
-            //                   Text(
-            //                     '10 Min',
-            //                     style: textStyle(
-            //                       fontSize: 14,
-            //                       color: ColorSys.darkBlue,
-            //                     ),
-            //                   ),
-            //                 ],
-            //               ),
             //               const SizedBox(height: 30.0),
-            //               Row(
-            //                 children: [
-            //                   ElevatedButton.icon(
-            //                     onPressed: () {},
-            //                     icon: const Center(
-            //                       child: Icon(Iconsax.direct_up),
-            //                     ),
-            //                     label: const Text('Go'),
-            //                     style: ElevatedButton.styleFrom(
-            //                       backgroundColor: ColorSys.darkBlue,
-            //                       textStyle: const TextStyle(
-            //                         fontSize: 14,
-            //                         fontWeight: FontWeight.bold,
-            //                       ),
-            //                       fixedSize: const Size(90, 50),
-            //                       shape: RoundedRectangleBorder(
-            //                         borderRadius: BorderRadius.circular(25.0),
-            //                       ),
-            //                     ),
+            //               ElevatedButton.icon(
+            //                 onPressed: () {
+            //                   showModalBottomSheet(
+            //                     isScrollControlled: true,
+            //                     backgroundColor: Colors.transparent,
+            //                     context: context,
+            //                     builder: (BuildContext context) {
+            //                       return BackdropFilter(
+            //                         filter: ImageFilter.blur(
+            //                             sigmaX: 48, sigmaY: 48),
+            //                         child: Padding(
+            //                           padding:
+            //                               MediaQuery.of(context).viewInsets,
+            //                           child: const SizedBox(
+            //                             height: double.infinity,
+            //                             child: FindOficcersWidget(),
+            //                           ),
+            //                         ).animateOnPageLoad(animationsMap[
+            //                             'containerOnPageLoadAnimation5']!),
+            //                       );
+            //                     },
+            //                   );
+            //                 },
+            //                 icon: const Icon(
+            //                   Iconsax.radar_2,
+            //                   color: Colors.white,
+            //                 ),
+            //                 label: const Text(
+            //                   'Find Pilgrims',
+            //                   style: TextStyle(color: Colors.white),
+            //                 ),
+            //                 style: ElevatedButton.styleFrom(
+            //                   backgroundColor: ColorSys.darkBlue,
+            //                   textStyle: const TextStyle(fontSize: 14),
+            //                   shape: RoundedRectangleBorder(
+            //                     borderRadius: BorderRadius.circular(25.0),
             //                   ),
-            //                   const SizedBox(width: 10.0), // Adjust the spacing
-            //                   ElevatedButton.icon(
-            //                     onPressed: () {},
-            //                     icon: const Icon(Iconsax.danger),
-            //                     label: const Text('Help'),
-            //                     style: ElevatedButton.styleFrom(
-            //                       backgroundColor: Colors.red,
-            //                       textStyle: const TextStyle(
-            //                         fontSize: 14,
-            //                         fontWeight: FontWeight.bold,
-            //                       ),
-            //                       fixedSize: const Size(100, 50),
-            //                       shape: RoundedRectangleBorder(
-            //                         borderRadius: BorderRadius.circular(25.0),
-            //                       ),
-            //                     ),
-            //                   ),
-            //                 ],
+            //                   padding: const EdgeInsets.symmetric(
+            //                       horizontal: 16.0, vertical: 12.0),
+            //                 ),
             //               ),
             //             ],
             //           ),

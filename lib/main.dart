@@ -11,7 +11,7 @@ import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
 import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/features/menu/home.dart';
-import 'package:hajj_app/screens/features/menu/find_me.dart';
+import 'package:hajj_app/screens/features/menu/find_my.dart';
 import 'package:hajj_app/screens/features/menu/contact.dart';
 import 'package:hajj_app/screens/features/menu/settings.dart';
 // import 'package:hajj_app/services/user_service.dart';
@@ -131,7 +131,7 @@ class _HajjAppState extends State<HajjApp> {
         '/register': (context) => const RegisterScreen(),
         '/forgot': (context) => const ForgotPasswordScreen(),
         '/home': (context) => const HomeScreen(),
-        '/find_me': (context) => const FindMeScreen(),
+        '/find_my': (context) => const FindMyScreen(),
         '/find_officers': (context) => const MapScreen(),
         '/contact': (context) => const ContactScreen(),
         '/settings': (context) => const SettingScreen(),

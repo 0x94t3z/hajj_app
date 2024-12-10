@@ -137,7 +137,7 @@ class FirstWidget extends StatelessWidget {
               child: Text(
                 formattedTime,
                 style: textStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: ColorSys.darkBlue,
                 ),

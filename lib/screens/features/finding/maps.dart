@@ -59,9 +59,24 @@ class _MapScreenState extends State<MapScreen> {
 
     List<UserModel> petugasHaji =
         usersMap['petugasHaji'] ?? []; // Extract the list of users
+    List<UserModel> filteredUsers = [];
 
+    // Assuming you have the current user's role stored in a variable
+    String currentUserRole =
+        'Jemaah Haji'; // Replace this with actual logic to get current user role
+
+    // Check if current user is 'Jemaah Haji'
+    if (currentUserRole == 'Jemaah Haji') {
+      // Filter out users in 'petugasHaji' where latitude and longitude are not valid (i.e., not 0.0 or null)
+      filteredUsers = petugasHaji.where((user) {
+        // Ensure that latitude and longitude are valid (non-zero and non-null)
+        return (user.latitude != 0.0) && (user.longitude != 0.0);
+      }).toList();
+    }
+
+    // Update the state with the filtered data
     setState(() {
-      users = petugasHaji;
+      users = filteredUsers;
     });
   }
 
@@ -117,7 +132,7 @@ class _MapScreenState extends State<MapScreen> {
           return 'N/A';
         }
       } else {
-        print('Request failed with status: ${response.statusCode}');
+        // print('Request failed with status: ${response.statusCode}');
         return 'N/A';
       }
     } catch (e) {
@@ -128,14 +143,22 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _updateUserDistances() async {
     try {
+      // Get the current position of the device
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // Fetch users from Firebase
       Map<String, List<UserModel>> usersMap = await fetchModelsFromFirebase();
       List<UserModel> allUsers = usersMap['petugasHaji'] ?? [];
 
-      for (var user in allUsers) {
+      List<UserModel> validUsers = allUsers.where((user) {
+        // Ensure latitude and longitude are valid
+        return user.latitude != 0.0 && user.longitude != 0.0;
+      }).toList();
+
+      // Update distances and durations for valid users
+      for (var user in validUsers) {
         double distance = calculateHaversineDistance(
           position.latitude,
           position.longitude,
@@ -153,17 +176,19 @@ class _MapScreenState extends State<MapScreen> {
         user.duration = '$duration Min';
       }
 
-      allUsers.sort((a, b) {
+      // Sort users by distance
+      validUsers.sort((a, b) {
         double distanceA = double.parse(a.distance.split(' ')[0]);
         double distanceB = double.parse(b.distance.split(' ')[0]);
         return distanceA.compareTo(distanceB);
       });
 
+      // Update the state with sorted and updated users
       setState(() {
-        users = allUsers;
+        users = validUsers;
       });
     } catch (e) {
-      print(e.toString());
+      print('Error updating user distances: ${e.toString()}');
     }
   }
 
@@ -418,10 +443,6 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget buildUserList(UserModel user) {
-    // Check if the user.roles is 'Jemaah Haji'
-    // if (user.roles != 'petugas haji') {
-    //   return const SizedBox(); // Return an empty widget or null if the condition doesn't match
-    // }
     return Container(
       width: 390.0,
       height: 200.0,
@@ -464,95 +485,112 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ],
           ),
+          // Make the second column flexible to prevent overflow
           Flexible(
             child: Container(
               margin: const EdgeInsets.only(left: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.name,
-                    style: textStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: ColorSys.darkBlue,
+              child: SingleChildScrollView(
+                // Allow scrolling if content exceeds
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name.length > 20
+                          ? '${user.name.substring(0, 20)}...'
+                          : user.name,
+                      style: textStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: ColorSys.darkBlue,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 5.0),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.directions_walk,
-                        size: 14.0,
-                        color: ColorSys.darkBlue,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        user.distance,
-                        style: textStyle(
-                          fontSize: 14,
+                    const SizedBox(height: 5.0),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.directions_walk,
+                          size: 14.0,
                           color: ColorSys.darkBlue,
                         ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      const Icon(
-                        Iconsax.clock,
-                        size: 14.0,
-                        color: ColorSys.darkBlue,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        user.duration,
-                        style: textStyle(
-                          fontSize: 14,
+                        const SizedBox(width: 4.0),
+                        Text(
+                          user.distance,
+                          style: textStyle(
+                            fontSize: 14,
+                            color: ColorSys.darkBlue,
+                          ),
+                        ),
+                        const SizedBox(width: 10.0),
+                        const Icon(
+                          Iconsax.clock,
+                          size: 14.0,
                           color: ColorSys.darkBlue,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30.0),
-                  Row(
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          _getUserDirection(user);
-                        },
-                        icon: const Center(
-                          child: Icon(Iconsax.direct_up),
-                        ),
-                        label: const Text('Go'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorSys.darkBlue,
-                          textStyle: const TextStyle(
+                        const SizedBox(width: 4.0),
+                        Text(
+                          user.duration,
+                          style: textStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          fixedSize: const Size(90, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0),
+                            color: ColorSys.darkBlue,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10.0),
-                      ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Iconsax.danger),
-                        label: const Text('Help'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    const SizedBox(height: 20.0),
+                    Row(
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _getUserDirection(user);
+                          },
+                          icon: const Icon(
+                            Iconsax.direct_up,
+                            color: Colors.white,
                           ),
-                          fixedSize: const Size(100, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25.0),
+                          label: const Text(
+                            'Go',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorSys.darkBlue,
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            fixedSize: const Size(90, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 10.0),
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Iconsax.danger,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            'Help',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            fixedSize: const Size(100, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25.0),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

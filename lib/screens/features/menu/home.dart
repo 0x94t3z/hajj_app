@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/widgets/components/top_nav_bar.dart'; // Import the custom app bar
+import 'package:hajj_app/widgets/components/top_nav_bar.dart';
 import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
 import 'package:hajj_app/widgets/pages/first.dart';
 import 'package:hajj_app/widgets/pages/second.dart';

@@ -5,15 +5,15 @@ import 'package:hajj_app/widgets/pages/second.dart';
 import 'package:hajj_app/widgets/pages/third.dart';
 import 'package:hajj_app/widgets/pages/fourth.dart';
 
-class FindMeScreen extends StatefulWidget {
-  const FindMeScreen({Key? key}) : super(key: key);
+class FindMyScreen extends StatefulWidget {
+  const FindMyScreen({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _FindMeScreenState createState() => _FindMeScreenState();
+  _FindMyScreenState createState() => _FindMyScreenState();
 }
 
-class _FindMeScreenState extends State<FindMeScreen> {
+class _FindMyScreenState extends State<FindMyScreen> {
   int _currentIndex = 1;
 
   @override

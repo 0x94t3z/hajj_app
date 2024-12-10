@@ -29,8 +29,16 @@ class UserModel {
       duration: '10 Mins',
       roles: data['roles'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
-      latitude: data['latitude'] ?? 0.0,
-      longitude: data['longitude'] ?? 0.0,
+      latitude: (data['latitude'] is String && data['latitude'].isNotEmpty)
+          ? double.tryParse(data['latitude']) ?? 0.0
+          : (data['latitude'] is double
+              ? data['latitude']
+              : 0.0), // Fallback to 0.0 for invalid values
+      longitude: (data['longitude'] is String && data['longitude'].isNotEmpty)
+          ? double.tryParse(data['longitude']) ?? 0.0
+          : (data['longitude'] is double
+              ? data['longitude']
+              : 0.0), // Fallback to 0.0 for invalid values
     );
   }
 }
@@ -51,13 +59,24 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase() async {
     });
   }
 
+  // List of valid roles for Petugas Haji
+  const validPetugasHajiRoles = [
+    "KETUA KLOTER (TPHI)",
+    "PEMBIMBING IBADAH (TPIHI)",
+    "PELAYANAN AKOMODASI",
+    "PELAYANAN IBADAH",
+    "PELAYANAN KONSUMSI",
+    "PELAYANAN TRANSPORTASI"
+  ];
+
   // Filter users with role 'Jemaah Haji'
   List<UserModel> jemaahHaji =
       allUsers.where((user) => user.roles == 'Jemaah Haji').toList();
 
-  // Filter users with role 'Petugas Haji'
-  List<UserModel> petugasHaji =
-      allUsers.where((user) => user.roles == 'Petugas Haji').toList();
+  // Filter users with valid roles for 'Petugas Haji'
+  List<UserModel> petugasHaji = allUsers
+      .where((user) => validPetugasHajiRoles.contains(user.roles))
+      .toList();
 
   return {
     'jemaahHaji': jemaahHaji,
