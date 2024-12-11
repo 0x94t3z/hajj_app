@@ -32,6 +32,16 @@ class _MapScreenState extends State<MapScreen> {
   // bool routeBuilt = false;
   // bool isNavigating = false;
 
+  // List of valid roles for Petugas Haji
+  final validPetugasHajiRoles = [
+    "KETUA KLOTER (TPHI)",
+    "PEMBIMBING IBADAH (TPIHI)",
+    "PELAYANAN AKOMODASI",
+    "PELAYANAN IBADAH",
+    "PELAYANAN KONSUMSI",
+    "PELAYANAN TRANSPORTASI"
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -52,32 +62,59 @@ class _MapScreenState extends State<MapScreen> {
     mapController = controller;
   }
 
-  Future<void> fetchData() async {
-    // Fetch or initialize users here, such as from Firebase or any other source
-    Map<String, List<UserModel>> usersMap =
-        await fetchModelsFromFirebase(); // Use fetchModelsFromFirebase
+  // Helper method to check if the location is valid
+  bool isValidLocation(UserModel user) {
+    return (user.latitude != 0.0) && (user.longitude != 0.0);
+  }
 
-    List<UserModel> petugasHaji =
-        usersMap['petugasHaji'] ?? []; // Extract the list of users
-    List<UserModel> filteredUsers = [];
-
-    // Assuming you have the current user's role stored in a variable
-    String currentUserRole =
-        'Jemaah Haji'; // Replace this with actual logic to get current user role
-
-    // Check if current user is 'Jemaah Haji'
-    if (currentUserRole == 'Jemaah Haji') {
-      // Filter out users in 'petugasHaji' where latitude and longitude are not valid (i.e., not 0.0 or null)
-      filteredUsers = petugasHaji.where((user) {
-        // Ensure that latitude and longitude are valid (non-zero and non-null)
-        return (user.latitude != 0.0) && (user.longitude != 0.0);
-      }).toList();
+  // Fetch current user's role
+  Future<String> _getCurrentUserRole() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userDataSnapshot =
+          await FirebaseDatabase.instance.ref('users').child(user.uid).get();
+      if (userDataSnapshot.exists) {
+        final userData = userDataSnapshot.value as Map<dynamic, dynamic>;
+        return userData['roles']?.toString() ??
+            'Jemaah Haji'; // Default to 'Jemaah Haji' if not available
+      }
     }
+    return 'Jemaah Haji'; // Return default role if no user is logged in
+  }
 
-    // Update the state with the filtered data
-    setState(() {
-      users = filteredUsers;
-    });
+  // Fetch and filter users based on role
+  Future<void> fetchData() async {
+    try {
+      String currentUserRole = await _getCurrentUserRole();
+      print('Current user role: $currentUserRole');
+
+      Map<String, List<UserModel>> usersMap =
+          await fetchModelsFromFirebase(); // Fetch users
+      List<UserModel> petugasHaji = usersMap['petugasHaji'] ?? [];
+      List<UserModel> jemaahHaji = usersMap['jemaahHaji'] ?? [];
+      List<UserModel> filteredUsers = [];
+
+      // Filter users based on role
+      if (currentUserRole == 'Jemaah Haji') {
+        // 'Jemaah Haji' sees valid 'petugasHaji'
+        filteredUsers = petugasHaji.where(isValidLocation).toList();
+      } else if (validPetugasHajiRoles.contains(currentUserRole)) {
+        // 'Petugas Haji' sees valid 'jemaahHaji'
+        filteredUsers = jemaahHaji.where(isValidLocation).toList();
+      } else {
+        // Default case: no valid role, show no users or show an error message
+        filteredUsers = [];
+      }
+
+      // Limit to 5 nearest users
+      List<UserModel> nearestUsers = filteredUsers.take(5).toList();
+
+      setState(() {
+        users = nearestUsers;
+      });
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
   }
 
   Future<void> _updateUserLocation(double latitude, double longitude) async {
@@ -148,44 +185,67 @@ class _MapScreenState extends State<MapScreen> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      // Get the current user's role
+      String currentUserRole = await _getCurrentUserRole();
+      print('Current user role: $currentUserRole');
+
       // Fetch users from Firebase
       Map<String, List<UserModel>> usersMap = await fetchModelsFromFirebase();
-      List<UserModel> allUsers = usersMap['petugasHaji'] ?? [];
+      List<UserModel> petugasHaji = usersMap['petugasHaji'] ?? [];
+      List<UserModel> jemaahHaji = usersMap['jemaahHaji'] ?? [];
 
-      List<UserModel> validUsers = allUsers.where((user) {
-        // Ensure latitude and longitude are valid
-        return user.latitude != 0.0 && user.longitude != 0.0;
-      }).toList();
+      List<UserModel> filteredUsers = [];
 
-      // Update distances and durations for valid users
-      for (var user in validUsers) {
+      // Check if current user is 'Jemaah Haji' or a 'Petugas Haji'
+      if (currentUserRole == 'Jemaah Haji') {
+        // Show only 'Petugas Haji' data
+        filteredUsers = petugasHaji.where((user) {
+          return user.latitude != 0.0 && user.longitude != 0.0;
+        }).toList();
+      } else if (validPetugasHajiRoles.contains(currentUserRole)) {
+        // Show only 'Jemaah Haji' data
+        filteredUsers = jemaahHaji.where((user) {
+          return user.latitude != 0.0 && user.longitude != 0.0;
+        }).toList();
+      }
+
+      // Update distances and durations for filtered users
+      List<UserModel> finalFilteredUsers = [];
+
+      for (var user in filteredUsers) {
         double distance = calculateHaversineDistance(
           position.latitude,
           position.longitude,
           user.latitude,
           user.longitude,
         );
-        user.distance = '${distance.toStringAsFixed(2)} Km';
 
-        String duration = await getRouteDuration(
-          position.latitude,
-          position.longitude,
-          user.latitude,
-          user.longitude,
-        );
-        user.duration = '$duration Min';
+        // Only include users within 500 km
+        if (distance <= 500.0) {
+          user.distance = '${distance.toStringAsFixed(2)} Km';
+
+          String duration = await getRouteDuration(
+            position.latitude,
+            position.longitude,
+            user.latitude,
+            user.longitude,
+          );
+          user.duration = '$duration Min';
+
+          finalFilteredUsers.add(user);
+        }
       }
 
       // Sort users by distance
-      validUsers.sort((a, b) {
+      finalFilteredUsers.sort((a, b) {
         double distanceA = double.parse(a.distance.split(' ')[0]);
         double distanceB = double.parse(b.distance.split(' ')[0]);
         return distanceA.compareTo(distanceB);
       });
 
-      // Update the state with sorted and updated users
+      // Update the state with the filtered, sorted, and updated users
       setState(() {
-        users = validUsers;
+        users = finalFilteredUsers;
       });
     } catch (e) {
       print('Error updating user distances: ${e.toString()}');
@@ -327,7 +387,7 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(position.latitude, position.longitude),
-              iconImage: ('assets/images/pilgrim.png'),
+              iconImage: ('assets/images/my_location.png'),
               fontNames: ['DIN Offc Pro Bold', 'Arial Unicode MS Regular'],
               textField: 'My Location',
               textSize: 12.5,
@@ -344,9 +404,9 @@ class _MapScreenState extends State<MapScreen> {
           mapController?.addSymbol(
             SymbolOptions(
               geometry: LatLng(userLatitude, userLongitude),
-              iconImage: ('assets/images/officer.png'),
+              iconImage: ('assets/images/pin_3.png'),
               fontNames: ['DIN Offc Pro Bold', 'Arial Unicode MS Regular'],
-              textField: 'Officer',
+              textField: user.name,
               textSize: 12.5,
               textOffset: const Offset(0, -2.0),
               textAnchor: 'top',

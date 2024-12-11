@@ -125,12 +125,12 @@ class _LoginScreenState extends State<LoginScreen> {
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text('Login Failed'),
-            content: Text('The password is incorrect. Please try again.'),
+            title: const Text('Login Failed'),
+            content: const Text('The password is incorrect. Please try again.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           ),
@@ -140,12 +140,12 @@ class _LoginScreenState extends State<LoginScreen> {
         showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: Text('Login Failed'),
-            content: Text('No user found for that email.'),
+            title: const Text('Login Failed'),
+            content: const Text('No user found for that email.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           ),

@@ -98,7 +98,10 @@ flutter:
   assets:
     - .env
     - assets/fonts/
-    - assets/images/pilgrim.png
+    - assets/images/my_location.png
+    - assets/images/pin.png
+    - assets/images/pin_2.png
+    - assets/images/pin_3.png
     - assets/images/male.png
     - assets/images/officer.png
     - assets/images/location_pin.png
