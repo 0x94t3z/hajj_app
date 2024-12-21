@@ -18,6 +18,7 @@ class _FourthWidgetState extends State<FourthWidget> {
   late String _name = '';
   late String _email = '';
   late String _imageUrl = '';
+  late String _roles = '';
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _FourthWidgetState extends State<FourthWidget> {
             _name = userData['displayName'] as String? ?? '';
             _email = userData['email'] as String? ?? '';
             _imageUrl = userData['imageUrl'] as String? ?? '';
+            _roles = userData['roles'] as String? ?? '';
           });
         } else {
           print("No data available or data not in the expected format");
@@ -179,7 +181,7 @@ class _FourthWidgetState extends State<FourthWidget> {
                                 const Spacer(),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Jemaah Haji',
+                                  _roles,
                                   style: textStyle(
                                     fontSize: 14,
                                   ),
