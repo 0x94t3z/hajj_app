@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/styles.dart';
 import 'package:vertical_card_pager/vertical_card_pager.dart';
 
 class ThirdWidget extends StatefulWidget {
@@ -54,7 +55,14 @@ class _ThirdWidgetState extends State<ThirdWidget> {
       ),
     ),
   ];
-  final List<String> titles = ['', '', '', '', '', ''];
+  final List<String> titles = [
+    'Saepudin',
+    'Rifqotul Aulia',
+    'Abdullah',
+    '',
+    '',
+    ''
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -66,14 +74,39 @@ class _ThirdWidgetState extends State<ThirdWidget> {
           child: Column(
             children: <Widget>[
               Expanded(
-                  child: VerticalCardPager(
-                images: images,
-                titles: titles,
-                onPageChanged: (page) {},
-                onSelectedItem: (index) {
-                  print(index);
-                },
-              )),
+                child: VerticalCardPager(
+                  images: images.map((image) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white, // White background
+                        borderRadius:
+                            BorderRadius.circular(25.0), // Rounded corners
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                Colors.grey.withOpacity(0.2), // Softer shadow
+                            spreadRadius: 3, // Spread radius of shadow
+                            blurRadius: 3, // Blur radius of shadow
+                            offset: const Offset(0, 3), // Shadow position
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                            25.0), // Match the borderRadius
+                        child: image,
+                      ),
+                    );
+                  }).toList(),
+                  titles: titles,
+                  textStyle: textStyle(
+                      color: ColorSys.grey, fontWeight: FontWeight.bold),
+                  onPageChanged: (page) {},
+                  onSelectedItem: (index) {
+                    print(index);
+                  },
+                ),
+              ),
             ],
           ),
         ),

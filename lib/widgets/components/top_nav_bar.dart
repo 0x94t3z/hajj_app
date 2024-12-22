@@ -2,16 +2,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/screens/features/finding/maps.dart';
+import 'package:hajj_app/screens/features/profile/edit.dart';
 
 class TopNavBar extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback onSettingsTap;
-  final VoidCallback onMapTap;
+  final VoidCallback onMyProfileTap;
 
   const TopNavBar({
     Key? key,
     required this.onSettingsTap,
-    required this.onMapTap,
+    required this.onMyProfileTap,
   }) : super(key: key);
 
   @override
@@ -66,18 +66,18 @@ class _TopNavBarState extends State<TopNavBar> {
             Icons.menu,
             color: ColorSys.darkBlue,
           ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const MapScreen()),
-            );
-          },
+          onPressed: widget.onSettingsTap,
         ),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: InkResponse(
-              onTap: widget.onSettingsTap,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditScreen()),
+                );
+              },
               child: Container(
                 width: 35,
                 height: 35,

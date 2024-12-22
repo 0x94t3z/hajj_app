@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hajj_app/helpers/styles.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hajj_app/models/users.dart';
 
 class FindOficcersWidget extends StatefulWidget {
   const FindOficcersWidget({Key? key}) : super(key: key);
@@ -218,6 +220,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
   };
 
   late AnimationController _controller;
+  String buttonLabel = 'Find Officers';
 
   @override
   void initState() {
@@ -237,6 +240,8 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
 
     // Start the animations when the widget is initialized
     _startAnimations();
+    // Set the button label
+    _setButtonLabel();
   }
 
   void _startAnimations() {
@@ -247,6 +252,43 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
 
     // Start all animations
     _controller.forward();
+  }
+
+  Future<void> _setButtonLabel() async {
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        Map<String, List<UserModel>> groupedUsers =
+            await fetchModelsFromFirebase();
+
+        List<UserModel> allUsers = [
+          ...groupedUsers['jemaahHaji'] ?? [],
+          ...groupedUsers['petugasHaji'] ?? []
+        ];
+
+        final currentUserModel =
+            allUsers.firstWhere((user) => user.userId == currentUser.uid,
+                orElse: () => UserModel(
+                      userId: '',
+                      name: '',
+                      roles: '',
+                      distance: '',
+                      duration: '',
+                      imageUrl: '',
+                      latitude: 0.0,
+                      longitude: 0.0,
+                    ));
+
+        setState(() {
+          buttonLabel =
+              groupedUsers['jemaahHaji']?.contains(currentUserModel) == true
+                  ? 'Find Officers'
+                  : 'Find Pilgrims';
+        });
+      }
+    } catch (e) {
+      print('Error fetching user role: $e');
+    }
   }
 
   @override
@@ -280,7 +322,7 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
                           padding: const EdgeInsetsDirectional.fromSTEB(
                               0.0, 16.0, 0.0, 0.0),
                           child: Text(
-                            'Finding Officers',
+                            buttonLabel,
                             style: textStyle(
                                 fontSize: 20,
                                 color: ColorSys.darkBlue,

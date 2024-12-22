@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex == 0
+      appBar: _currentIndex != 3
           ? TopNavBar(
               onSettingsTap: () {
                 // Handle Settings tap (_currentIndex = 3)
@@ -28,10 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   _currentIndex = 3;
                 });
               },
-              onMapTap: () {
-                // Handle Map tap (_currentIndex = 1)
+              onMyProfileTap: () {
+                // Handle My Profile tap (_currentIndex = 3)
                 setState(() {
-                  _currentIndex = 1;
+                  _currentIndex = 3;
                 });
               },
             )
