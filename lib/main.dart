@@ -13,7 +13,7 @@ import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/features/menu/home.dart';
 import 'package:hajj_app/screens/features/menu/find_my.dart';
 import 'package:hajj_app/screens/features/menu/contact.dart';
-import 'package:hajj_app/screens/features/menu/settings.dart';
+import 'package:hajj_app/screens/features/menu/setting.dart';
 // import 'package:hajj_app/services/user_service.dart';
 
 import 'firebase_options.dart';
@@ -132,9 +132,9 @@ class _HajjAppState extends State<HajjApp> {
         '/forgot': (context) => const ForgotPasswordScreen(),
         '/home': (context) => const HomeScreen(),
         '/find_my': (context) => const FindMyScreen(),
-        '/find_officers': (context) => const MapScreen(),
+        '/finding': (context) => const MapScreen(),
         '/contact': (context) => const ContactScreen(),
-        '/settings': (context) => const SettingScreen(),
+        '/setting': (context) => const SettingScreen(),
         '/edit': (context) => const EditScreen(),
       },
     );

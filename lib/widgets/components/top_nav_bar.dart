@@ -5,12 +5,12 @@ import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
 
 class TopNavBar extends StatefulWidget implements PreferredSizeWidget {
-  final VoidCallback onSettingsTap;
+  final VoidCallback onSettingTap;
   final VoidCallback onMyProfileTap;
 
   const TopNavBar({
     Key? key,
-    required this.onSettingsTap,
+    required this.onSettingTap,
     required this.onMyProfileTap,
   }) : super(key: key);
 
@@ -66,7 +66,7 @@ class _TopNavBarState extends State<TopNavBar> {
             Icons.menu,
             color: ColorSys.darkBlue,
           ),
-          onPressed: widget.onSettingsTap,
+          onPressed: widget.onSettingTap,
         ),
         actions: <Widget>[
           Padding(

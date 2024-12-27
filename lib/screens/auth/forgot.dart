@@ -82,12 +82,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     contentPadding: const EdgeInsets.all(0.0),
                     labelText: 'Email',
                     hintText: 'Your e-mail',
-                    labelStyle: const TextStyle(
+                    labelStyle: textStyle(
                       color: ColorSys.primary,
                       fontSize: 14.0,
                       fontWeight: FontWeight.w400,
                     ),
-                    hintStyle: const TextStyle(
+                    hintStyle: textStyle(
                       color: Colors.grey,
                       fontSize: 14.0,
                     ),
@@ -150,9 +150,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
+                      : Text(
                           "Next",
-                          style: TextStyle(color: Colors.white, fontSize: 16.0),
+                          style: textStyle(
+                              color: Colors.white,
+                              fontSize: 16.0,
+                              fontWeight: FontWeight.bold),
                         ),
                 ),
               ),

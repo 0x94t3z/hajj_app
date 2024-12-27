@@ -78,29 +78,26 @@ class _ThirdWidgetState extends State<ThirdWidget> {
                   images: images.map((image) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: Colors.white, // White background
-                        borderRadius:
-                            BorderRadius.circular(25.0), // Rounded corners
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25.0),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                Colors.grey.withOpacity(0.2), // Softer shadow
-                            spreadRadius: 3, // Spread radius of shadow
-                            blurRadius: 3, // Blur radius of shadow
-                            offset: const Offset(0, 3), // Shadow position
+                            color: Colors.grey.withOpacity(0.2),
+                            spreadRadius: 3,
+                            blurRadius: 3,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                            25.0), // Match the borderRadius
+                        borderRadius: BorderRadius.circular(25.0),
                         child: image,
                       ),
                     );
                   }).toList(),
                   titles: titles,
                   textStyle: textStyle(
-                      color: ColorSys.grey, fontWeight: FontWeight.bold),
+                      color: Colors.white, fontWeight: FontWeight.bold),
                   onPageChanged: (page) {},
                   onSelectedItem: (index) {
                     print(index);

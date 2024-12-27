@@ -4,15 +4,15 @@ import 'package:hajj_app/helpers/styles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hajj_app/models/users.dart';
 
-class FindOficcersWidget extends StatefulWidget {
-  const FindOficcersWidget({Key? key}) : super(key: key);
+class FindingWidget extends StatefulWidget {
+  const FindingWidget({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _FindOficcersWidgetState createState() => _FindOficcersWidgetState();
+  _FindingWidgetState createState() => _FindingWidgetState();
 }
 
-class _FindOficcersWidgetState extends State<FindOficcersWidget>
+class _FindingWidgetState extends State<FindingWidget>
     with SingleTickerProviderStateMixin {
   final animationsMap = {
     'textOnPageLoadAnimation': AnimationInfo(
@@ -234,14 +234,14 @@ class _FindOficcersWidgetState extends State<FindOficcersWidget>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         // Animation is completed, navigate to MapScreen
-        Navigator.of(context).pushReplacementNamed('/find_officers');
+        Navigator.of(context).pushReplacementNamed('/finding');
       }
     });
 
-    // Start the animations when the widget is initialized
-    _startAnimations();
     // Set the button label
     _setButtonLabel();
+    // Start the animations when the widget is initialized
+    _startAnimations();
   }
 
   void _startAnimations() {

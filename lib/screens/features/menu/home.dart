@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: _currentIndex != 3
           ? TopNavBar(
-              onSettingsTap: () {
+              onSettingTap: () {
                 // Handle Settings tap (_currentIndex = 3)
                 setState(() {
                   _currentIndex = 3;

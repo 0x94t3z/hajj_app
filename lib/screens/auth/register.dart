@@ -199,12 +199,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   contentPadding: const EdgeInsets.all(0.0),
                   labelText: 'Name',
                   hintText: 'Full name',
-                  labelStyle: const TextStyle(
+                  labelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 14.0,
                     fontWeight: FontWeight.w400,
                   ),
-                  hintStyle: const TextStyle(
+                  hintStyle: textStyle(
                     color: Colors.grey,
                     fontSize: 14.0,
                   ),
@@ -218,7 +218,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         BorderSide(color: Colors.grey.shade200, width: 2),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  floatingLabelStyle: const TextStyle(
+                  floatingLabelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 18.0,
                   ),
@@ -242,12 +242,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   contentPadding: const EdgeInsets.all(0.0),
                   labelText: 'Email',
                   hintText: 'Your e-mail',
-                  labelStyle: const TextStyle(
+                  labelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 14.0,
                     fontWeight: FontWeight.w400,
                   ),
-                  hintStyle: const TextStyle(
+                  hintStyle: textStyle(
                     color: Colors.grey,
                     fontSize: 14.0,
                   ),
@@ -261,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         BorderSide(color: Colors.grey.shade200, width: 2),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  floatingLabelStyle: const TextStyle(
+                  floatingLabelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 18.0,
                   ),
@@ -286,11 +286,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   contentPadding: const EdgeInsets.all(0.0),
                   labelText: 'Password',
                   hintText: 'Password',
-                  hintStyle: const TextStyle(
+                  hintStyle: textStyle(
                     color: Colors.grey,
                     fontSize: 14.0,
                   ),
-                  labelStyle: const TextStyle(
+                  labelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 14.0,
                     fontWeight: FontWeight.w400,
@@ -305,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         BorderSide(color: Colors.grey.shade200, width: 2),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  floatingLabelStyle: const TextStyle(
+                  floatingLabelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 18.0,
                   ),
@@ -363,9 +363,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         "Register",
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                        style: textStyle(
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -379,7 +382,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   Text(
                     'Already have an account?',
-                    style: TextStyle(
+                    style: textStyle(
                         color: Colors.grey.shade600,
                         fontSize: 14.0,
                         fontWeight: FontWeight.w400),
@@ -388,9 +391,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text(
+                    child: Text(
                       'Login',
-                      style: TextStyle(
+                      style: textStyle(
                           color: Colors.blue,
                           fontSize: 14.0,
                           fontWeight: FontWeight.w400),

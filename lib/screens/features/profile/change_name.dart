@@ -150,10 +150,12 @@ class _EditNameScreenState extends State<EditNameScreen> {
                               AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'Save Changes',
-                        style: TextStyle(
+                        style: textStyle(
                           fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
               ),

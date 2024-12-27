@@ -205,13 +205,14 @@ class _EditScreenState extends State<EditScreen> {
                   borderRadius: BorderRadius.circular(25.0),
                 ),
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(16.0),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
                   'Change Image',
-                  style: TextStyle(
+                  style: textStyle(
                     fontSize: 14,
                     color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

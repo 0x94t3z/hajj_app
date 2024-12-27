@@ -250,12 +250,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   contentPadding: const EdgeInsets.all(0.0),
                   labelText: 'Email',
                   hintText: 'Your e-mail',
-                  labelStyle: const TextStyle(
+                  labelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 14.0,
                     fontWeight: FontWeight.w400,
                   ),
-                  hintStyle: const TextStyle(
+                  hintStyle: textStyle(
                     color: Colors.grey,
                     fontSize: 14.0,
                   ),
@@ -294,11 +294,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   contentPadding: const EdgeInsets.all(0.0),
                   labelText: 'Password',
                   hintText: 'Password',
-                  hintStyle: const TextStyle(
+                  hintStyle: textStyle(
                     color: Colors.grey,
                     fontSize: 14.0,
                   ),
-                  labelStyle: const TextStyle(
+                  labelStyle: textStyle(
                     color: ColorSys.primary,
                     fontSize: 14.0,
                     fontWeight: FontWeight.w400,
@@ -334,9 +334,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       _navigateToForgotPasswordScreen(context);
                     },
-                    child: const Text(
+                    child: Text(
                       'Forgot Password?',
-                      style: TextStyle(
+                      style: textStyle(
                           color: Colors.black,
                           fontSize: 14.0,
                           fontWeight: FontWeight.w400),
@@ -383,9 +383,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
+                    : Text(
                         "Login",
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                        style: textStyle(
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -399,7 +402,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Text(
                     'Don\'t have an account?',
-                    style: TextStyle(
+                    style: textStyle(
                         color: Colors.grey.shade600,
                         fontSize: 14.0,
                         fontWeight: FontWeight.w400),
@@ -408,9 +411,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       _navigateToRegisterScreen(context);
                     },
-                    child: const Text(
+                    child: Text(
                       'Register',
-                      style: TextStyle(
+                      style: textStyle(
                           color: Colors.blue,
                           fontSize: 14.0,
                           fontWeight: FontWeight.w400),

@@ -46,6 +46,8 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
 
+    // Get the current user's role
+    _getCurrentUserRole();
     // Start a timer to update user distances periodically
     _getCurrentPosition();
     // Call a method to fetch or initialize users when the screen loads
@@ -670,6 +672,7 @@ class _MapScreenState extends State<MapScreen> {
             styleString: MapboxStyles.MAPBOX_STREETS,
             accessToken: dotenv.env['MAPBOX_SECRET_KEY']!,
             onMapCreated: _onMapCreated,
+            // myLocationEnabled: true,
             myLocationRenderMode: MyLocationRenderMode.NORMAL,
             myLocationTrackingMode: MyLocationTrackingMode.TrackingGPS,
             initialCameraPosition: const CameraPosition(

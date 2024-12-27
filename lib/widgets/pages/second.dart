@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hajj_app/widgets/radar/find_officers.dart';
+import 'package:hajj_app/widgets/radar/finding.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/models/users.dart';
 import 'package:iconsax/iconsax.dart';
@@ -181,7 +181,7 @@ class _SecondWidgetState extends State<SecondWidget> {
           children: [
             const SizedBox(height: 30.0),
             Container(
-              height: 500.0,
+              height: 490.0,
               margin: const EdgeInsets.symmetric(horizontal: 20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -233,7 +233,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16.0),
+                  const SizedBox(height: 18.0),
                   // Text Section
                   Text(
                     'Your location',
@@ -247,7 +247,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                       color: ColorSys.darkBlue,
                     ),
                   ),
-                  const SizedBox(height: 46.0),
+                  const SizedBox(height: 36.0),
                   ElevatedButton.icon(
                     onPressed: () {
                       showModalBottomSheet(
@@ -261,7 +261,7 @@ class _SecondWidgetState extends State<SecondWidget> {
                               padding: MediaQuery.of(context).viewInsets,
                               child: const SizedBox(
                                 height: double.infinity,
-                                child: FindOficcersWidget(),
+                                child: FindingWidget(),
                               ),
                             ).animateOnPageLoad(
                               animationsMap['containerOnPageLoadAnimation5']!,
