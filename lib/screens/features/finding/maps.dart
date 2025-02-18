@@ -664,7 +664,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     // Filter and get the five nearest users
-    List<UserModel> nearestUsers = users.take(5).toList();
+    List<UserModel> nearestUsers = users.take(10).toList();
     return Scaffold(
       body: Stack(
         children: [
