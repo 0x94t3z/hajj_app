@@ -108,8 +108,8 @@ class _MapScreenState extends State<MapScreen> {
         filteredUsers = [];
       }
 
-      // Limit to 5 nearest users
-      List<UserModel> nearestUsers = filteredUsers.take(5).toList();
+      // Limit to 10 nearest users
+      List<UserModel> nearestUsers = filteredUsers.take(10).toList();
 
       setState(() {
         users = nearestUsers;
@@ -663,7 +663,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter and get the five nearest users
+    // Filter and get the 10 nearest users
     List<UserModel> nearestUsers = users.take(10).toList();
     return Scaffold(
       body: Stack(
