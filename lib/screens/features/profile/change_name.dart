@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -26,12 +27,12 @@ class _EditNameScreenState extends State<EditNameScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.initialName;
+    _nameController.text = toTitleCaseName(widget.initialName);
     _nameController.addListener(_onNameChanged);
   }
 
   Future<void> _saveChanges() async {
-    String newName = _nameController.text;
+    final newName = toTitleCaseName(_nameController.text);
 
     // Update the name in the Realtime Database
     widget.updateName(newName);
@@ -50,7 +51,8 @@ class _EditNameScreenState extends State<EditNameScreen> {
   void _onNameChanged() {
     final newName = _nameController.text;
     setState(() {
-      isButtonDisabled = newName.isEmpty || newName == widget.initialName;
+      isButtonDisabled = newName.isEmpty ||
+          toTitleCaseName(newName) == toTitleCaseName(widget.initialName);
     });
   }
 

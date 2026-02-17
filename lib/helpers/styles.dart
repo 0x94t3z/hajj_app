@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+
+const String _appFontFamily = 'Montserrat';
 
 class ColorSys {
   static const Color primary = Color.fromRGBO(42, 42, 42, 1);
@@ -15,7 +16,8 @@ class ColorSys {
 }
 
 TextStyle titleTextStyle() {
-  return GoogleFonts.montserrat(
+  return const TextStyle(
+    fontFamily: _appFontFamily,
     color: ColorSys.primary,
     fontSize: 28,
     fontWeight: FontWeight.bold,
@@ -23,15 +25,17 @@ TextStyle titleTextStyle() {
 }
 
 TextStyle contentTextStyle({Color? color, double? fontSize}) {
-  return GoogleFonts.poppins(
+  return TextStyle(
+    fontFamily: _appFontFamily,
     color: color ?? ColorSys.grey,
-    fontSize: 18,
+    fontSize: fontSize ?? 18,
     fontWeight: FontWeight.w400,
   );
 }
 
 TextStyle textStyle({double? fontSize, Color? color, FontWeight? fontWeight}) {
-  return GoogleFonts.montserrat(
+  return TextStyle(
+    fontFamily: _appFontFamily,
     color: color ?? ColorSys.grey,
     fontSize: fontSize ?? 20,
     fontWeight: fontWeight ?? FontWeight.w400,

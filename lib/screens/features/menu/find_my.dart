@@ -3,7 +3,6 @@ import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
 import 'package:hajj_app/widgets/pages/first.dart';
 import 'package:hajj_app/widgets/pages/second.dart';
 import 'package:hajj_app/widgets/pages/third.dart';
-import 'package:hajj_app/widgets/pages/fourth.dart';
 
 class FindMyScreen extends StatefulWidget {
   const FindMyScreen({Key? key}) : super(key: key);
@@ -25,7 +24,6 @@ class _FindMyScreenState extends State<FindMyScreen> {
           FirstWidget(),
           SecondWidget(),
           ThirdWidget(),
-          FourthWidget(),
         ],
       ),
       bottomNavigationBar: BottomNavBar(

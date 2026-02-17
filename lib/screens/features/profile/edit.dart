@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/profile/change_name.dart';
+import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:random_string/random_string.dart';
@@ -18,6 +19,7 @@ class EditScreen extends StatefulWidget {
 }
 
 class _EditScreenState extends State<EditScreen> {
+  final UserService _userService = UserService();
   late String _name = '';
   late String _email = '';
   late String _imageUrl = '';
@@ -30,41 +32,38 @@ class _EditScreenState extends State<EditScreen> {
   }
 
   void getData() async {
-    DatabaseReference userRef = FirebaseDatabase.instance
-        .ref()
-        .child("users")
-        .child(FirebaseAuth.instance.currentUser!.uid);
-
-    userRef.once().then((DatabaseEvent event) {
-      if (mounted) {
-        DataSnapshot snapshot = event.snapshot;
-        var userData = snapshot.value;
-        if (userData != null && userData is Map) {
-          // Process the retrieved data
-          // print("User data: $userData");
-          setState(() {
-            _name = userData['displayName'] as String? ?? '';
-            _email = userData['email'] as String? ?? '';
-            _imageUrl = userData['imageUrl'] as String? ?? '';
-          });
-        } else {
-          // Handle cases where data is not available or not in the expected format
-          print("No data available or data not in the expected format");
-        }
+    try {
+      final cachedProfile = _userService.getCachedCurrentUserProfile();
+      if (cachedProfile != null && mounted) {
+        setState(() {
+          _name =
+              toTitleCaseName(cachedProfile['displayName'] as String? ?? '');
+          _email = cachedProfile['email'] as String? ?? '';
+          _imageUrl = cachedProfile['imageUrl'] as String? ?? '';
+        });
       }
-    }).catchError((error) {
+
+      final userData =
+          await _userService.fetchCurrentUserProfile(forceRefresh: true);
+      if (!mounted) return;
+      if (userData != null) {
+        setState(() {
+          _name = toTitleCaseName(userData['displayName'] as String? ?? '');
+          _email = userData['email'] as String? ?? '';
+          _imageUrl = userData['imageUrl'] as String? ?? '';
+        });
+      } else {
+        print("No data available or data not in the expected format");
+      }
+    } catch (error) {
       print("Error fetching data: $error");
-      // Handle error if needed
-    });
+    }
   }
 
   Future<void> updateNameInDatabase(String newName) async {
-    DatabaseReference userRef = FirebaseDatabase.instance
-        .ref()
-        .child("users")
-        .child(FirebaseAuth.instance.currentUser!.uid);
-
-    await userRef.update({'displayName': newName});
+    await _userService.updateCurrentUserData({
+      'displayName': toTitleCaseName(newName),
+    });
   }
 
   Future<void> getLostData() async {
@@ -137,10 +136,7 @@ class _EditScreenState extends State<EditScreen> {
       var imageUrl = await reference.getDownloadURL();
 
       // Update the user's profile image URL in the Realtime Database
-      DatabaseReference userRef =
-          FirebaseDatabase.instance.ref().child("users").child(user.uid);
-
-      await userRef.update({'imageUrl': imageUrl});
+      await _userService.updateCurrentUserData({'imageUrl': imageUrl});
 
       // Update the UI by calling getData() to refresh the image
       getData();
@@ -161,7 +157,7 @@ class _EditScreenState extends State<EditScreen> {
             Navigator.pop(
               context,
               {
-                'name': _name,
+                'name': toTitleCaseName(_name),
                 'imageUrl': _imageUrl,
               },
             );
@@ -186,12 +182,28 @@ class _EditScreenState extends State<EditScreen> {
                 shape: BoxShape.circle,
                 color: Colors.grey,
               ),
-              child: CircleAvatar(
-                radius: 100,
-                backgroundImage:
-                    _imageUrl.isNotEmpty ? NetworkImage(_imageUrl) : null,
-                backgroundColor:
-                    _imageUrl.isNotEmpty ? Colors.transparent : Colors.white,
+              child: ClipOval(
+                child: _imageUrl.trim().isNotEmpty
+                    ? Image.network(
+                        _imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(
+                              Iconsax.profile_circle,
+                              color: ColorSys.darkBlue,
+                              size: 48,
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Icon(
+                          Iconsax.profile_circle,
+                          color: ColorSys.darkBlue,
+                          size: 48,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 30),
@@ -229,7 +241,7 @@ class _EditScreenState extends State<EditScreen> {
                           initialName: _name,
                           updateName: (String newName) {
                             setState(() {
-                              _name = newName;
+                              _name = toTitleCaseName(newName);
                             });
                           },
                         ),
@@ -257,7 +269,7 @@ class _EditScreenState extends State<EditScreen> {
                         ),
                         const Spacer(),
                         Text(
-                          _name,
+                          toTitleCaseName(_name),
                           style: textStyle(
                             fontSize: 14,
                           ),

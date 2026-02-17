@@ -1,8 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hajj_app/helpers/styles.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:hajj_app/models/users.dart';
+import 'package:hajj_app/services/user_service.dart';
 
 class FindingWidget extends StatefulWidget {
   const FindingWidget({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class FindingWidget extends StatefulWidget {
 
 class _FindingWidgetState extends State<FindingWidget>
     with SingleTickerProviderStateMixin {
+  final UserService _userService = UserService();
   final animationsMap = {
     'textOnPageLoadAnimation': AnimationInfo(
       trigger: AnimationTrigger.onPageLoad,
@@ -254,38 +256,21 @@ class _FindingWidgetState extends State<FindingWidget>
     _controller.forward();
   }
 
+  bool _isPetugasRole(String role) {
+    final normalizedRole = role.trim().toUpperCase();
+    return UserService.validPetugasHajiRoles
+        .any((value) => value.toUpperCase() == normalizedRole);
+  }
+
   Future<void> _setButtonLabel() async {
     try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        Map<String, List<UserModel>> groupedUsers =
-            await fetchModelsFromFirebase();
-
-        List<UserModel> allUsers = [
-          ...groupedUsers['jemaahHaji'] ?? [],
-          ...groupedUsers['petugasHaji'] ?? []
-        ];
-
-        final currentUserModel =
-            allUsers.firstWhere((user) => user.userId == currentUser.uid,
-                orElse: () => UserModel(
-                      userId: '',
-                      name: '',
-                      roles: '',
-                      distance: '',
-                      duration: '',
-                      imageUrl: '',
-                      latitude: 0.0,
-                      longitude: 0.0,
-                    ));
-
-        setState(() {
-          buttonLabel =
-              groupedUsers['jemaahHaji']?.contains(currentUserModel) == true
-                  ? 'Find Officers'
-                  : 'Find Pilgrims';
-        });
-      }
+      final role =
+          await _userService.fetchCurrentUserRole(defaultRole: 'Jemaah Haji');
+      final isPetugas = _isPetugasRole(role);
+      if (!mounted) return;
+      setState(() {
+        buttonLabel = isPetugas ? 'Find Pilgrims' : 'Find Officers';
+      });
     } catch (e) {
       print('Error fetching user role: $e');
     }
@@ -293,158 +278,189 @@ class _FindingWidgetState extends State<FindingWidget>
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final sheetHeight = math.max(430.0, math.min(screenHeight * 0.66, 620.0));
+
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 40.0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(40.0),
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: ColorSys.backgroundMap,
-                borderRadius: BorderRadius.circular(40.0),
-                border: Border.all(
+          padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 24.0),
+          child: SizedBox(
+            height: sheetHeight,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(40.0),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
                   color: ColorSys.backgroundMap,
-                  width: 2.0,
+                  borderRadius: BorderRadius.circular(40.0),
+                  border: Border.all(
+                    color: ColorSys.backgroundMap,
+                    width: 2.0,
+                  ),
                 ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Stack(
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 16.0, 0.0, 0.0),
-                          child: Text(
-                            buttonLabel,
-                            style: textStyle(
-                                fontSize: 20,
-                                color: ColorSys.darkBlue,
-                                fontWeight: FontWeight.bold),
-                          ).animateOnPageLoad(
-                              animationsMap['textOnPageLoadAnimation']!),
-                        ),
-                        // const SizedBox(height: 8.0),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(
-                              0.0, 08.0, 0.0, 0.0),
-                          child: Container(
-                            width: 60.0,
-                            height: 3.0,
-                            decoration: BoxDecoration(
-                              color: ColorSys.cirlceMap,
-                              borderRadius: BorderRadius.circular(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 20.0),
+                  child: Stack(
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                0.0, 16.0, 0.0, 0.0),
+                            child: Text(
+                              buttonLabel,
+                              style: textStyle(
+                                  fontSize: 20,
+                                  color: ColorSys.darkBlue,
+                                  fontWeight: FontWeight.bold),
+                            ).animateOnPageLoad(
+                                animationsMap['textOnPageLoadAnimation']!),
+                          ),
+                          Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                0.0, 8.0, 0.0, 0.0),
+                            child: Container(
+                              width: 60.0,
+                              height: 3.0,
+                              decoration: BoxDecoration(
+                                color: ColorSys.cirlceMap,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ).animateOnPageLoad(animationsMap[
+                                'containerOnPageLoadAnimation1']!),
+                          ),
+                          const SizedBox(height: 20.0),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final radarSize = math.min(
+                                      constraints.maxWidth,
+                                      constraints.maxHeight,
+                                    ) *
+                                    0.88;
+                                final middleCircleSize = radarSize * 0.70;
+                                final innerCircleSize = radarSize * 0.44;
+                                final pulseSize = radarSize * 0.16;
+                                final blipSize =
+                                    math.max(radarSize * 0.05, 14.0);
+
+                                return Center(
+                                  child: SizedBox(
+                                    width: radarSize,
+                                    height: radarSize,
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Container(
+                                          width: radarSize,
+                                          height: radarSize,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: ColorSys.cirlceMap,
+                                              width: 2.0,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: middleCircleSize,
+                                          height: middleCircleSize,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: ColorSys.cirlceMap,
+                                              width: 2.0,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: innerCircleSize,
+                                          height: innerCircleSize,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: ColorSys.cirlceMap,
+                                              width: 2.0,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: pulseSize,
+                                          height: pulseSize,
+                                          decoration: const BoxDecoration(
+                                            color: ColorSys.radarMap,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ).animateOnPageLoad(animationsMap[
+                                            'containerOnPageLoadAnimation2']!),
+                                        Align(
+                                          alignment: const AlignmentDirectional(
+                                              -0.3, -0.25),
+                                          child: Container(
+                                            width: blipSize,
+                                            height: blipSize,
+                                            decoration: const BoxDecoration(
+                                              color: ColorSys.radarMap,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ).animateOnPageLoad(animationsMap[
+                                              'containerOnPageLoadAnimation3']!),
+                                        ),
+                                        Align(
+                                          alignment: const AlignmentDirectional(
+                                              0.45, -0.5),
+                                          child: Container(
+                                            width: blipSize,
+                                            height: blipSize,
+                                            decoration: const BoxDecoration(
+                                              color: ColorSys.radarMap,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ).animateOnPageLoad(animationsMap[
+                                              'containerOnPageLoadAnimation4']!),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        top: 10.0,
+                        right: 4.0,
+                        child: SizedBox(
+                          width: 64.0,
+                          height: 48.0,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: ColorSys.moreDarkBlue,
+                              backgroundColor: Colors.red,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30.0),
+                              ),
+                              padding: EdgeInsets.zero,
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 26.0,
                             ),
                           ).animateOnPageLoad(
-                              animationsMap['containerOnPageLoadAnimation1']!),
+                              animationsMap['iconButtonOnPageLoadAnimation']!),
                         ),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 500.0,
-                          child: Stack(
-                            alignment: const Alignment(0.0, 0.0),
-                            children: [
-                              Container(
-                                width: 200.0,
-                                height: 200.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: ColorSys.cirlceMap,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: 300.0,
-                                height: 300.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: ColorSys.cirlceMap,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: 100.0,
-                                height: 100.0,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: ColorSys.cirlceMap,
-                                    width: 2.0,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: 50.0,
-                                height: 50.0,
-                                decoration: const BoxDecoration(
-                                  color: ColorSys.radarMap,
-                                  shape: BoxShape.circle,
-                                ),
-                              ).animateOnPageLoad(animationsMap[
-                                  'containerOnPageLoadAnimation2']!),
-                              Align(
-                                alignment:
-                                    const AlignmentDirectional(-0.3, -0.25),
-                                child: Container(
-                                  width: 16.0,
-                                  height: 16.0,
-                                  decoration: const BoxDecoration(
-                                    color: ColorSys.radarMap,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ).animateOnPageLoad(animationsMap[
-                                    'containerOnPageLoadAnimation3']!),
-                              ),
-                              Align(
-                                alignment:
-                                    const AlignmentDirectional(0.45, -0.5),
-                                child: Container(
-                                  width: 16.0,
-                                  height: 16.0,
-                                  decoration: const BoxDecoration(
-                                    color: ColorSys.radarMap,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ).animateOnPageLoad(animationsMap[
-                                    'containerOnPageLoadAnimation4']!),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Align(
-                      alignment: const AlignmentDirectional(1.0, -1.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: ColorSys.moreDarkBlue,
-                          backgroundColor: ColorSys.darkBlue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                        ),
-                        onPressed: () async {
-                          Navigator.pop(context);
-                        },
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: Colors.white,
-                          size: 24.0,
-                        ),
-                      ).animateOnPageLoad(
-                          animationsMap['iconButtonOnPageLoadAnimation']!),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

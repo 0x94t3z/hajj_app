@@ -6,8 +6,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/helpers/strings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,6 +33,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> registerWithEmailAndPassword() async {
     try {
+      final normalizedName = toTitleCaseName(nameController.text.trim());
+
       // Fetching current location
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -44,12 +48,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       // Update the user's display name
-      await userCredential.user!.updateDisplayName(nameController.text.trim());
+      await userCredential.user!.updateDisplayName(normalizedName);
       String userId = userCredential.user!.uid;
 
       // Get the download URL for the default image from Firebase Storage
       Reference storageRef =
-          FirebaseStorage.instance.ref().child('images/default_profile.jpg');
+          FirebaseStorage.instance.ref().child('images/default_profile.png');
       String imageUrl = await storageRef.getDownloadURL();
 
       // Additional: Save longitude and latitude to Realtime Database along with imageUrl
@@ -57,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           FirebaseDatabase.instance.ref().child('users');
       usersRef.child(userId).set({
         'userId': userId,
-        'displayName': nameController.text.trim(),
+        'displayName': normalizedName,
         'email': emailController.text.trim(),
         'roles': 'Jemaah Haji',
         'latitude': position.latitude,
@@ -65,11 +69,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'imageUrl': imageUrl,
       });
 
-      // Registration successful - Show success message using SnackBar
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration successful!'),
-        ),
+      await showAppPopup(
+        context,
+        type: AppPopupType.success,
+        title: 'Registrasi Berhasil',
+        message: 'Akun berhasil dibuat. Silakan login.',
       );
 
       // Registration successful - Navigate to the next screen or perform actions accordingly
@@ -78,11 +82,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (e) {
-      // Handle registration errors here
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error occurred during registration: $e'),
-        ),
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Registrasi Gagal',
+        message: 'Error occurred during registration: $e',
       );
       print('Error occurred during registration: $e');
     }

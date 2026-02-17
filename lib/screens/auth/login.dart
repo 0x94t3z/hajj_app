@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/app_popup.dart';
+import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/auth/register.dart';
@@ -19,6 +22,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final UserService _userService = UserService();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   int activeIndex = 1;
@@ -112,47 +116,59 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (userCredential.user != null) {
-        print('User ID: ${userCredential.user?.uid}');
-        print('User Email: ${userCredential.user?.email}');
+        final firebaseUser = userCredential.user!;
+        _userService.seedCacheFromAuthUser(firebaseUser);
+        if (!mounted) return;
         _navigateToHomeScreen(context);
+
+        // Refresh in background so UI can render instantly with cached values.
+        unawaited(() async {
+          final profileData = await _userService.primeCurrentUserCache();
+          final rawUserData = await _userService.fetchCurrentUserData();
+          debugPrint(
+            '[LOGIN] authUser=${jsonEncode({
+                  'uid': firebaseUser.uid,
+                  'email': firebaseUser.email ?? '',
+                  'displayName': firebaseUser.displayName ?? '',
+                  'photoURL': firebaseUser.photoURL ?? '',
+                })}',
+          );
+          debugPrint(
+            '[LOGIN] rawUserData=${jsonEncode(rawUserData ?? <String, dynamic>{})}',
+          );
+          debugPrint(
+            '[LOGIN] resolvedProfile=${jsonEncode(profileData ?? <String, dynamic>{})}',
+          );
+        }());
+
+        return;
       }
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
       if (e.code == 'wrong-password') {
-        // Handle incorrect password
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Login Failed'),
-            content: const Text('The password is incorrect. Please try again.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
+        await showAppPopup(
+          context,
+          type: AppPopupType.error,
+          title: 'Login Gagal',
+          message: 'The password is incorrect. Please try again.',
         );
       } else if (e.code == 'user-not-found') {
-        // Handle user not found
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text('Login Failed'),
-            content: const Text('No user found for that email.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
+        await showAppPopup(
+          context,
+          type: AppPopupType.warning,
+          title: 'Login Gagal',
+          message: 'No user found for that email.',
         );
       } else {
-        // Handle other errors
-        print("Error: ${e.message}");
+        await showAppPopup(
+          context,
+          type: AppPopupType.error,
+          title: 'Login Gagal',
+          message: e.message ?? 'Terjadi kesalahan saat login.',
+        );
       }
     }
   }

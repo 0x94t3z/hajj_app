@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
+import 'package:hajj_app/services/user_service.dart';
 
 class TopNavBar extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback onSettingTap;
@@ -24,6 +23,7 @@ class TopNavBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _TopNavBarState extends State<TopNavBar> {
+  final UserService _userService = UserService();
   late String imageUrl = ''; // Initialize imageUrl as an empty string
 
   @override
@@ -33,26 +33,27 @@ class _TopNavBarState extends State<TopNavBar> {
   }
 
   void getData() async {
-    DatabaseReference userRef = FirebaseDatabase.instance
-        .ref()
-        .child("users")
-        .child(FirebaseAuth.instance.currentUser!.uid);
-
-    userRef.once().then((DatabaseEvent event) {
-      if (mounted) {
-        DataSnapshot snapshot = event.snapshot;
-        var userData = snapshot.value;
-        if (userData != null && userData is Map) {
-          setState(() {
-            imageUrl = userData['imageUrl'] as String? ?? '';
-          });
-        } else {
-          print("No data available or data not in the expected format");
-        }
+    try {
+      final cachedProfile = _userService.getCachedCurrentUserProfile();
+      if (cachedProfile != null && mounted) {
+        setState(() {
+          imageUrl = cachedProfile['imageUrl'] as String? ?? '';
+        });
       }
-    }).catchError((error) {
+
+      final userData =
+          await _userService.fetchCurrentUserProfile(forceRefresh: true);
+      if (!mounted) return;
+      if (userData != null) {
+        setState(() {
+          imageUrl = userData['imageUrl'] as String? ?? '';
+        });
+      } else {
+        print("No data available or data not in the expected format");
+      }
+    } catch (error) {
       print("Error fetching data: $error");
-    });
+    }
   }
 
   @override
@@ -83,24 +84,45 @@ class _TopNavBarState extends State<TopNavBar> {
                 height: 35,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: imageUrl.isNotEmpty ? null : Colors.white,
-                  image: imageUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(imageUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
+                  color: Colors.white,
                 ),
-                child: Transform.translate(
-                  offset: const Offset(15, -15),
-                  child: Container(
-                    margin: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      border: Border.all(width: 3, color: Colors.white),
-                      shape: BoxShape.circle,
-                      color: Colors.green,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: imageUrl.trim().isEmpty
+                            ? const Icon(
+                                Icons.person,
+                                color: ColorSys.darkBlue,
+                                size: 20,
+                              )
+                            : Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.person,
+                                    color: ColorSys.darkBlue,
+                                    size: 20,
+                                  );
+                                },
+                              ),
+                      ),
                     ),
-                  ),
+                    Transform.translate(
+                      offset: const Offset(15, -15),
+                      child: Container(
+                        margin: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 3, color: Colors.white),
+                          shape: BoxShape.circle,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

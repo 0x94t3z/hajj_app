@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:hajj_app/helpers/name_formatter.dart';
 
 class UserModel {
   final String userId;
@@ -24,7 +28,7 @@ class UserModel {
   factory UserModel.fromMap(Map<String, dynamic> data) {
     return UserModel(
       userId: data['userId'] ?? '',
-      name: data['displayName'] ?? '',
+      name: toTitleCaseName(data['displayName']?.toString() ?? ''),
       distance: '0 Km',
       duration: '10 Mins',
       roles: data['roles'] ?? '',
@@ -41,22 +45,69 @@ class UserModel {
               : 0.0), // Fallback to 0.0 for invalid values
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'displayName': name,
+      'distance': distance,
+      'duration': duration,
+      'roles': roles,
+      'imageUrl': imageUrl,
+      'latitude': latitude,
+      'longitude': longitude,
+    };
+  }
 }
 
-Future<Map<String, List<UserModel>>> fetchModelsFromFirebase() async {
-  final databaseReference = FirebaseDatabase.instance.ref();
-  DatabaseEvent event =
-      await databaseReference.child('users').once(); // Await directly here
+class UserDataAccessException implements Exception {
+  final String message;
+  UserDataAccessException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+Future<Map<String, List<UserModel>>> fetchModelsFromFirebase({
+  bool logPetugasJson = false,
+}) async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  if (currentUser == null) {
+    throw UserDataAccessException('Please sign in to access user data.');
+  }
+
+  final usersRef = FirebaseDatabase.instance.ref('users');
+  late DatabaseEvent event;
+  try {
+    event = await usersRef.once();
+  } on FirebaseException catch (e) {
+    if (e.code == 'permission-denied') {
+      throw UserDataAccessException(
+        'Permission denied by Firebase rules when reading /users.',
+      );
+    }
+    rethrow;
+  }
 
   List<UserModel> allUsers = []; // Fetch all users
-
-  Map<dynamic, dynamic>? values =
-      event.snapshot.value as Map<dynamic, dynamic>?;
-
+  final values = event.snapshot.value as Map<dynamic, dynamic>?;
   if (values != null) {
-    values.forEach((key, value) {
-      allUsers.add(UserModel.fromMap(Map<String, dynamic>.from(value)));
-    });
+    final rootMap = Map<String, dynamic>.from(values);
+    final isSingleUserObject = rootMap.containsKey('userId') ||
+        rootMap.containsKey('displayName') ||
+        rootMap.containsKey('email') ||
+        rootMap.containsKey('roles') ||
+        rootMap.containsKey('imageUrl');
+
+    if (isSingleUserObject) {
+      allUsers.add(UserModel.fromMap(rootMap));
+    } else {
+      values.forEach((key, value) {
+        if (value is Map) {
+          allUsers.add(UserModel.fromMap(Map<String, dynamic>.from(value)));
+        }
+      });
+    }
   }
 
   // List of valid roles for Petugas Haji
@@ -69,14 +120,48 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase() async {
     "PELAYANAN TRANSPORTASI"
   ];
 
-  // Filter users with role 'Jemaah Haji'
-  List<UserModel> jemaahHaji =
-      allUsers.where((user) => user.roles == 'Jemaah Haji').toList();
+  bool isPetugasHajiRole(String role) => validPetugasHajiRoles.contains(role);
 
-  // Filter users with valid roles for 'Petugas Haji'
-  List<UserModel> petugasHaji = allUsers
-      .where((user) => validPetugasHajiRoles.contains(user.roles))
-      .toList();
+  final petugasRawJson = <Map<String, dynamic>>[];
+  if (values != null) {
+    final rootMap = Map<String, dynamic>.from(values);
+    final isSingleUserObject = rootMap.containsKey('userId') ||
+        rootMap.containsKey('displayName') ||
+        rootMap.containsKey('email') ||
+        rootMap.containsKey('roles') ||
+        rootMap.containsKey('imageUrl');
+
+    if (isSingleUserObject) {
+      final role = rootMap['roles']?.toString() ?? '';
+      if (isPetugasHajiRole(role)) {
+        petugasRawJson.add(rootMap);
+      }
+    } else {
+      values.forEach((key, value) {
+        if (value is Map) {
+          final mapValue = Map<String, dynamic>.from(value);
+          final role = mapValue['roles']?.toString() ?? '';
+          if (isPetugasHajiRole(role)) {
+            petugasRawJson.add(mapValue);
+          }
+        }
+      });
+    }
+  }
+
+  // Role di dalam daftar = Petugas Haji
+  List<UserModel> petugasHaji =
+      allUsers.where((user) => isPetugasHajiRole(user.roles)).toList();
+
+  // Selain role petugas = Jemaah Haji
+  List<UserModel> jemaahHaji =
+      allUsers.where((user) => !isPetugasHajiRole(user.roles)).toList();
+
+  if (logPetugasJson) {
+    final prettyJson =
+        const JsonEncoder.withIndent('  ').convert(petugasRawJson);
+    print('PETUGAS_HAJI_JSON: $prettyJson');
+  }
 
   return {
     'jemaahHaji': jemaahHaji,

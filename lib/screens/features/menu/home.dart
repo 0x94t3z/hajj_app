@@ -4,7 +4,6 @@ import 'package:hajj_app/widgets/components/bottom_nav_bar.dart';
 import 'package:hajj_app/widgets/pages/first.dart';
 import 'package:hajj_app/widgets/pages/second.dart';
 import 'package:hajj_app/widgets/pages/third.dart';
-import 'package:hajj_app/widgets/pages/fourth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,33 +15,33 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  int _secondRefreshTick = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _currentIndex != 3
+      appBar: _currentIndex != 2
           ? TopNavBar(
               onSettingTap: () {
-                // Handle Settings tap (_currentIndex = 3)
+                // Handle Settings tap (_currentIndex = 2)
                 setState(() {
-                  _currentIndex = 3;
+                  _currentIndex = 2;
                 });
               },
               onMyProfileTap: () {
-                // Handle My Profile tap (_currentIndex = 3)
+                // Handle My Profile tap (_currentIndex = 2)
                 setState(() {
-                  _currentIndex = 3;
+                  _currentIndex = 2;
                 });
               },
             )
           : null,
       body: IndexedStack(
         index: _currentIndex,
-        children: const [
-          FirstWidget(),
-          SecondWidget(),
-          ThirdWidget(),
-          FourthWidget(),
+        children: [
+          const FirstWidget(),
+          SecondWidget(refreshTick: _secondRefreshTick),
+          const ThirdWidget(),
         ],
       ),
       bottomNavigationBar: BottomNavBar(
@@ -50,6 +49,9 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (index) {
           setState(() {
             _currentIndex = index;
+            if (index == 1) {
+              _secondRefreshTick++;
+            }
           });
         },
       ),
