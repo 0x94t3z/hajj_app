@@ -28,6 +28,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        def mapboxAccessToken = project.findProperty("MAPBOX_ACCESS_TOKEN") ?: ""
+        resValue "string", "mapbox_access_token", mapboxAccessToken
         ndk {
             abiFilters 'armeabi-v7a','arm64-v8a','x86_64', 'x86'
         }

@@ -21,6 +21,9 @@ migrate_working_dir/
 *.iws
 .idea/
 
+# Local secret configs
+ios/Flutter/Secrets.xcconfig
+
 .vscode/
 
 # Flutter/Dart/Pub related
