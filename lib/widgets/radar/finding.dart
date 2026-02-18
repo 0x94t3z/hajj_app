@@ -435,29 +435,19 @@ class _FindingWidgetState extends State<FindingWidget>
                       Positioned(
                         top: 10.0,
                         right: 4.0,
-                        child: SizedBox(
-                          width: 64.0,
-                          height: 48.0,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              foregroundColor: ColorSys.moreDarkBlue,
-                              backgroundColor: Colors.red,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              padding: EdgeInsets.zero,
-                            ),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                            },
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 26.0,
-                            ),
-                          ).animateOnPageLoad(
-                              animationsMap['iconButtonOnPageLoadAnimation']!),
-                        ),
+                        child: IconButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                          },
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.red,
+                            size: 32.0,
+                          ),
+                        ).animateOnPageLoad(
+                            animationsMap['iconButtonOnPageLoadAnimation']!),
                       ),
                     ],
                   ),

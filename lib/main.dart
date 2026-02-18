@@ -21,6 +21,8 @@ import 'package:hajj_app/screens/features/menu/find_my.dart';
 import 'package:hajj_app/screens/features/menu/setting.dart';
 import 'package:hajj_app/services/local_notification_service.dart';
 import 'package:hajj_app/services/user_service.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart'
+    show MapboxOptions;
 
 import 'firebase_options.dart';
 
@@ -32,9 +34,19 @@ void main() async {
   );
 
   await dotenv.load();
+  _configureMapboxAccessToken();
   await LocalNotificationService.initialize();
 
   runApp(const HajjApp());
+}
+
+void _configureMapboxAccessToken() {
+  final token = dotenv.env['MAPBOX_PUBLIC_KEY']?.trim();
+  if (token == null || token.isEmpty) {
+    debugPrint('MAPBOX_PUBLIC_KEY is missing.');
+    return;
+  }
+  MapboxOptions.setAccessToken(token);
 }
 
 class HajjApp extends StatefulWidget {

@@ -37,6 +37,9 @@ class _MapScreenState extends State<MapScreen> {
   List<UserModel> users = [];
   bool _isCurrentUserPetugas = false;
   StreamSubscription<geo.Position>? _navigationPositionSubscription;
+  StreamSubscription<geo.Position>? _nearestPositionSubscription;
+  DateTime? _lastNearestRefresh;
+  bool _isNearestRefreshInFlight = false;
 
   bool _isNavigationLoading = false;
   bool _isNavigationRunning = false;
@@ -62,6 +65,7 @@ class _MapScreenState extends State<MapScreen> {
   static const double _offRouteThresholdMeters = 35.0;
   static const Duration _minimumRerouteGap = Duration(seconds: 8);
   static const int _maxNearestOfficers = 10;
+  static const Duration _nearestRefreshInterval = Duration(seconds: 20);
 
   Future<void> _applyStandard3DStyle() async {
     try {
@@ -96,6 +100,7 @@ class _MapScreenState extends State<MapScreen> {
     _getCurrentUserRole();
     // Start a timer to update user distances periodically
     _getCurrentPosition();
+    _startNearestUpdates();
     // Call a method to fetch or initialize users when the screen loads
     fetchData();
   }
@@ -132,6 +137,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void dispose() {
     _navigationPositionSubscription?.cancel();
+    _nearestPositionSubscription?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -404,13 +410,10 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _updateUserDistances() async {
+  Future<void> _updateUserDistancesForPosition(
+    geo.Position position,
+  ) async {
     try {
-      // Get the current position of the device
-      geo.Position position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.high,
-      );
-
       // Get the current user's role
       String currentUserRole = await _getCurrentUserRole();
       print('Current user role: $currentUserRole');
@@ -454,6 +457,47 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _refreshNearestOfficers(
+    geo.Position position, {
+    bool force = false,
+  }) async {
+    if (_isNearestRefreshInFlight) return;
+    final now = DateTime.now();
+    if (!force &&
+        _lastNearestRefresh != null &&
+        now.difference(_lastNearestRefresh!) < _nearestRefreshInterval) {
+      return;
+    }
+
+    _isNearestRefreshInFlight = true;
+    _lastNearestRefresh = now;
+    try {
+      await _updateUserLocation(position.latitude, position.longitude);
+      await _updateUserDistancesForPosition(position);
+    } finally {
+      _isNearestRefreshInFlight = false;
+    }
+  }
+
+  void _startNearestUpdates() {
+    _nearestPositionSubscription?.cancel();
+    const locationSettings = geo.LocationSettings(
+      accuracy: geo.LocationAccuracy.high,
+      distanceFilter: 10,
+    );
+
+    _nearestPositionSubscription = geo.Geolocator.getPositionStream(
+      locationSettings: locationSettings,
+    ).listen(
+      (position) {
+        unawaited(_refreshNearestOfficers(position));
+      },
+      onError: (error) {
+        print('Nearest location stream error: $error');
+      },
+    );
+  }
+
   Future<void> _getCurrentPosition() async {
     try {
       geo.Position position = await geo.Geolocator.getCurrentPosition(
@@ -464,7 +508,7 @@ class _MapScreenState extends State<MapScreen> {
       await _updateUserLocation(position.latitude, position.longitude);
 
       // Refresh nearest officer list (max 10)
-      _updateUserDistances();
+      await _refreshNearestOfficers(position, force: true);
     } catch (e) {
       print(e.toString());
     }
@@ -1173,7 +1217,8 @@ class _MapScreenState extends State<MapScreen> {
     final distanceText = _formatDistanceSmart(user.distance);
     final durationText = user.duration;
     final distDurPainter = TextPainter(
-      text: TextSpan(text: '$distanceText  $durationText', style: distanceDurationStyle),
+      text: TextSpan(
+          text: '$distanceText  $durationText', style: distanceDurationStyle),
       maxLines: 1,
       textDirection: Directionality.of(context),
     )..layout();
