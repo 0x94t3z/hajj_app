@@ -397,8 +397,6 @@ class DirectionMapScreen extends StatefulWidget {
 
 class _DirectionMapScreenState extends State<DirectionMapScreen> {
   final UserService _userService = UserService();
-  final bool _showBackButton = false;
-
   MapboxMap? _mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager;
@@ -457,6 +455,8 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
         await map.annotations.createPolylineAnnotationManager();
 
     _destinationMarker ??= await _loadMarkerBytes('assets/images/pin_3.png');
+
+    await map.compass.updateSettings(CompassSettings(enabled: false));
 
     await map.location.updateSettings(
       LocationComponentSettings(
@@ -1184,14 +1184,18 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     required Color iconColor,
     VoidCallback? onTap,
   }) {
-    return SizedBox(
+    return Container(
       width: 58,
       height: 58,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+      ),
       child: Material(
         color: const Color(0xFF131823),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14.5),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14.5),
           onTap: onTap,
           child: Icon(icon, color: iconColor, size: 30),
         ),
@@ -1303,34 +1307,6 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
               pitch: 70,
             ),
           ),
-          if (_showBackButton)
-            Positioned(
-              top: 58,
-              left: 18,
-              child: SafeArea(
-                child: InkWell(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(99),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Iconsax.arrow_left_2,
-                      color: ColorSys.darkBlue,
-                    ),
-                  ),
-                ),
-              ),
-            ),
           Positioned(
             left: 0,
             right: 0,

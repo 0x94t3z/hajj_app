@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +41,10 @@ class _MapScreenState extends State<MapScreen> {
   bool _isNavigationLoading = false;
   bool _isNavigationRunning = false;
   bool _isRerouting = false;
+  UserModel? _selectedOfficerPreview;
+  Offset? _selectedOfficerPreviewOffset;
+  bool _isResolvingPreviewAnchor = false;
+  bool _pendingPreviewAnchorRefresh = false;
   UserModel? _activeNavigationTarget;
   List<Position> _activeRouteCoordinates = [];
   List<_RouteStep> _activeRouteSteps = [];
@@ -56,6 +62,31 @@ class _MapScreenState extends State<MapScreen> {
   static const double _offRouteThresholdMeters = 35.0;
   static const Duration _minimumRerouteGap = Duration(seconds: 8);
   static const int _maxNearestOfficers = 10;
+
+  Future<void> _applyStandard3DStyle() async {
+    try {
+      await mapboxMap?.style.setStyleImportConfigProperties(
+        'basemap',
+        {
+          'lightPreset': 'day',
+          'theme': 'default',
+          'show3dObjects': true,
+          'showRoadLabels': true,
+        },
+      );
+    } catch (_) {
+      // Keep map usable even if style import config is unavailable.
+    }
+  }
+
+  void _onMapStyleLoaded(StyleLoadedEventData _) {
+    unawaited(_applyStandard3DStyle());
+  }
+
+  void _onMapCameraChanged(CameraChangedEventData _) {
+    if (_selectedOfficerPreview == null) return;
+    unawaited(_refreshSelectedOfficerPreviewAnchor());
+  }
 
   @override
   void initState() {
@@ -107,6 +138,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
+    unawaited(_applyStandard3DStyle());
     mapboxMap?.setCamera(
       CameraOptions(
         center: Point(
@@ -130,15 +162,47 @@ class _MapScreenState extends State<MapScreen> {
         await mapboxMap?.annotations.createPointAnnotationManager();
     _polylineAnnotationManager ??=
         await mapboxMap?.annotations.createPolylineAnnotationManager();
-    _destinationMarker ??= await _loadMarkerBytes('assets/images/pin_3.png');
+    _destinationMarker ??= await _buildOfficerCircleMarkerBytes();
 
     // Auto zoom to current user location when map is ready (same behavior as second.dart).
     await _getUserLocation();
   }
 
-  Future<Uint8List> _loadMarkerBytes(String assetPath) async {
-    final bytes = await rootBundle.load(assetPath);
-    return bytes.buffer.asUint8List();
+  Future<Uint8List> _buildOfficerCircleMarkerBytes() async {
+    const size = 180.0;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = const Offset(size / 2, size / 2);
+
+    final outerHaloPaint = Paint()
+      ..color = ColorSys.darkBlue.withValues(alpha: 0.24)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, size * 0.43, outerHaloPaint);
+
+    final middleHaloPaint = Paint()
+      ..color = ColorSys.darkBlue.withValues(alpha: 0.34)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, size * 0.31, middleHaloPaint);
+
+    final whiteRingPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, size * 0.22, whiteRingPaint);
+
+    final coreDotPaint = Paint()
+      ..color = ColorSys.darkBlue
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, size * 0.16, coreDotPaint);
+
+    final innerDotPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, size * 0.06, innerDotPaint);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.toInt(), size.toInt());
+    final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    return pngBytes!.buffer.asUint8List();
   }
 
   Future<void> _clearMapOverlays() async {
@@ -162,11 +226,11 @@ class _MapScreenState extends State<MapScreen> {
           coordinates: Position(longitude, latitude),
         ),
         image: imageBytes,
-        iconSize: 0.8,
+        iconSize: 0.9,
         textField: label,
         textSize: 12.5,
-        textColor: Colors.black.value,
-        textHaloColor: Colors.white.value,
+        textColor: Colors.black.toARGB32(),
+        textHaloColor: Colors.white.toARGB32(),
         textHaloWidth: 0.8,
         textOffset: textOffset ?? [0.0, 0.8],
       ),
@@ -421,8 +485,9 @@ class _MapScreenState extends State<MapScreen> {
             center: Point(
               coordinates: Position(position.longitude, position.latitude),
             ),
-            zoom: 18.0,
-            pitch: 70,
+            zoom: 16.0,
+            pitch: 0.0,
+            bearing: 0.0,
           ),
           MapAnimationOptions(duration: 800),
         );
@@ -461,6 +526,22 @@ class _MapScreenState extends State<MapScreen> {
       if (word.isEmpty) return word;
       return '${word[0].toUpperCase()}${word.substring(1)}';
     }).join(' ');
+  }
+
+  String _formatDistanceSmart(String rawDistance) {
+    final cleaned = rawDistance.trim();
+    if (cleaned.isEmpty) return cleaned;
+
+    final kmMatch =
+        RegExp(r'([\d.,]+)\s*km', caseSensitive: false).firstMatch(cleaned);
+    if (kmMatch == null) {
+      return cleaned;
+    }
+
+    final kmValue = double.tryParse(kmMatch.group(1)!.replaceAll(',', '.'));
+    if (kmValue == null) return cleaned;
+
+    return '${kmValue.toStringAsFixed(2)} Km';
   }
 
   String _toIndonesianInstruction(String instruction) {
@@ -636,14 +717,24 @@ class _MapScreenState extends State<MapScreen> {
     await _clearMapOverlays();
 
     if (route.coordinates.isNotEmpty) {
+      try {
+        await _polylineAnnotationManager
+            ?.setLineElevationReference(LineElevationReference.GROUND);
+        await _polylineAnnotationManager?.setLineZOffset(2.2);
+        await _polylineAnnotationManager?.setLineDepthOcclusionFactor(0.0);
+      } catch (_) {
+        // Fallback: some devices/styles may not support elevated polyline settings.
+      }
+
       await _polylineAnnotationManager?.create(
         PolylineAnnotationOptions(
           geometry: LineString(coordinates: route.coordinates),
           lineJoin: LineJoin.ROUND,
-          lineColor: 0xFF74C1FF,
+          lineColor: ColorSys.navigationRoutePrimary.toARGB32(),
           lineWidth: 9.0,
-          lineBorderColor: 0xFF2D6CFF,
+          lineBorderColor: ColorSys.navigationRouteBorder.toARGB32(),
           lineBorderWidth: 3.0,
+          lineZOffset: 2.2,
           lineBlur: 0.2,
           lineEmissiveStrength: 0.5,
         ),
@@ -657,21 +748,68 @@ class _MapScreenState extends State<MapScreen> {
       imageBytes: _destinationMarker,
       textOffset: [0.0, -2.0],
     );
-
-    final centerLatitude = (origin.latitude + destinationUser.latitude) / 2;
-    final centerLongitude = (origin.longitude + destinationUser.longitude) / 2;
-
-    mapboxMap?.flyTo(
-      CameraOptions(
-        center: Point(
-          coordinates: Position(centerLongitude, centerLatitude),
-        ),
-        zoom: 18.0,
-        pitch: 70,
-        bearing: origin.heading > 0 ? origin.heading : 0,
-      ),
-      MapAnimationOptions(duration: 1200),
+    await _showRouteOverviewCamera(
+      origin: origin,
+      destinationUser: destinationUser,
+      route: route,
     );
+  }
+
+  Future<void> _showRouteOverviewCamera({
+    required geo.Position origin,
+    required UserModel destinationUser,
+    required _NavigationRouteData route,
+  }) async {
+    final currentMap = mapboxMap;
+    if (currentMap == null) return;
+
+    final points = <Point>[
+      Point(coordinates: Position(origin.longitude, origin.latitude)),
+      ...route.coordinates.map((coordinate) => Point(coordinates: coordinate)),
+      Point(
+        coordinates:
+            Position(destinationUser.longitude, destinationUser.latitude),
+      ),
+    ];
+
+    try {
+      final camera = await currentMap.cameraForCoordinatesPadding(
+        points,
+        CameraOptions(
+          pitch: 0.0,
+          bearing: 0.0,
+        ),
+        MbxEdgeInsets(
+          top: 120.0,
+          left: 40.0,
+          bottom: 300.0,
+          right: 40.0,
+        ),
+        17.0,
+        null,
+      );
+      await currentMap.easeTo(
+        camera,
+        MapAnimationOptions(duration: 900),
+      );
+    } catch (_) {
+      final centerLatitude = (origin.latitude + destinationUser.latitude) / 2;
+      final centerLongitude =
+          (origin.longitude + destinationUser.longitude) / 2;
+      await currentMap.flyTo(
+        CameraOptions(
+          center: Point(coordinates: Position(centerLongitude, centerLatitude)),
+          zoom: 15.2,
+          pitch: 0.0,
+          bearing: 0.0,
+        ),
+        MapAnimationOptions(duration: 900),
+      );
+    }
+
+    if (_selectedOfficerPreview?.userId == destinationUser.userId) {
+      await _refreshSelectedOfficerPreviewAnchor();
+    }
   }
 
   // ignore: unused_element
@@ -881,17 +1019,6 @@ class _MapScreenState extends State<MapScreen> {
       );
       _updateNextInstruction();
     });
-
-    mapboxMap?.setCamera(
-      CameraOptions(
-        center: Point(
-          coordinates: Position(position.longitude, position.latitude),
-        ),
-        zoom: 18.0,
-        bearing: position.heading > 0 ? position.heading : 0,
-        pitch: 70,
-      ),
-    );
   }
 
   Future<void> _getRouteDirection(UserModel user) async {
@@ -951,6 +1078,8 @@ class _MapScreenState extends State<MapScreen> {
     if (!mounted) return;
     setState(() {
       _hideBackButton = true;
+      _selectedOfficerPreview = null;
+      _selectedOfficerPreviewOffset = null;
     });
     await Navigator.push(
       context,
@@ -962,6 +1091,265 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _hideBackButton = false;
     });
+  }
+
+  Future<void> _onOfficerCardTap(UserModel user) async {
+    if (!mounted) return;
+    setState(() {
+      _selectedOfficerPreview = user;
+      _selectedOfficerPreviewOffset = null;
+    });
+    await _getRouteDirection(user);
+    await _refreshSelectedOfficerPreviewAnchor();
+  }
+
+  Future<void> _refreshSelectedOfficerPreviewAnchor() async {
+    final selectedUser = _selectedOfficerPreview;
+    final currentMap = mapboxMap;
+    if (selectedUser == null || currentMap == null) return;
+    if (_isNavigationRunning || _isNavigationLoading) return;
+
+    if (_isResolvingPreviewAnchor) {
+      _pendingPreviewAnchorRefresh = true;
+      return;
+    }
+
+    _isResolvingPreviewAnchor = true;
+    try {
+      final pixel = await currentMap.pixelForCoordinate(
+        Point(
+          coordinates: Position(selectedUser.longitude, selectedUser.latitude),
+        ),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _selectedOfficerPreviewOffset = Offset(pixel.x, pixel.y);
+      });
+    } catch (_) {
+      // Keep map stable even if anchor projection fails.
+    } finally {
+      _isResolvingPreviewAnchor = false;
+      if (_pendingPreviewAnchorRefresh) {
+        _pendingPreviewAnchorRefresh = false;
+        unawaited(_refreshSelectedOfficerPreviewAnchor());
+      }
+    }
+  }
+
+  Widget _buildOfficerPreviewPopup() {
+    final user = _selectedOfficerPreview;
+    final anchor = _selectedOfficerPreviewOffset;
+    if (user == null ||
+        anchor == null ||
+        _isNavigationRunning ||
+        _isNavigationLoading) {
+      return const SizedBox.shrink();
+    }
+
+    const cardHeight = 90.0;
+    final screenSize = MediaQuery.of(context).size;
+    final displayName = _toTitleCase(user.name);
+    final nameStyle = textStyle(
+      fontSize: 13.5,
+      fontWeight: FontWeight.w700,
+      color: ColorSys.darkBlue,
+    );
+    const horizontalPadding = 24.0; // 12 left + 12 right
+    const avatarAndGapWidth = 64.0; // 54 avatar + 10 gap
+    const minBubbleWidth = 168.0;
+    final maxBubbleWidth = math.min(320.0, screenSize.width - 24.0);
+
+    final textPainter = TextPainter(
+      text: TextSpan(text: displayName, style: nameStyle),
+      maxLines: 2,
+      textDirection: Directionality.of(context),
+    )..layout(maxWidth: maxBubbleWidth - horizontalPadding - avatarAndGapWidth);
+
+    final distanceDurationStyle = textStyle(
+      fontSize: 11,
+      color: ColorSys.darkBlue,
+    );
+    final distanceText = _formatDistanceSmart(user.distance);
+    final durationText = user.duration;
+    final distDurPainter = TextPainter(
+      text: TextSpan(text: '$distanceText  $durationText', style: distanceDurationStyle),
+      maxLines: 1,
+      textDirection: Directionality.of(context),
+    )..layout();
+    // icons (12+4 + 12+4) + gap (8) = 40
+    final distDurRowWidth = distDurPainter.width + 40.0;
+
+    final contentWidth = math.max(textPainter.width, distDurRowWidth);
+    final cardWidth =
+        (horizontalPadding + avatarAndGapWidth + contentWidth + 18.0)
+            .clamp(minBubbleWidth, maxBubbleWidth)
+            .toDouble();
+
+    final left = (anchor.dx - (cardWidth / 2))
+        .clamp(12.0, math.max(12.0, screenSize.width - cardWidth - 12.0))
+        .toDouble();
+    final top = (anchor.dy - cardHeight - 22.0)
+        .clamp(94.0, math.max(94.0, screenSize.height - cardHeight - 250.0))
+        .toDouble();
+    final pointerLeft =
+        (anchor.dx - left - 6.0).clamp(20.0, cardWidth - 20.0).toDouble();
+
+    return Positioned(
+      left: left,
+      top: top,
+      width: cardWidth,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            height: cardHeight,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(999.0),
+              border: Border.all(
+                color: ColorSys.darkBlue.withValues(alpha: 0.08),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 16.0,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999.0),
+                  child: SizedBox(
+                    width: 54.0,
+                    height: 54.0,
+                    child: user.imageUrl.trim().isEmpty
+                        ? Container(
+                            color: Colors.grey.shade200,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Iconsax.profile_circle,
+                              color: ColorSys.darkBlue,
+                              size: 30,
+                            ),
+                          )
+                        : Image.network(
+                            user.imageUrl.trim(),
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Iconsax.profile_circle,
+                                  color: ColorSys.darkBlue,
+                                  size: 30,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 10.0),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: nameStyle,
+                        ),
+                        const SizedBox(height: 4.0),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.directions_walk,
+                              size: 12.0,
+                              color: ColorSys.darkBlue,
+                            ),
+                            const SizedBox(width: 4.0),
+                            Text(
+                              _formatDistanceSmart(user.distance),
+                              style: textStyle(
+                                fontSize: 11,
+                                color: ColorSys.darkBlue,
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                            const Icon(
+                              Iconsax.clock,
+                              size: 12.0,
+                              color: ColorSys.darkBlue,
+                            ),
+                            const SizedBox(width: 4.0),
+                            Text(
+                              user.duration,
+                              style: textStyle(
+                                fontSize: 11,
+                                color: ColorSys.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: pointerLeft - 8.0,
+            bottom: -34.0,
+            child: SizedBox(
+              width: 16.0,
+              height: 34.0,
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Positioned(
+                    top: 2.0,
+                    child: ClipPath(
+                      clipper: _LongTriangleTailClipper(),
+                      child: Container(
+                        width: 16.0,
+                        height: 32.0,
+                        color: Colors.black.withValues(alpha: 0.07),
+                      ),
+                    ),
+                  ),
+                  ClipPath(
+                    clipper: _LongTriangleTailClipper(),
+                    child: Container(
+                      width: 14.0,
+                      height: 30.0,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: ColorSys.darkBlue.withValues(alpha: 0.08),
+                          width: 0.8,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _openHelpChat(UserModel user) {
@@ -1072,11 +1460,13 @@ class _MapScreenState extends State<MapScreen> {
                           color: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 4.0),
-                        Text(
-                          user.distance,
-                          style: textStyle(
-                            fontSize: 14,
-                            color: ColorSys.darkBlue,
+                        Flexible(
+                          child: Text(
+                            user.distance,
+                            style: textStyle(
+                              fontSize: 14,
+                              color: ColorSys.darkBlue,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10.0),
@@ -1086,11 +1476,13 @@ class _MapScreenState extends State<MapScreen> {
                           color: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 4.0),
-                        Text(
-                          user.duration,
-                          style: textStyle(
-                            fontSize: 14,
-                            color: ColorSys.darkBlue,
+                        Flexible(
+                          child: Text(
+                            user.duration,
+                            style: textStyle(
+                              fontSize: 14,
+                              color: ColorSys.darkBlue,
+                            ),
                           ),
                         ),
                       ],
@@ -1161,7 +1553,7 @@ class _MapScreenState extends State<MapScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 18),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF3E6EF0),
+          color: ColorSys.navigationPanelPrimary,
           borderRadius: BorderRadius.circular(22),
           boxShadow: [
             BoxShadow(
@@ -1207,7 +1599,7 @@ class _MapScreenState extends State<MapScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
-        color: const Color(0xFF3E6EF0),
+        color: ColorSys.navigationPanelPrimary,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
@@ -1263,7 +1655,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
             Container(
-              color: const Color(0xFF2A4FB5),
+              color: ColorSys.navigationPanelSecondary,
               padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
               child: Row(
                 children: [
@@ -1306,7 +1698,7 @@ class _MapScreenState extends State<MapScreen> {
       width: 58,
       height: 58,
       child: Material(
-        color: const Color(0xFF131823),
+        color: ColorSys.navigationDockButton,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -1322,7 +1714,7 @@ class _MapScreenState extends State<MapScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 18),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xCC0E131E),
+        color: ColorSys.navigationDockBackground,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
@@ -1367,7 +1759,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           _buildDockButton(
             icon: Icons.close_rounded,
-            iconColor: const Color(0xFFFF4A57),
+            iconColor: ColorSys.navigationDanger,
             onTap: () {
               _stopNavigation(
                 clearMapRoute: true,
@@ -1388,8 +1780,10 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           MapWidget(
-            styleUri: MapboxStyles.MAPBOX_STREETS,
+            styleUri: MapboxStyles.STANDARD,
             onMapCreated: _onMapCreated,
+            onStyleLoadedListener: _onMapStyleLoaded,
+            onCameraChangeListener: _onMapCameraChanged,
           ),
           if (!_hideBackButton)
             Positioned(
@@ -1496,7 +1890,7 @@ class _MapScreenState extends State<MapScreen> {
                                 scrollDirection: Axis.horizontal,
                                 children: nearestUsers.map((user) {
                                   return InkWell(
-                                    onTap: () => _getRouteDirection(user),
+                                    onTap: () => _onOfficerCardTap(user),
                                     child: buildUserList(user),
                                   );
                                 }).toList(),
@@ -1506,6 +1900,10 @@ class _MapScreenState extends State<MapScreen> {
                         ),
                       ),
           ),
+          if (!_isCurrentUserPetugas &&
+              !(_isNavigationRunning || _isNavigationLoading) &&
+              _selectedOfficerPreview != null)
+            _buildOfficerPreviewPopup(),
           if (!_isNavigationRunning && !_isNavigationLoading)
             Positioned(
               bottom: 225.0,
@@ -1555,4 +1953,18 @@ class _RouteStep {
     required this.latitude,
     required this.longitude,
   });
+}
+
+class _LongTriangleTailClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width * 0.5, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

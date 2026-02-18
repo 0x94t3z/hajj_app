@@ -13,6 +13,15 @@ class ColorSys {
   static const Color backgroundMap = Color.fromRGBO(236, 231, 228, 1);
   static const Color cirlceMap = Color.fromRGBO(225, 219, 215, 1);
   static const Color radarMap = Color.fromRGBO(163, 192, 201, 1);
+
+  // Shared navigation-direction palette (maps.dart + navigation.dart)
+  static const Color navigationPanelPrimary = Color(0xFF3E6EF0);
+  static const Color navigationPanelSecondary = Color(0xFF2A4FB5);
+  static const Color navigationDockBackground = Color(0xCC0E131E);
+  static const Color navigationDockButton = Color(0xFF131823);
+  static const Color navigationRoutePrimary = Color(0xFF74C1FF);
+  static const Color navigationRouteBorder = Color(0xFF2D6CFF);
+  static const Color navigationDanger = Color(0xFFFF4A57);
 }
 
 TextStyle titleTextStyle() {
