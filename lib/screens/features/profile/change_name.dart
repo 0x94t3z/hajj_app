@@ -1,12 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:iconsax/iconsax.dart';
 
 class EditNameScreen extends StatefulWidget {
   final String initialName;
-  final Function(String) updateName;
+  final Future<void> Function(String) updateName;
 
   const EditNameScreen({
     Key? key,
@@ -34,15 +35,41 @@ class _EditNameScreenState extends State<EditNameScreen> {
   Future<void> _saveChanges() async {
     final newName = toTitleCaseName(_nameController.text);
 
-    // Update the name in the Realtime Database
-    widget.updateName(newName);
-
-    // Refresh the user data to sync changes with the server
-    try {
-      await FirebaseAuth.instance.currentUser!.reload();
-    } catch (e) {
-      print("Error while reloading user data: $e");
+    if (newName.trim().isEmpty) {
+      await showAppPopup(
+        context,
+        type: AppPopupType.warning,
+        title: 'Missing Name',
+        message: 'Please enter your name.',
+      );
+      return;
     }
+
+    try {
+      await widget.updateName(newName);
+
+      // Refresh the user data to sync changes with the server
+      try {
+        await FirebaseAuth.instance.currentUser!.reload();
+      } catch (e) {
+        print("Error while reloading user data: $e");
+      }
+    } catch (e) {
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Update Failed',
+        message: 'Unable to update your name. Please try again.',
+      );
+      return;
+    }
+
+    await showAppPopup(
+      context,
+      type: AppPopupType.success,
+      title: 'Name Updated',
+      message: 'Your name has been updated.',
+    );
 
     // ignore: use_build_context_synchronously
     Navigator.pop(context, newName);

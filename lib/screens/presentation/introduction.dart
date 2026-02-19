@@ -35,10 +35,10 @@ class _IntroductionState extends State<Introduction> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ColorSys.surface,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: ColorSys.surface,
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20, top: 20),
@@ -46,7 +46,11 @@ class _IntroductionState extends State<Introduction> {
               onTap: navigateToLogin,
               child: Text(
                 'Skip',
-                style: textStyle(fontSize: 16),
+                style: textStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: ColorSys.darkBlue,
+                ),
               ),
             ),
           )
@@ -99,7 +103,7 @@ class _IntroductionState extends State<Introduction> {
       width: isActive ? 30 : 6,
       margin: const EdgeInsets.only(right: 5),
       decoration: BoxDecoration(
-        color: ColorSys.darkBlue,
+        color: isActive ? ColorSys.darkBlue : ColorSys.primarySoft,
         borderRadius: BorderRadius.circular(5),
       ),
     );

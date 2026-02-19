@@ -1,5 +1,7 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/helpers/styles.dart';
@@ -14,25 +16,123 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
   bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showMessage(
+    String message, {
+    AppPopupType type = AppPopupType.info,
+    String? title,
+  }) async {
+    if (!mounted) return;
+    await showAppPopup(
+      context,
+      type: type,
+      title: title,
+      message: message,
+    );
+  }
+
+  Future<void> _handleResetPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      await _showMessage(
+        'Please enter your email address.',
+        type: AppPopupType.warning,
+        title: 'Missing Email',
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) return;
+      await _showMessage(
+        'We sent a password reset link to your email.',
+        type: AppPopupType.success,
+        title: 'Email Sent',
+      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = 'Failed to send reset email.';
+      if (e.code == 'invalid-email') {
+        message = 'Invalid email address.';
+      } else if (e.code == 'user-not-found') {
+        message = 'No user found with this email.';
+      } else if (e.code == 'too-many-requests') {
+        message = 'Too many attempts. Please try again later.';
+      }
+      await _showMessage(
+        message,
+        type: AppPopupType.error,
+        title: 'Action Failed',
+      );
+    } catch (_) {
+      await _showMessage(
+        'Something went wrong. Please try again.',
+        type: AppPopupType.error,
+        title: 'Action Failed',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: ColorSys.surface,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              const SizedBox(
-                height: 50,
-              ),
+              const SizedBox(height: 30),
               FadeInDown(
                 delay: const Duration(milliseconds: 200),
                 child: SizedBox(
                   height: 350,
                   child: Stack(
                     children: [
+                      Center(
+                        child: Container(
+                          width: 220,
+                          height: 220,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: ColorSys.primaryTint,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Container(
+                          width: 170,
+                          height: 170,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: ColorSys.primarySoft,
+                          ),
+                        ),
+                      ),
                       Positioned(
                         top: 0,
                         left: 0,
@@ -56,7 +156,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 delay: const Duration(milliseconds: 400),
                 child: Text(
                   "Forgot Password",
-                  style: titleTextStyle(),
+                  style: textStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: ColorSys.darkBlue,
+                  ),
                 ),
               ),
               const SizedBox(
@@ -68,7 +172,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   "Enter your email address to reset your password",
                   textAlign: TextAlign.center,
                   style: contentTextStyle(
-                      color: Colors.grey.shade700, fontSize: 14.0),
+                    color: ColorSys.textSecondary,
+                    fontSize: 14.0,
+                  ),
                 ),
               ),
               const SizedBox(
@@ -77,67 +183,68 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               FadeInDown(
                 delay: const Duration(milliseconds: 600),
                 child: TextField(
-                  cursorColor: ColorSys.primary,
+                  controller: _emailController,
+                  cursorColor: ColorSys.darkBlue,
+                  style: textStyle(
+                    color: ColorSys.textPrimary,
+                    fontSize: 14.0,
+                  ),
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.all(0.0),
                     labelText: 'Email',
                     hintText: 'Your e-mail',
                     labelStyle: textStyle(
-                      color: ColorSys.primary,
+                      color: ColorSys.darkBlue,
                       fontSize: 14.0,
                       fontWeight: FontWeight.w400,
                     ),
                     hintStyle: textStyle(
-                      color: Colors.grey,
+                      color: ColorSys.textSecondary,
                       fontSize: 14.0,
                     ),
                     prefixIcon: const Icon(
                       Iconsax.sms,
-                      color: ColorSys.primary,
+                      color: ColorSys.darkBlue,
                       size: 18,
+                    ),
+                    suffixIcon: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Cancel',
+                        style: textStyle(
+                          color: ColorSys.darkBlue,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide:
-                          BorderSide(color: Colors.grey.shade200, width: 2),
+                          const BorderSide(color: ColorSys.border, width: 2),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
-                    floatingLabelStyle: const TextStyle(
-                      color: ColorSys.primary,
+                    floatingLabelStyle: textStyle(
+                      color: ColorSys.darkBlue,
                       fontSize: 18.0,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: ColorSys.primary, width: 1.5),
+                      borderSide: const BorderSide(
+                          color: ColorSys.darkBlue, width: 1.5),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(
-                height: 30,
-              ),
+              const SizedBox(height: 16),
               FadeInDown(
                 delay: const Duration(milliseconds: 800),
                 child: MaterialButton(
                   minWidth: double.infinity,
-                  onPressed: () {
-                    setState(() {
-                      _isLoading = true;
-                    });
-
-                    Future.delayed(const Duration(seconds: 2), () {
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginScreen()));
-                    });
-                  },
+                  onPressed: _isLoading ? null : _handleResetPassword,
                   color: ColorSys.darkBlue,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
                   padding:
                       const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                   child: _isLoading
@@ -153,9 +260,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       : Text(
                           "Next",
                           style: textStyle(
-                              color: Colors.white,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold),
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),

@@ -2,10 +2,11 @@ import 'package:flutter/services.dart';
 import 'package:csv/csv.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:hajj_app/helpers/name_formatter.dart';
 
 class UserService {
+  static const String defaultProfileImageUrl =
+      'https://i.ibb.co.com/jNCnb00/default-profile.png';
   static const List<String> validPetugasHajiRoles = [
     "KETUA KLOTER (TPHI)",
     "PEMBIMBING IBADAH (TPIHI)",
@@ -485,10 +486,7 @@ Future<void> importDataFromCSVToFirebase() async {
         // Get userId
         String? userId = userCredential.user?.uid;
 
-        // Get the download URL for the default image from Firebase Storage
-        Reference storageRef =
-            FirebaseStorage.instance.ref().child('images/default_profile.jpg');
-        String imageUrl = await storageRef.getDownloadURL();
+        final String imageUrl = UserService.defaultProfileImageUrl;
 
         if (userId != null) {
           final DatabaseReference userRef =

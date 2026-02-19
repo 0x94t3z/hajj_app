@@ -19,25 +19,25 @@ _PopupThemeData _popupTheme(AppPopupType type) {
   switch (type) {
     case AppPopupType.success:
       return const _PopupThemeData(
-        accent: Color(0xFF16A34A),
+        accent: ColorSys.darkBlue,
         icon: Icons.check_circle_rounded,
         title: 'Berhasil',
       );
     case AppPopupType.warning:
       return const _PopupThemeData(
-        accent: Color(0xFFF59E0B),
+        accent: ColorSys.warning,
         icon: Icons.warning_amber_rounded,
         title: 'Perhatian',
       );
     case AppPopupType.error:
       return const _PopupThemeData(
-        accent: Color(0xFFDC2626),
+        accent: ColorSys.error,
         icon: Icons.error_rounded,
         title: 'Terjadi Kesalahan',
       );
     case AppPopupType.info:
       return const _PopupThemeData(
-        accent: ColorSys.darkBlue,
+        accent: ColorSys.info,
         icon: Icons.info_rounded,
         title: 'Informasi',
       );
@@ -51,8 +51,10 @@ Future<void> showAppPopup(
   String? title,
   String buttonText = 'OK',
   bool barrierDismissible = true,
+  Color? accentOverride,
 }) async {
   final popup = _popupTheme(type);
+  final accent = accentOverride ?? popup.accent;
 
   await showDialog<void>(
     context: context,
@@ -82,11 +84,11 @@ Future<void> showAppPopup(
                 height: 52,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: popup.accent.withValues(alpha: 0.12),
+                  color: accent.withValues(alpha: 0.12),
                 ),
                 child: Icon(
                   popup.icon,
-                  color: popup.accent,
+                  color: accent,
                   size: 30,
                 ),
               ),
@@ -106,7 +108,7 @@ Future<void> showAppPopup(
                 textAlign: TextAlign.center,
                 style: textStyle(
                   fontSize: 13,
-                  color: ColorSys.darkBlue.withValues(alpha: 0.86),
+                  color: ColorSys.textSecondary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -116,7 +118,7 @@ Future<void> showAppPopup(
                   onPressed: () => Navigator.of(dialogContext).pop(),
                   style: ElevatedButton.styleFrom(
                     elevation: 0,
-                    backgroundColor: popup.accent,
+                    backgroundColor: accent,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -147,6 +149,7 @@ Future<void> showAppPopupFromNavigator(
   String? title,
   String buttonText = 'OK',
   bool barrierDismissible = true,
+  Color? accentOverride,
 }) {
   return showAppPopup(
     navigator.context,
@@ -155,5 +158,6 @@ Future<void> showAppPopupFromNavigator(
     title: title,
     buttonText: buttonText,
     barrierDismissible: barrierDismissible,
+    accentOverride: accentOverride,
   );
 }

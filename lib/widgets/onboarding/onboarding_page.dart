@@ -18,45 +18,94 @@ class OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(left: 50, right: 50, bottom: 60),
+      padding: const EdgeInsets.only(left: 40, right: 40, bottom: 60),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           if (!reverse)
             Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Image.asset(image),
+                SizedBox(
+                  height: 280,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ColorSys.primaryTint,
+                        ),
+                      ),
+                      Container(
+                        width: 170,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ColorSys.primarySoft,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Image.asset(image),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(
-                  height: 30,
-                ),
+                const SizedBox(height: 10),
               ],
             )
           else
             const SizedBox(),
           Text(
             title,
-            style: titleTextStyle(),
+            style: textStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: ColorSys.darkBlue,
+            ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           Text(
             content,
             textAlign: TextAlign.center,
-            style: contentTextStyle(),
+            style: contentTextStyle(
+              fontSize: 14,
+              color: ColorSys.textSecondary,
+            ),
           ),
           if (reverse)
             Column(
               children: <Widget>[
-                const SizedBox(
-                  height: 30,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Image.asset(image),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 280,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ColorSys.primaryTint,
+                        ),
+                      ),
+                      Container(
+                        width: 170,
+                        height: 170,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: ColorSys.primarySoft,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Image.asset(image),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             )

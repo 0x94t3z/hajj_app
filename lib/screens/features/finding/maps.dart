@@ -219,13 +219,14 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _addPointMarker({
     required double latitude,
     required double longitude,
-    required String label,
+    String? label,
     required Uint8List? imageBytes,
     List<double>? textOffset,
   }) async {
     if (imageBytes == null || _pointAnnotationManager == null) {
       return;
     }
+    final trimmedLabel = label?.trim() ?? '';
     await _pointAnnotationManager!.create(
       PointAnnotationOptions(
         geometry: Point(
@@ -233,12 +234,12 @@ class _MapScreenState extends State<MapScreen> {
         ),
         image: imageBytes,
         iconSize: 0.9,
-        textField: label,
-        textSize: 12.5,
-        textColor: Colors.black.toARGB32(),
-        textHaloColor: Colors.white.toARGB32(),
-        textHaloWidth: 0.8,
-        textOffset: textOffset ?? [0.0, 0.8],
+        textField: trimmedLabel.isEmpty ? null : trimmedLabel,
+        textSize: trimmedLabel.isEmpty ? null : 12.5,
+        textColor: trimmedLabel.isEmpty ? null : Colors.black.toARGB32(),
+        textHaloColor: trimmedLabel.isEmpty ? null : Colors.white.toARGB32(),
+        textHaloWidth: trimmedLabel.isEmpty ? null : 0.8,
+        textOffset: trimmedLabel.isEmpty ? null : (textOffset ?? [0.0, 0.8]),
       ),
     );
   }
@@ -788,9 +789,8 @@ class _MapScreenState extends State<MapScreen> {
     await _addPointMarker(
       latitude: destinationUser.latitude,
       longitude: destinationUser.longitude,
-      label: _toTitleCase(destinationUser.name),
+      label: '',
       imageBytes: _destinationMarker,
-      textOffset: [0.0, -2.0],
     );
     await _showRouteOverviewCamera(
       origin: origin,

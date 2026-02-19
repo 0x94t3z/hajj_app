@@ -38,14 +38,13 @@ class FirstWidget extends StatelessWidget {
                   width: 250,
                   height: 250,
                   decoration: BoxDecoration(
-                    border: Border.all(width: 4.0, color: ColorSys.primary),
-                    color: ColorSys.lightPrimary,
+                    color: const Color(0xFF3A3A3A),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 7,
-                        blurRadius: 7,
+                        color: Colors.black.withOpacity(0.25),
+                        spreadRadius: 2,
+                        blurRadius: 8,
                         offset: const Offset(0, 3),
                       ),
                     ],

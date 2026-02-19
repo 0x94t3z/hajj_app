@@ -4,11 +4,27 @@ import 'package:flutter_animate/flutter_animate.dart';
 const String _appFontFamily = 'Montserrat';
 
 class ColorSys {
-  static const Color primary = Color.fromRGBO(42, 42, 42, 1);
+  // Brand anchor
+  static const Color darkBlue = Color.fromRGBO(71, 131, 149, 1);
+  static const Color lightBlue = Color.fromRGBO(163, 192, 201, 1);
+
+  // Core palette (derived from darkBlue)
+  static const Color primary = darkBlue;
+  static const Color primarySoft = Color(0xFFBFD6DD);
+  static const Color primaryTint = Color(0xFFDCE9EE);
+  static const Color surface = Color(0xFFF7FAFB);
+  static const Color surfaceAlt = Color(0xFFF1F5F6);
+  static const Color border = Color(0xFFDFE9EC);
+  static const Color textPrimary = Color(0xFF20323B);
+  static const Color textSecondary = Color(0xFF5F7C86);
+  static const Color info = darkBlue;
+  static const Color success = Color(0xFF2F8F7A);
+  static const Color warning = Color(0xFFE0A64B);
+  static const Color error = Color(0xFFD46363);
+
+  // Legacy aliases (kept for compatibility)
   static const Color lightPrimary = Color.fromRGBO(51, 51, 51, 1);
   static const Color grey = Color.fromRGBO(158, 158, 158, 1);
-  static const Color lightBlue = Color.fromRGBO(163, 192, 201, 1);
-  static const Color darkBlue = Color.fromRGBO(71, 131, 149, 1);
   static const Color moreDarkBlue = Color.fromRGBO(30, 55, 70, 70);
   static const Color backgroundMap = Color.fromRGBO(236, 231, 228, 1);
   static const Color cirlceMap = Color.fromRGBO(225, 219, 215, 1);
@@ -27,7 +43,7 @@ class ColorSys {
 TextStyle titleTextStyle() {
   return const TextStyle(
     fontFamily: _appFontFamily,
-    color: ColorSys.primary,
+    color: ColorSys.textPrimary,
     fontSize: 28,
     fontWeight: FontWeight.bold,
   );
@@ -36,7 +52,7 @@ TextStyle titleTextStyle() {
 TextStyle contentTextStyle({Color? color, double? fontSize}) {
   return TextStyle(
     fontFamily: _appFontFamily,
-    color: color ?? ColorSys.grey,
+    color: color ?? ColorSys.textSecondary,
     fontSize: fontSize ?? 18,
     fontWeight: FontWeight.w400,
   );
@@ -45,7 +61,7 @@ TextStyle contentTextStyle({Color? color, double? fontSize}) {
 TextStyle textStyle({double? fontSize, Color? color, FontWeight? fontWeight}) {
   return TextStyle(
     fontFamily: _appFontFamily,
-    color: color ?? ColorSys.grey,
+    color: color ?? ColorSys.textPrimary,
     fontSize: fontSize ?? 20,
     fontWeight: fontWeight ?? FontWeight.w400,
   );
@@ -149,9 +165,9 @@ class TiltEffect extends Effect<Offset> {
 
 final darkTheme = ThemeData(
   brightness: Brightness.dark,
-  primaryColor: const Color.fromRGBO(69, 125, 143, 1), // Dark blue color
+  primaryColor: ColorSys.darkBlue,
   colorScheme: const ColorScheme.dark(
-    primary: Color.fromRGBO(69, 125, 143, 1), // Dark blue color
+    primary: ColorSys.darkBlue,
     secondary: Colors
         .white, // Change this to your desired secondary color in dark mode
   ),
@@ -160,12 +176,14 @@ final darkTheme = ThemeData(
 
 final lightTheme = ThemeData(
   brightness: Brightness.light,
-  primaryColor:
-      Colors.white, // Change this to your desired primary color in light mode
+  primaryColor: ColorSys.darkBlue,
+  scaffoldBackgroundColor: ColorSys.surface,
   colorScheme: const ColorScheme.light(
-    primary:
-        Colors.white, // Change this to your desired primary color in light mode
-    secondary: Color.fromRGBO(69, 125, 143, 1), // Dark blue color
+    primary: ColorSys.darkBlue,
+    secondary: ColorSys.lightBlue,
+    surface: ColorSys.surface,
+    onPrimary: Colors.white,
+    onSurface: ColorSys.textPrimary,
   ),
   // Add more properties like text styles, fonts, etc. as needed
 );

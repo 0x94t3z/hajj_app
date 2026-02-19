@@ -405,7 +405,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           },
         ),
         title: Text(
-          'Petugas Terdekat',
+          'Nearest Hajj Officers',
           style: textStyle(
             color: ColorSys.darkBlue,
             fontSize: 18,
@@ -833,7 +833,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Petugas Terdekat',
+                    'Nearest Hajj Officers',
                     style: textStyle(
                       color: ColorSys.darkBlue,
                       fontSize: 16,
@@ -1043,6 +1043,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
             ),
             image: _destinationMarker,
             iconSize: 0.9,
+            textField: null,
           ),
         );
       }

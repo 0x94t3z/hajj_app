@@ -152,22 +152,22 @@ class _LoginScreenState extends State<LoginScreen> {
         await showAppPopup(
           context,
           type: AppPopupType.error,
-          title: 'Login Gagal',
+          title: 'Login Failed',
           message: 'The password is incorrect. Please try again.',
         );
       } else if (e.code == 'user-not-found') {
         await showAppPopup(
           context,
           type: AppPopupType.warning,
-          title: 'Login Gagal',
+          title: 'Login Failed',
           message: 'No user found for that email.',
         );
       } else {
         await showAppPopup(
           context,
           type: AppPopupType.error,
-          title: 'Login Gagal',
-          message: e.message ?? 'Terjadi kesalahan saat login.',
+          title: 'Login Failed',
+          message: e.message ?? 'Something went wrong while logging in.',
         );
       }
     }
@@ -176,271 +176,304 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: ColorSys.surface,
         body: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 50,
-            ),
-            FadeInDown(
-              delay: const Duration(milliseconds: 200),
-              child: SizedBox(
-                height: 350,
-                child: Stack(children: [
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: AnimatedOpacity(
-                      opacity: activeIndex == 0 ? 1 : 0,
-                      duration: const Duration(
-                        seconds: 1,
-                      ),
-                      curve: Curves.linear,
-                      child: Image.asset(
-                        Strings.stepOneImage,
-                        height: 400,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: AnimatedOpacity(
-                      opacity: activeIndex == 1 ? 1 : 0,
-                      duration: const Duration(seconds: 1),
-                      curve: Curves.linear,
-                      child: Image.asset(
-                        Strings.stepTwoImage,
-                        height: 400,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: AnimatedOpacity(
-                      opacity: activeIndex == 2 ? 1 : 0,
-                      duration: const Duration(seconds: 1),
-                      curve: Curves.linear,
-                      child: Image.asset(
-                        Strings.stepThreeImage,
-                        height: 400,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: AnimatedOpacity(
-                      opacity: activeIndex == 3 ? 1 : 0,
-                      duration: const Duration(seconds: 1),
-                      curve: Curves.linear,
-                      child: Image.asset(
-                        Strings.stepTwoImage,
-                        height: 400,
-                      ),
-                    ),
-                  )
-                ]),
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            FadeInDown(
-              delay: const Duration(milliseconds: 400),
-              child: TextField(
-                controller: _emailController,
-                cursorColor: ColorSys.primary,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(0.0),
-                  labelText: 'Email',
-                  hintText: 'Your e-mail',
-                  labelStyle: textStyle(
-                    color: ColorSys.primary,
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  hintStyle: textStyle(
-                    color: Colors.grey,
-                    fontSize: 14.0,
-                  ),
-                  prefixIcon: const Icon(
-                    Iconsax.sms,
-                    color: ColorSys.primary,
-                    size: 18,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.grey.shade200, width: 2),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  floatingLabelStyle: const TextStyle(
-                    color: ColorSys.primary,
-                    fontSize: 18.0,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        const BorderSide(color: ColorSys.primary, width: 1.5),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 50,
                 ),
-              ),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            FadeInDown(
-              delay: const Duration(milliseconds: 400),
-              child: TextField(
-                controller: _passwordController,
-                cursorColor: ColorSys.primary,
-                obscureText: true, // Set this to true to hide the input text
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(0.0),
-                  labelText: 'Password',
-                  hintText: 'Password',
-                  hintStyle: textStyle(
-                    color: Colors.grey,
-                    fontSize: 14.0,
-                  ),
-                  labelStyle: textStyle(
-                    color: ColorSys.primary,
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  prefixIcon: const Icon(
-                    Iconsax.key,
-                    color: ColorSys.primary,
-                    size: 18,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(color: Colors.grey.shade200, width: 2),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  floatingLabelStyle: const TextStyle(
-                    color: ColorSys.primary,
-                    fontSize: 18.0,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        const BorderSide(color: ColorSys.primary, width: 1.5),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-            ),
-            FadeInDown(
-              delay: const Duration(milliseconds: 400),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      _navigateToForgotPasswordScreen(context);
-                    },
-                    child: Text(
-                      'Forgot Password?',
-                      style: textStyle(
-                          color: Colors.black,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w400),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            FadeInDown(
-              delay: const Duration(milliseconds: 600),
-              child: MaterialButton(
-                minWidth: double.infinity,
-                onPressed: () {
-                  setState(() {
-                    _isLoading = true;
-                  });
-
-                  Future.delayed(const Duration(seconds: 2), () {
-                    // setState(() {
-                    //   _isLoading = false;
-                    // });
-                    _loginUser();
-                    // Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //         builder: (context) => const HomeScreen()));
-                  });
-                },
-                color: ColorSys.darkBlue,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0)),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          backgroundColor: Colors.white,
-                          color: ColorSys.darkBlue,
-                          strokeWidth: 2,
+                FadeInDown(
+                  delay: const Duration(milliseconds: 200),
+                  child: SizedBox(
+                    height: 350,
+                    child: Stack(children: [
+                      Center(
+                        child: Container(
+                          width: 240,
+                          height: 240,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: ColorSys.primaryTint,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Container(
+                          width: 180,
+                          height: 180,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: ColorSys.primarySoft,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: AnimatedOpacity(
+                          opacity: activeIndex == 0 ? 1 : 0,
+                          duration: const Duration(
+                            seconds: 1,
+                          ),
+                          curve: Curves.linear,
+                          child: Image.asset(
+                            Strings.stepOneImage,
+                            height: 400,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: AnimatedOpacity(
+                          opacity: activeIndex == 1 ? 1 : 0,
+                          duration: const Duration(seconds: 1),
+                          curve: Curves.linear,
+                          child: Image.asset(
+                            Strings.stepTwoImage,
+                            height: 400,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: AnimatedOpacity(
+                          opacity: activeIndex == 2 ? 1 : 0,
+                          duration: const Duration(seconds: 1),
+                          curve: Curves.linear,
+                          child: Image.asset(
+                            Strings.stepThreeImage,
+                            height: 400,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: AnimatedOpacity(
+                          opacity: activeIndex == 3 ? 1 : 0,
+                          duration: const Duration(seconds: 1),
+                          curve: Curves.linear,
+                          child: Image.asset(
+                            Strings.stepTwoImage,
+                            height: 400,
+                          ),
                         ),
                       )
-                    : Text(
-                        "Login",
-                        style: textStyle(
-                            color: Colors.white,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold),
-                      ),
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            FadeInDown(
-              delay: const Duration(milliseconds: 800),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Don\'t have an account?',
-                    style: textStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w400),
+                    ]),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      _navigateToRegisterScreen(context);
-                    },
-                    child: Text(
-                      'Register',
-                      style: textStyle(
-                          color: Colors.blue,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w400),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 400),
+                  child: TextField(
+                    controller: _emailController,
+                    cursorColor: ColorSys.darkBlue,
+                    style: textStyle(
+                      color: ColorSys.textPrimary,
+                      fontSize: 14.0,
                     ),
-                  )
-                ],
-              ),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.all(0.0),
+                      labelText: 'Email',
+                      hintText: 'Your e-mail',
+                      labelStyle: textStyle(
+                        color: ColorSys.darkBlue,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      hintStyle: textStyle(
+                        color: ColorSys.textSecondary,
+                        fontSize: 14.0,
+                      ),
+                      prefixIcon: const Icon(
+                        Iconsax.sms,
+                        color: ColorSys.darkBlue,
+                        size: 18,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: ColorSys.border, width: 2),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      floatingLabelStyle: textStyle(
+                        color: ColorSys.darkBlue,
+                        fontSize: 18.0,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: ColorSys.darkBlue, width: 1.5),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 400),
+                  child: TextField(
+                    controller: _passwordController,
+                    cursorColor: ColorSys.darkBlue,
+                    obscureText:
+                        true, // Set this to true to hide the input text
+                    style: textStyle(
+                      color: ColorSys.textPrimary,
+                      fontSize: 14.0,
+                    ),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.all(0.0),
+                      labelText: 'Password',
+                      hintText: 'Password',
+                      hintStyle: textStyle(
+                        color: ColorSys.textSecondary,
+                        fontSize: 14.0,
+                      ),
+                      labelStyle: textStyle(
+                        color: ColorSys.darkBlue,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      prefixIcon: const Icon(
+                        Iconsax.key,
+                        color: ColorSys.darkBlue,
+                        size: 18,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: ColorSys.border, width: 2),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      floatingLabelStyle: textStyle(
+                        color: ColorSys.darkBlue,
+                        fontSize: 18.0,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: ColorSys.darkBlue, width: 1.5),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                ),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 400),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          _navigateToForgotPasswordScreen(context);
+                        },
+                        child: Text(
+                          'Forgot Password?',
+                          style: textStyle(
+                            color: ColorSys.darkBlue,
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 600),
+                  child: MaterialButton(
+                    minWidth: double.infinity,
+                    onPressed: () {
+                      setState(() {
+                        _isLoading = true;
+                      });
+
+                      Future.delayed(const Duration(seconds: 2), () {
+                        // setState(() {
+                        //   _isLoading = false;
+                        // });
+                        _loginUser();
+                        // Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //         builder: (context) => const HomeScreen()));
+                      });
+                    },
+                    color: ColorSys.darkBlue,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 30),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                              color: ColorSys.darkBlue,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            "Login",
+                            style: textStyle(
+                                color: Colors.white,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold),
+                          ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 800),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Don\'t have an account?',
+                        style: textStyle(
+                          color: ColorSys.textSecondary,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          _navigateToRegisterScreen(context);
+                        },
+                        child: Text(
+                          'Register',
+                          style: textStyle(
+                            color: ColorSys.darkBlue,
+                            fontSize: 14.0,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ));
+          ),
+        ));
   }
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/profile/change_name.dart';
@@ -101,26 +102,31 @@ class _EditScreenState extends State<EditScreen> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (pickedFile != null) {
+    if (pickedFile == null) {
+      if (mounted) {
+        await showAppPopup(
+          context,
+          type: AppPopupType.warning,
+          title: 'No Image Selected',
+          message: 'Please choose an image to update your profile photo.',
+        );
+      }
+      return;
+    }
+
+    try {
       // Generate a random string for the image name
-      final randomImageName =
-          randomAlphaNumeric(20); // Adjust the length as needed
+      final randomImageName = randomAlphaNumeric(20);
 
       // Get a reference to the Firebase Storage location with the random image name
       final storage = FirebaseStorage.instance;
       final user = FirebaseAuth.instance.currentUser!;
-      final oldImageReference =
-          storage.ref().child('images/${user.uid}/$_imageUrl');
+      final defaultImageUrl = UserService.defaultProfileImageUrl;
 
-      // Check if the selected image is the default image
-      final Reference defaultImageReference =
-          FirebaseStorage.instance.ref().child('images/default_profile.jpg');
-      final defaultImageUrl = await defaultImageReference.getDownloadURL();
-
-      if (_imageUrl != defaultImageUrl) {
-        // Delete old image if it's not the default image
+      if (_imageUrl.isNotEmpty && _imageUrl != defaultImageUrl) {
         try {
-          await oldImageReference.delete();
+          final oldRef = FirebaseStorage.instance.refFromURL(_imageUrl);
+          await oldRef.delete();
         } catch (e) {
           print('No old image found or unable to delete old image: $e');
         }
@@ -140,6 +146,24 @@ class _EditScreenState extends State<EditScreen> {
 
       // Update the UI by calling getData() to refresh the image
       getData();
+
+      if (mounted) {
+        await showAppPopup(
+          context,
+          type: AppPopupType.success,
+          title: 'Photo Updated',
+          message: 'Your profile photo has been updated.',
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Update Failed',
+        message: 'Unable to update profile photo. Please try again.',
+      );
+      print('Image update error: $e');
     }
   }
 
@@ -234,26 +258,23 @@ class _EditScreenState extends State<EditScreen> {
               children: [
                 InkWell(
                   onTap: () async {
-                    String? newName = await Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => EditNameScreen(
                           initialName: _name,
-                          updateName: (String newName) {
+                          updateName: (String newName) async {
+                            await updateNameInDatabase(newName);
+                            if (!mounted) return;
                             setState(() {
                               _name = toTitleCaseName(newName);
                             });
+                            getData();
                           },
                         ),
                       ),
                     );
 
-                    if (newName != null && newName.isNotEmpty) {
-                      // Update the name in the Realtime Database
-                      await updateNameInDatabase(newName);
-
-                      getData();
-                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

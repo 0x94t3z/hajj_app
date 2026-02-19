@@ -7,6 +7,7 @@ import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/help/help_inbox.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
+import 'package:hajj_app/screens/features/profile/change_password.dart';
 import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
@@ -357,7 +358,12 @@ class _ThirdWidgetState extends State<ThirdWidget> {
                     const Divider(),
                     InkWell(
                       onTap: () {
-                        // Handle for onTap here
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ChangePasswordScreen(),
+                          ),
+                        );
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
