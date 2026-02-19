@@ -106,7 +106,7 @@ PODS:
     - MapboxCommon (= 24.18.0)
     - MapboxCoreMaps (= 11.18.0)
     - Turf (= 4.0.0)
-  - package_info (0.0.1):
+  - package_info_plus (0.4.5):
     - Flutter
   - RecaptchaInterop (101.0.0)
   - Turf (4.0.0)
@@ -124,7 +124,7 @@ DEPENDENCIES:
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - mapbox_maps_flutter (from `.symlinks/plugins/mapbox_maps_flutter/ios`)
-  - package_info (from `.symlinks/plugins/package_info/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -169,8 +169,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   mapbox_maps_flutter:
     :path: ".symlinks/plugins/mapbox_maps_flutter/ios"
-  package_info:
-    :path: ".symlinks/plugins/package_info/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -201,7 +201,7 @@ SPEC CHECKSUMS:
   MapboxCommon: 7dc22ef3ccd162e54b28ddf97e9a6a293a72875c
   MapboxCoreMaps: fa266f524b2ab0c4d4c76d94db6411b243969b37
   MapboxMaps: e8a15728a4600e9fef4e11a29bc21c4bf9c4cbc3
-  package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
+  package_info_plus: 115f4ad11e0698c8c1c5d8a689390df880f47e85
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   Turf: c9eb11a65d96af58cac523460fd40fec5061b081
   url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa

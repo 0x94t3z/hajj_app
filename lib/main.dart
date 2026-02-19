@@ -6,7 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
+import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/finding/maps.dart';
 import 'package:hajj_app/screens/features/finding/navigation.dart';
 import 'package:hajj_app/screens/features/help/help_chat.dart';
@@ -23,6 +23,7 @@ import 'package:hajj_app/services/local_notification_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart'
     show MapboxOptions;
+import 'package:iconsax/iconsax.dart';
 
 import 'firebase_options.dart';
 
@@ -60,6 +61,7 @@ class HajjApp extends StatefulWidget {
 class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   final UserService _userService = UserService();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late final _AppRouteObserver _routeObserver;
   bool isLoggedIn = false;
   bool _isPermissionRequested = false;
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -67,11 +69,20 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<DatabaseEvent>? _helpNotificationSubscription;
   final Set<String> _seenHelpNotificationIds = <String>{};
+  int _lastHelpPopupEpochMs = 0;
+  bool? _cachedIsPetugas;
+  String _currentRouteName = '';
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _routeObserver = _AppRouteObserver(
+      onRouteChanged: (routeName) {
+        if (routeName == null || routeName.trim().isEmpty) return;
+        _currentRouteName = routeName;
+      },
+    );
     checkLoginStatus();
 
     _authStateSubscription =
@@ -112,7 +123,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
 
     await _helpNotificationSubscription?.cancel();
     _helpNotificationSubscription = null;
-    _seenHelpNotificationIds.clear();
+    // Keep seen ids during runtime to prevent repeated popups when
+    // listener is reattached (e.g. initial auth sync).
 
     final query = FirebaseDatabase.instance
         .ref('helpNotificationRequests')
@@ -141,6 +153,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
               conversationId: map['conversationId']?.toString() ?? '',
               status: map['status']?.toString() ?? '',
               senderUid: map['senderUid']?.toString() ?? '',
+              senderName: map['senderName']?.toString() ?? '',
               createdAt: createdAt,
             );
           })
@@ -151,6 +164,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                 int createdAt,
                 String id,
                 String key,
+                String senderName,
                 String senderUid,
                 String status,
                 String title
@@ -158,31 +172,94 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           .toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
+      final newItems = <({
+        String body,
+        String conversationId,
+        int createdAt,
+        String id,
+        String key,
+        String senderName,
+        String senderUid,
+        String status,
+        String title
+      })>[];
+      final staleItems = <({
+        String body,
+        String conversationId,
+        int createdAt,
+        String id,
+        String key,
+        String senderName,
+        String senderUid,
+        String status,
+        String title
+      })>[];
+
       for (final item in items) {
         if (_seenHelpNotificationIds.contains(item.id)) continue;
         if (item.status != 'pending') continue;
         if (item.senderUid == user.uid) continue;
-
+        final conversationId = item.conversationId.trim();
+        if (conversationId.isNotEmpty) {
+          final isConversationActive =
+              await _isConversationActive(conversationId);
+          if (!isConversationActive) {
+            _seenHelpNotificationIds.add(item.id);
+            staleItems.add(item);
+            continue;
+          }
+        }
         _seenHelpNotificationIds.add(item.id);
-        if (_appLifecycleState != AppLifecycleState.resumed) {
-          await LocalNotificationService.showNotification(
-            title: item.title,
-            body: item.body.isEmpty ? 'Ada pesan bantuan baru.' : item.body,
-            payload: item.conversationId,
-          );
-        } else {
-          final navigator = _navigatorKey.currentState;
-          if (navigator != null) {
-            await showAppPopupFromNavigator(
+        newItems.add(item);
+      }
+
+      for (final item in staleItems) {
+        try {
+          await FirebaseDatabase.instance
+              .ref('helpNotificationRequests/${item.key}')
+              .update({
+            'status': 'ignored',
+            'ignoredAt': ServerValue.timestamp,
+          });
+        } catch (_) {
+          // Keep app stable if notification status update is denied by rules.
+        }
+      }
+
+      if (newItems.isEmpty) return;
+
+      final isPetugas = await _resolveIsPetugas();
+      final uniqueSenderUids = newItems
+          .map((item) => item.senderUid.trim())
+          .where((id) => id.isNotEmpty)
+          .toSet();
+      final senderCount =
+          uniqueSenderUids.isEmpty ? newItems.length : uniqueSenderUids.length;
+      final popupCount = isPetugas ? senderCount : newItems.length;
+
+      if (_appLifecycleState != AppLifecycleState.resumed) {
+        await LocalNotificationService.showNotification(
+          title: isPetugas ? 'Urgent Help Request' : 'New Message',
+          body: _newMessageCountText(popupCount),
+          payload: newItems.first.conversationId,
+        );
+      } else {
+        final navigator = _navigatorKey.currentState;
+        final isInHelpChat = _currentRouteName == '/help_chat';
+        if (navigator != null && !isInHelpChat) {
+          final now = DateTime.now().millisecondsSinceEpoch;
+          if (now - _lastHelpPopupEpochMs > 1000) {
+            _lastHelpPopupEpochMs = now;
+            await _showHelpRequestCountPopup(
               navigator,
-              type: AppPopupType.info,
-              title: item.title,
-              message:
-                  item.body.isEmpty ? 'Ada pesan bantuan baru.' : item.body,
+              count: popupCount,
+              isUrgent: isPetugas,
             );
           }
         }
+      }
 
+      for (final item in newItems) {
         try {
           await FirebaseDatabase.instance
               .ref('helpNotificationRequests/${item.key}')
@@ -195,6 +272,161 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         }
       }
     });
+  }
+
+  Future<bool> _isConversationActive(String conversationId) async {
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref('helpConversations/$conversationId')
+          .get();
+      if (!snapshot.exists || snapshot.value == null) return false;
+      if (snapshot.value is! Map) return false;
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      final status = data['status']?.toString() ?? 'open';
+      final archived = data['archived'] == true;
+      return status != 'closed' && !archived;
+    } catch (_) {
+      // If conversation status can't be read, keep notifications visible.
+      return true;
+    }
+  }
+
+  Future<bool> _resolveIsPetugas() async {
+    if (_cachedIsPetugas != null) return _cachedIsPetugas!;
+    final cachedRole =
+        _userService.getCachedCurrentUserProfile()?['roles']?.toString() ?? '';
+    if (cachedRole.trim().isNotEmpty) {
+      _cachedIsPetugas = _userService.isPetugasHajiRole(cachedRole);
+      return _cachedIsPetugas!;
+    }
+    final role = await _userService.fetchCurrentUserRole();
+    _cachedIsPetugas = _userService.isPetugasHajiRole(role);
+    return _cachedIsPetugas!;
+  }
+
+  String _newMessageCountText(int count) {
+    final total = count < 1 ? 1 : count;
+    return 'You have $total new message.';
+  }
+
+  Future<void> _showHelpRequestCountPopup(
+    NavigatorState navigator, {
+    required int count,
+    required bool isUrgent,
+  }) async {
+    final accent = isUrgent ? ColorSys.error : ColorSys.darkBlue;
+    final title = isUrgent ? 'Urgent Help Request' : 'New Message';
+    await showDialog<void>(
+      context: navigator.context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 26),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accent.withValues(alpha: 0.12),
+                  ),
+                  child: Icon(
+                    isUrgent ? Iconsax.danger : Iconsax.message_question,
+                    color: accent,
+                    size: 30,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: textStyle(
+                    fontSize: 18,
+                    color: accent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _newMessageCountText(count),
+                  textAlign: TextAlign.center,
+                  style: textStyle(
+                    fontSize: 13,
+                    color: ColorSys.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: accent),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          'No',
+                          style: textStyle(
+                            fontSize: 14,
+                            color: accent,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          navigator.pushNamed('/help_inbox');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor: accent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          'View',
+                          style: textStyle(
+                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _stopHelpNotificationListener() async {
@@ -302,6 +534,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
+      navigatorObservers: <NavigatorObserver>[_routeObserver],
       initialRoute: isLoggedIn ? '/home' : '/introduction',
       routes: {
         '/introduction': (context) => const Introduction(),
@@ -325,6 +558,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           final peerImageUrl = args['peerImageUrl']?.toString() ?? '';
           final peerIsPetugas = args['peerIsPetugas'] == true;
           final peerRole = args['peerRole']?.toString() ?? '';
+          final conversationId = args['conversationId']?.toString();
+          final readOnly = args['readOnly'] == true;
 
           return MaterialPageRoute(
             builder: (_) => HelpChatScreen(
@@ -333,6 +568,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
               peerImageUrl: peerImageUrl,
               peerIsPetugas: peerIsPetugas,
               peerRole: peerRole,
+              conversationId: conversationId,
+              readOnly: readOnly,
             ),
             settings: settings,
           );
@@ -340,5 +577,41 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         return null;
       },
     );
+  }
+}
+
+class _AppRouteObserver extends NavigatorObserver {
+  _AppRouteObserver({
+    required this.onRouteChanged,
+  });
+
+  final void Function(String? routeName) onRouteChanged;
+
+  void _notify(Route<dynamic>? route) {
+    onRouteChanged(route?.settings.name);
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _notify(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _notify(previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    _notify(newRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _notify(previousRoute);
   }
 }

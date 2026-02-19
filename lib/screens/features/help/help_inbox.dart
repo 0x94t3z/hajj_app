@@ -1,10 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/helpers/name_formatter.dart';
 import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/models/users.dart';
-import 'package:hajj_app/screens/features/finding/navigation.dart';
 import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
@@ -24,6 +21,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
   bool _currentIsPetugas = false;
   String? _currentUid;
   String? _errorMessage;
+  bool _showArchiveList = false;
 
   @override
   void initState() {
@@ -63,71 +61,13 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
     return '$dd/$mm $hh:$min';
   }
 
-  Future<void> _openGoToRequester(HelpConversationSummary item) async {
-    try {
-      final rawData = await _userService.fetchAnyUserDataById(item.peerId);
-      if (!mounted) return;
-      if (rawData == null) {
-        await showAppPopup(
-          context,
-          type: AppPopupType.warning,
-          title: 'Data Tidak Ditemukan',
-          message: 'Data jemaah tidak ditemukan.',
-        );
-        return;
-      }
-
-      final normalizedData = <String, dynamic>{...rawData};
-      normalizedData['userId'] =
-          normalizedData['userId']?.toString().isNotEmpty == true
-              ? normalizedData['userId'].toString()
-              : item.peerId;
-      normalizedData['displayName'] =
-          normalizedData['displayName']?.toString().isNotEmpty == true
-              ? normalizedData['displayName'].toString()
-              : item.peerName;
-      normalizedData['roles'] =
-          normalizedData['roles']?.toString().isNotEmpty == true
-              ? normalizedData['roles'].toString()
-              : item.peerRole;
-      normalizedData['imageUrl'] =
-          normalizedData['imageUrl']?.toString().isNotEmpty == true
-              ? normalizedData['imageUrl'].toString()
-              : item.peerImageUrl;
-
-      final targetUser = UserModel.fromMap(normalizedData);
-      if (targetUser.latitude == 0.0 || targetUser.longitude == 0.0) {
-        await showAppPopup(
-          context,
-          type: AppPopupType.warning,
-          title: 'Lokasi Belum Tersedia',
-          message: 'Lokasi jemaah belum tersedia untuk navigasi.',
-        );
-        return;
-      }
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DirectionMapScreen(officer: targetUser),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      await showAppPopup(
-        context,
-        type: AppPopupType.error,
-        title: 'Navigasi Gagal',
-        message: 'Gagal membuka navigasi: $e',
-      );
-    }
-  }
-
   void _openChat(HelpConversationSummary item) {
     Navigator.pushNamed(
       context,
       '/help_chat',
       arguments: {
+        'conversationId': item.conversationId,
+        'readOnly': item.archived || item.status == 'closed',
         'peerId': item.peerId,
         'peerName': toTitleCaseName(item.peerName),
         'peerImageUrl': item.peerImageUrl,
@@ -137,22 +77,183 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
     );
   }
 
+  Widget _buildConversationTile(
+    HelpConversationSummary item, {
+    required bool archived,
+  }) {
+    final tileColor = archived ? Colors.grey.shade100 : Colors.white;
+    final borderColor = archived ? Colors.grey.shade300 : Colors.grey.shade200;
+    final nameColor = archived ? ColorSys.textSecondary : ColorSys.darkBlue;
+    final messageColor = archived ? ColorSys.textSecondary : ColorSys.darkBlue;
+    final timeColor = archived ? ColorSys.textSecondary : ColorSys.grey;
+    final avatarBg = archived ? Colors.grey.shade300 : Colors.grey.shade200;
+
+    Widget avatarContent = item.peerImageUrl.trim().isEmpty
+        ? const Icon(
+            Iconsax.profile_circle,
+            size: 22,
+          )
+        : Image.network(
+            item.peerImageUrl.trim(),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const Icon(
+              Iconsax.profile_circle,
+              size: 22,
+            ),
+          );
+
+    if (archived) {
+      avatarContent = ColorFiltered(
+        colorFilter: const ColorFilter.matrix(<double>[
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+        ]),
+        child: avatarContent,
+      );
+    }
+
+    return Material(
+      color: tileColor,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () {
+          _openChat(item);
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor),
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: avatarBg,
+                child: ClipOval(
+                  child: SizedBox.expand(
+                    child: avatarContent,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      toTitleCaseName(item.peerName),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textStyle(
+                        fontSize: 14,
+                        color: nameColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.lastMessage.isEmpty
+                          ? 'Belum ada pesan'
+                          : item.lastMessage,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textStyle(
+                        fontSize: 12,
+                        color: messageColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    _formatDateTime(item.lastMessageAt),
+                    style: textStyle(
+                      fontSize: 10,
+                      color: timeColor,
+                    ),
+                  ),
+                  if (!archived && item.unreadMessageCount > 0) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ColorSys.error,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        item.unreadMessageCount.toString(),
+                        style: textStyle(
+                          fontSize: 10,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (archived) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Archived',
+                      style: textStyle(
+                        fontSize: 10,
+                        color: ColorSys.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 0,
+        elevation: 0.0,
         backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: ColorSys.darkBlue),
+        iconTheme: const IconThemeData(color: ColorSys.primary),
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left_2),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Help Requests',
-          style: textStyle(
-            fontSize: 18,
-            color: ColorSys.darkBlue,
-            fontWeight: FontWeight.w700,
-          ),
+          style: textStyle(color: ColorSys.primary),
         ),
+        centerTitle: true,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -170,188 +271,252 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                     ),
                   ),
                 )
-              : StreamBuilder<List<HelpConversationSummary>>(
-                  stream: _helpService.watchInbox(
-                    currentUid: _currentUid!,
-                    currentIsPetugas: _currentIsPetugas,
-                  ),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Text(
-                            'Akses inbox bantuan ditolak. '
-                            'Periksa Firebase Rules untuk helpConversations.',
-                            textAlign: TextAlign.center,
-                            style: textStyle(
-                              fontSize: 13,
-                              color: ColorSys.darkBlue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      StreamBuilder<List<HelpConversationSummary>>(
+                        stream: _helpService.watchInbox(
+                          currentUid: _currentUid!,
+                          currentIsPetugas: _currentIsPetugas,
                         ),
-                      );
-                    }
-
-                    if (snapshot.connectionState == ConnectionState.waiting &&
-                        !snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    final conversations =
-                        snapshot.data ?? <HelpConversationSummary>[];
-                    if (conversations.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 22),
-                          child: Text(
-                            _currentIsPetugas
-                                ? 'Belum ada pesan bantuan dari jemaah.'
-                                : 'Belum ada riwayat bantuan. Gunakan tombol Help pada daftar petugas.',
-                            textAlign: TextAlign.center,
-                            style: textStyle(
-                              fontSize: 14,
-                              color: ColorSys.darkBlue,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                      itemCount: conversations.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (context, index) {
-                        final item = conversations[index];
-                        return Material(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(14),
-                            onTap: () {
-                              _openChat(item);
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: Colors.grey.shade200),
+                        builder: (context, activeSnapshot) {
+                          if (activeSnapshot.hasError) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 6),
+                              child: Text(
+                                'Akses inbox bantuan ditolak. '
+                                'Periksa Firebase Rules untuk helpConversations.',
+                                textAlign: TextAlign.center,
+                                style: textStyle(
+                                  fontSize: 13,
+                                  color: ColorSys.darkBlue,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundColor: Colors.grey.shade200,
-                                    child: ClipOval(
-                                      child: SizedBox.expand(
-                                        child: item.peerImageUrl.trim().isEmpty
-                                            ? const Icon(
-                                                Iconsax.profile_circle,
-                                                size: 22,
-                                              )
-                                            : Image.network(
-                                                item.peerImageUrl.trim(),
-                                                fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) =>
-                                                    const Icon(
-                                                  Iconsax.profile_circle,
-                                                  size: 22,
-                                                ),
-                                              ),
-                                      ),
+                            );
+                          }
+
+                          if (activeSnapshot.connectionState ==
+                                  ConnectionState.waiting &&
+                              !activeSnapshot.hasData) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          final activeItems = (activeSnapshot.data ??
+                                  <HelpConversationSummary>[])
+                              .take(5)
+                              .toList();
+
+                          return StreamBuilder<List<HelpConversationSummary>>(
+                            stream: _helpService.watchArchivedInbox(
+                              currentUid: _currentUid!,
+                              currentIsPetugas: _currentIsPetugas,
+                            ),
+                            builder: (context, archiveSnapshot) {
+                              final archivedItems = archiveSnapshot.data ??
+                                  <HelpConversationSummary>[];
+                              final archiveCount = archivedItems.length;
+                              final visibleArchiveCount =
+                                  archivedItems.length >= 3
+                                      ? 3
+                                      : archivedItems.length;
+                              final archiveListHeight = visibleArchiveCount == 0
+                                  ? 0.0
+                                  : (visibleArchiveCount * 78.0) +
+                                      ((visibleArchiveCount - 1) * 10.0);
+
+                              final hasActive = activeItems.isNotEmpty;
+                              final hasArchived = archivedItems.isNotEmpty;
+                              final totalUnread = activeItems.fold<int>(
+                                0,
+                                (sum, item) => sum + item.unreadMessageCount,
+                              );
+
+                              if (!hasActive && !hasArchived) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  child: Text(
+                                    _currentIsPetugas
+                                        ? 'Belum ada permintaan bantuan masuk.'
+                                        : 'Belum ada permintaan bantuan. Gunakan tombol Help pada daftar petugas.',
+                                    style: textStyle(
+                                      fontSize: 13,
+                                      color: ColorSys.textSecondary,
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          toTitleCaseName(item.peerName),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: textStyle(
-                                            fontSize: 14,
-                                            color: ColorSys.darkBlue,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          item.lastMessage.isEmpty
-                                              ? 'Belum ada pesan'
-                                              : item.lastMessage,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: textStyle(
-                                            fontSize: 12,
-                                            color: ColorSys.darkBlue,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
+                                );
+                              }
+
+                              final sections = <Widget>[];
+
+                              if (hasArchived) {
+                                sections.add(
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        _formatDateTime(item.lastMessageAt),
-                                        style: textStyle(
-                                          fontSize: 10,
-                                          color: ColorSys.grey,
-                                        ),
-                                      ),
-                                      if (_currentIsPetugas &&
-                                          !item.peerIsPetugas) ...[
-                                        const SizedBox(height: 8),
-                                        SizedBox(
-                                          height: 28,
-                                          child: ElevatedButton.icon(
-                                            onPressed: () =>
-                                                _openGoToRequester(item),
-                                            icon: const Icon(
-                                              Iconsax.direct_up,
-                                              color: Colors.white,
-                                              size: 14,
+                                      InkWell(
+                                        borderRadius: BorderRadius.circular(12),
+                                        onTap: () {
+                                          setState(() {
+                                            _showArchiveList =
+                                                !_showArchiveList;
+                                          });
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.archive_rounded,
+                                              color: ColorSys.darkBlue,
+                                              size: 18,
                                             ),
-                                            label: const Text(
-                                              'Go',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 11,
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'Archived',
+                                              style: textStyle(
+                                                fontSize: 14,
+                                                color: ColorSys.darkBlue,
                                                 fontWeight: FontWeight.w700,
                                               ),
                                             ),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  ColorSys.darkBlue,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal: 10,
-                                                vertical: 0,
+                                            if (archiveCount > 0 &&
+                                                !_showArchiveList) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: ColorSys.primaryTint,
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                                child: Text(
+                                                  archiveCount.toString(),
+                                                  style: textStyle(
+                                                    fontSize: 11,
+                                                    color: ColorSys.darkBlue,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
                                               ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
+                                            ],
+                                            const Spacer(),
+                                            Icon(
+                                              _showArchiveList
+                                                  ? Icons
+                                                      .keyboard_arrow_up_rounded
+                                                  : Icons
+                                                      .keyboard_arrow_down_rounded,
+                                              color: ColorSys.darkBlue,
                                             ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (_showArchiveList) ...[
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          height: archiveListHeight,
+                                          child: ListView.separated(
+                                            itemCount: archivedItems.length,
+                                            separatorBuilder: (_, __) =>
+                                                const SizedBox(height: 10),
+                                            itemBuilder: (context, index) {
+                                              return _buildConversationTile(
+                                                archivedItems[index],
+                                                archived: true,
+                                              );
+                                            },
                                           ),
                                         ),
                                       ],
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                                );
+                              }
+
+                              if (hasActive) {
+                                if (sections.isNotEmpty) {
+                                  sections.add(const SizedBox(height: 18));
+                                }
+                                sections.add(
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Active Requests',
+                                            style: textStyle(
+                                              fontSize: 14,
+                                              color: ColorSys.darkBlue,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          if (totalUnread > 0) ...[
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 2,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: ColorSys.error,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Text(
+                                                totalUnread.toString(),
+                                                style: textStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                      SizedBox(
+                                        height: 260,
+                                        child: ListView.separated(
+                                          itemCount: activeItems.length,
+                                          separatorBuilder: (_, __) =>
+                                              const SizedBox(height: 10),
+                                          itemBuilder: (context, index) {
+                                            return _buildConversationTile(
+                                              activeItems[index],
+                                              archived: false,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: sections,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
     );
   }

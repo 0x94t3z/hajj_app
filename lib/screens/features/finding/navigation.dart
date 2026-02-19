@@ -12,6 +12,7 @@ import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/models/users.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
+import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:iconsax/iconsax.dart';
@@ -26,10 +27,12 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   final UserService _userService = UserService();
+  final HelpService _helpService = HelpService();
 
   bool _isLoading = true;
   String? _errorMessage;
   List<_OfficerRouteItem> _officerRoutes = [];
+  bool _isSendingHelpRequest = false;
   StreamSubscription<geo.Position>? _nearestPositionSubscription;
   DateTime? _lastNearestRefresh;
   bool _isNearestRefreshInFlight = false;
@@ -88,9 +91,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
     );
   }
 
-  String _estimateWalkDuration(double distanceKm) {
+  double _estimateWalkDurationMinutes(double distanceKm) {
     const walkingSpeedKmPerHour = 4.8;
-    final minutes = ((distanceKm / walkingSpeedKmPerHour) * 60).ceil();
+    return (distanceKm / walkingSpeedKmPerHour) * 60;
+  }
+
+  String _estimateWalkDuration(double distanceKm) {
+    final minutes = _estimateWalkDurationMinutes(distanceKm).ceil();
     return '$minutes Min';
   }
 
@@ -98,8 +105,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     final officer = item.user;
     return Container(
       width: double.infinity,
-      height: 200.0,
-      margin: const EdgeInsets.only(bottom: 16.0),
+      height: 172.0,
+      margin: const EdgeInsets.only(bottom: 12.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25.0),
@@ -112,14 +119,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(25.0),
+      padding: const EdgeInsets.all(18.0),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(25.0),
             child: SizedBox(
-              height: 122.0,
-              width: 120.0,
+              height: 100.0,
+              width: 98.0,
               child: _buildOfficerCardImage(officer.imageUrl),
             ),
           ),
@@ -135,18 +142,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           ? '${_toTitleCase(officer.name).substring(0, 20)}...'
                           : _toTitleCase(officer.name),
                       style: textStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: ColorSys.darkBlue,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 5.0),
+                    const SizedBox(height: 4.0),
                     Row(
                       children: [
                         const Icon(
                           Icons.directions_walk,
-                          size: 14.0,
+                          size: 13.0,
                           color: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 4.0),
@@ -154,15 +161,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           child: Text(
                             officer.distance,
                             style: textStyle(
-                              fontSize: 14,
+                              fontSize: 12.5,
                               color: ColorSys.darkBlue,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 8.0),
                         const Icon(
                           Iconsax.clock,
-                          size: 14.0,
+                          size: 13.0,
                           color: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 4.0),
@@ -170,14 +177,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           child: Text(
                             officer.duration,
                             style: textStyle(
-                              fontSize: 14,
+                              fontSize: 12.5,
                               color: ColorSys.darkBlue,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20.0),
+                    const SizedBox(height: 14.0),
                     Row(
                       children: [
                         ElevatedButton.icon(
@@ -202,16 +209,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ColorSys.darkBlue,
                             textStyle: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
-                            fixedSize: const Size(90, 50),
+                            fixedSize: const Size(84, 40),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25.0),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10.0),
+                        const SizedBox(width: 8.0),
                         ElevatedButton.icon(
                           onPressed: () => _openHelpChat(officer),
                           icon: const Icon(
@@ -225,10 +232,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             textStyle: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
-                            fixedSize: const Size(100, 50),
+                            fixedSize: const Size(92, 40),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25.0),
                             ),
@@ -246,19 +253,80 @@ class _NavigationScreenState extends State<NavigationScreen> {
     );
   }
 
-  void _openHelpChat(UserModel user) {
-    Navigator.pushNamed(
+  Future<bool> _confirmHelpRequest(UserModel user) async {
+    final officerName =
+        user.name.trim().isEmpty ? 'petugas haji' : _toTitleCase(user.name);
+    return showAppConfirmPopup(
       context,
-      '/help_chat',
-      arguments: {
-        'peerId': user.userId,
-        'peerName':
-            user.name.trim().isEmpty ? 'Petugas Haji' : _toTitleCase(user.name),
-        'peerImageUrl': user.imageUrl,
-        'peerIsPetugas': true,
-        'peerRole': user.roles,
-      },
+      type: AppPopupType.info,
+      title: 'Need Help?',
+      message: 'Kamu akan meminta bantuan kepada $officerName. '
+          'Lokasi kamu akan dibagikan.',
+      confirmText: 'Continue',
+      cancelText: 'Cancel',
     );
+  }
+
+  Future<void> _openHelpChat(UserModel user) async {
+    if (_isSendingHelpRequest) return;
+
+    final peerName =
+        user.name.trim().isEmpty ? 'Petugas Haji' : _toTitleCase(user.name);
+    final peerRole =
+        user.roles.trim().isEmpty ? 'Petugas Haji' : user.roles.trim();
+
+    final shouldContinue = await _confirmHelpRequest(user);
+    if (!shouldContinue || !mounted) return;
+
+    setState(() {
+      _isSendingHelpRequest = true;
+    });
+
+    try {
+      final position = await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.high,
+      );
+      await _userService.updateCurrentUserLocation(
+        position.latitude,
+        position.longitude,
+      );
+
+      final handle = await _helpService.ensureConversationWithPeer(
+        peerId: user.userId,
+        peerName: peerName,
+        peerImageUrl: user.imageUrl,
+        peerIsPetugas: true,
+        peerRole: peerRole,
+      );
+
+      if (!mounted) return;
+      Navigator.pushNamed(
+        context,
+        '/help_chat',
+        arguments: {
+          'peerId': user.userId,
+          'peerName': peerName,
+          'peerImageUrl': user.imageUrl,
+          'peerIsPetugas': true,
+          'peerRole': peerRole,
+          'conversationId': handle.conversationId,
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Gagal Mengirim Bantuan',
+        message: 'Permintaan bantuan tidak dapat dikirim: $e',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingHelpRequest = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadOfficerRoutes({
@@ -308,6 +376,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
       final usersMap = await fetchModelsFromFirebase();
       final petugasHaji = usersMap['petugasHaji'] ?? <UserModel>[];
 
+      // Thesis requirement: list order is based on Haversine distance.
       final routes = petugasHaji
           .where(
         (user) =>
@@ -397,7 +466,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
       appBar: AppBar(
         elevation: 0.0,
         backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: ColorSys.darkBlue),
+        iconTheme: const IconThemeData(color: ColorSys.primary),
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left_2),
           onPressed: () {
@@ -406,11 +475,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         ),
         title: Text(
           'Nearest Hajj Officers',
-          style: textStyle(
-            color: ColorSys.darkBlue,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+          style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
       ),
@@ -490,12 +555,17 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   String _nextModifier = 'straight';
   double _remainingMeters = 0.0;
   double _remainingSeconds = 0.0;
+  DateTime? _lastNavigationUiUpdate;
+  DateTime? _lastLocationUpload;
 
   Offset? _officerPopupOffset;
   bool _isResolvingOfficerPopup = false;
   bool _pendingOfficerPopupRefresh = false;
 
   static const double _arrivalThresholdMeters = 20.0;
+  static const Duration _navigationUiUpdateInterval =
+      Duration(milliseconds: 600);
+  static const Duration _locationUploadInterval = Duration(seconds: 5);
 
   Future<void> _applyStandardNightStyle() async {
     try {
@@ -565,7 +635,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     const size = 180.0;
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
-    final center = const Offset(size / 2, size / 2);
+    const center = Offset(size / 2, size / 2);
 
     final outerHaloPaint = Paint()
       ..color = ColorSys.darkBlue.withValues(alpha: 0.24)
@@ -1091,10 +1161,22 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   }
 
   Future<void> _onPositionUpdated(geo.Position position) async {
-    await _userService.updateCurrentUserLocation(
-      position.latitude,
-      position.longitude,
-    );
+    final now = DateTime.now();
+    if (_lastLocationUpload == null ||
+        now.difference(_lastLocationUpload!) >= _locationUploadInterval) {
+      _lastLocationUpload = now;
+      await _userService.updateCurrentUserLocation(
+        position.latitude,
+        position.longitude,
+      );
+    }
+
+    if (_lastNavigationUiUpdate != null &&
+        now.difference(_lastNavigationUiUpdate!) <
+            _navigationUiUpdateInterval) {
+      return;
+    }
+    _lastNavigationUiUpdate = now;
 
     final remaining = _distanceMeters(
       position.latitude,

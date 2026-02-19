@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/helpers/app_popup.dart';
 import 'package:hajj_app/models/users.dart';
+import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:hajj_app/helpers/styles.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
@@ -28,6 +29,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final UserService _userService = UserService();
+  final HelpService _helpService = HelpService();
   MapboxMap? mapboxMap;
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager;
@@ -44,14 +46,11 @@ class _MapScreenState extends State<MapScreen> {
   bool _isNavigationLoading = false;
   bool _isNavigationRunning = false;
   bool _isRerouting = false;
+  bool _isSendingHelpRequest = false;
   UserModel? _selectedOfficerPreview;
   Offset? _selectedOfficerPreviewOffset;
   bool _isResolvingPreviewAnchor = false;
   bool _pendingPreviewAnchorRefresh = false;
-  UserModel? _activeNavigationTarget;
-  List<Position> _activeRouteCoordinates = [];
-  List<_RouteStep> _activeRouteSteps = [];
-  int _activeStepIndex = 0;
   String _navigationInstruction = '';
   String _navigationModifier = 'straight';
   String _nextNavigationInstruction = '';
@@ -59,11 +58,6 @@ class _MapScreenState extends State<MapScreen> {
   double _navigationRemainingMeters = 0.0;
   double _navigationRemainingSeconds = 0.0;
   DateTime? _navigationEta;
-  DateTime? _lastRerouteTime;
-
-  static const double _arrivalThresholdMeters = 20.0;
-  static const double _offRouteThresholdMeters = 35.0;
-  static const Duration _minimumRerouteGap = Duration(seconds: 8);
   static const int _maxNearestOfficers = 10;
   static const Duration _nearestRefreshInterval = Duration(seconds: 20);
 
@@ -253,12 +247,19 @@ class _MapScreenState extends State<MapScreen> {
     return _userService.isPetugasHajiRole(role);
   }
 
+  String _estimateWalkDuration(double distanceKm) {
+    const walkingSpeedKmPerHour = 4.8;
+    final minutes = ((distanceKm / walkingSpeedKmPerHour) * 60).ceil();
+    return '$minutes Min';
+  }
+
   Future<List<UserModel>> _buildNearestPetugasList({
     required geo.Position currentPosition,
     required List<UserModel> petugasHaji,
   }) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
+    // Thesis requirement: nearest officers are ranked by Haversine distance.
     final rankedUsers = petugasHaji
         .where(
           (user) =>
@@ -287,14 +288,7 @@ class _MapScreenState extends State<MapScreen> {
       final user = rankedUser.key;
       final distanceKm = rankedUser.value;
       user.distance = '${distanceKm.toStringAsFixed(2)} Km';
-
-      final duration = await getRouteDuration(
-        currentPosition.latitude,
-        currentPosition.longitude,
-        user.latitude,
-        user.longitude,
-      );
-      user.duration = '$duration Min';
+      user.duration = _estimateWalkDuration(distanceKm);
       nearestUsers.add(user);
     }
 
@@ -366,48 +360,6 @@ class _MapScreenState extends State<MapScreen> {
       }
     } catch (e) {
       print('Error updating user location: $e');
-    }
-  }
-
-  Future<String> getRouteDuration(double originLatitude, double originLongitude,
-      double destinationLatitude, double destinationLongitude) async {
-    try {
-      // Your Mapbox API token
-      String mapboxApiToken = dotenv.env['MAPBOX_SECRET_KEY']!;
-
-      final response = await http.get(
-        Uri.parse(
-          'https://api.mapbox.com/directions/v5/mapbox/walking/$originLongitude,$originLatitude;$destinationLongitude,$destinationLatitude?geometries=geojson&language=id&voice_units=metric&access_token=$mapboxApiToken',
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.body);
-        List<dynamic> routes = data['routes'];
-
-        if (routes.isNotEmpty) {
-          // Extracting duration from the API response
-          double durationInSeconds = routes[0]['duration'].toDouble();
-
-          // Converting duration from seconds to minutes as a double
-          double durationInMinutes = durationInSeconds / 60;
-
-          // Convert durationInMinutes to an int before converting to a string
-          int durationInMinutesInt = durationInMinutes.toInt();
-
-          // Returning duration as a string rounded to 2 decimal places
-          return durationInMinutesInt.toString();
-        } else {
-          print('No routes found');
-          return 'N/A';
-        }
-      } else {
-        // print('Request failed with status: ${response.statusCode}');
-        return 'N/A';
-      }
-    } catch (e) {
-      print('Error fetching route duration: $e');
-      return 'N/A';
     }
   }
 
@@ -656,23 +608,6 @@ class _MapScreenState extends State<MapScreen> {
     return '$hour:$minute $suffix';
   }
 
-  void _updateNextInstruction() {
-    if (_activeRouteSteps.isEmpty) {
-      _nextNavigationInstruction = '';
-      _nextNavigationModifier = 'straight';
-      return;
-    }
-    if (_activeStepIndex + 1 < _activeRouteSteps.length) {
-      _nextNavigationInstruction =
-          _activeRouteSteps[_activeStepIndex + 1].instruction;
-      _nextNavigationModifier =
-          _activeRouteSteps[_activeStepIndex + 1].modifier;
-      return;
-    }
-    _nextNavigationInstruction = 'Lanjutkan hingga tujuan';
-    _nextNavigationModifier = 'straight';
-  }
-
   Future<_NavigationRouteData?> _fetchNavigationRoute({
     required double originLatitude,
     required double originLongitude,
@@ -856,28 +791,6 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  // ignore: unused_element
-  Future<void> _startNavigationTracking() async {
-    await _navigationPositionSubscription?.cancel();
-    const locationSettings = geo.LocationSettings(
-      accuracy: geo.LocationAccuracy.bestForNavigation,
-      distanceFilter: 3,
-    );
-
-    _navigationPositionSubscription = geo.Geolocator.getPositionStream(
-      locationSettings: locationSettings,
-    ).listen(
-      (position) async {
-        if (!_isNavigationRunning) return;
-        await _updateUserLocation(position.latitude, position.longitude);
-        await _handleNavigationPositionUpdate(position);
-      },
-      onError: (error) {
-        print('Navigation location stream error: $error');
-      },
-    );
-  }
-
   Future<void> _stopNavigation({
     bool clearMapRoute = false,
     bool showStoppedMessage = false,
@@ -893,10 +806,6 @@ class _MapScreenState extends State<MapScreen> {
       _isNavigationRunning = false;
       _isNavigationLoading = false;
       _isRerouting = false;
-      _activeNavigationTarget = null;
-      _activeRouteCoordinates = [];
-      _activeRouteSteps = [];
-      _activeStepIndex = 0;
       _navigationInstruction = '';
       _navigationModifier = 'straight';
       _nextNavigationInstruction = '';
@@ -904,7 +813,6 @@ class _MapScreenState extends State<MapScreen> {
       _navigationRemainingMeters = 0.0;
       _navigationRemainingSeconds = 0.0;
       _navigationEta = null;
-      _lastRerouteTime = null;
     });
 
     if (showStoppedMessage && mounted) {
@@ -914,155 +822,6 @@ class _MapScreenState extends State<MapScreen> {
         title: 'Navigasi',
       );
     }
-  }
-
-  double _distanceBetweenMeters(
-    double lat1,
-    double lon1,
-    double lat2,
-    double lon2,
-  ) {
-    return calculateHaversineDistance(lat1, lon1, lat2, lon2) * 1000;
-  }
-
-  double _distanceFromRouteMeters(geo.Position position) {
-    if (_activeRouteCoordinates.isEmpty) return 0;
-    var minDistance = double.infinity;
-    for (final coordinate in _activeRouteCoordinates) {
-      final distance = _distanceBetweenMeters(
-        position.latitude,
-        position.longitude,
-        coordinate.lat.toDouble(),
-        coordinate.lng.toDouble(),
-      );
-      if (distance < minDistance) {
-        minDistance = distance;
-      }
-    }
-    return minDistance;
-  }
-
-  Future<void> _tryReroute(geo.Position position) async {
-    if (_isRerouting || !_isNavigationRunning) return;
-    final target = _activeNavigationTarget;
-    if (target == null) return;
-
-    final now = DateTime.now();
-    if (_lastRerouteTime != null &&
-        now.difference(_lastRerouteTime!) < _minimumRerouteGap) {
-      return;
-    }
-
-    if (mounted) {
-      setState(() {
-        _isRerouting = true;
-      });
-    } else {
-      _isRerouting = true;
-    }
-    _lastRerouteTime = now;
-    try {
-      final route = await _fetchNavigationRoute(
-        originLatitude: position.latitude,
-        originLongitude: position.longitude,
-        destinationLatitude: target.latitude,
-        destinationLongitude: target.longitude,
-      );
-      if (route == null) return;
-
-      await _renderNavigationRoute(
-        origin: position,
-        destinationUser: target,
-        route: route,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        _activeRouteCoordinates = route.coordinates;
-        _activeRouteSteps = route.steps;
-        _activeStepIndex = 0;
-        _navigationInstruction = route.steps.isNotEmpty
-            ? route.steps.first.instruction
-            : 'Lanjutkan ke tujuan';
-        _navigationModifier =
-            route.steps.isNotEmpty ? route.steps.first.modifier : 'straight';
-        _navigationRemainingMeters = route.distanceMeters;
-        _navigationRemainingSeconds = route.durationSeconds;
-        _navigationEta = DateTime.now().add(
-          Duration(seconds: route.durationSeconds.ceil()),
-        );
-        _updateNextInstruction();
-      });
-    } catch (e) {
-      print('Reroute failed: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isRerouting = false;
-        });
-      } else {
-        _isRerouting = false;
-      }
-    }
-  }
-
-  Future<void> _handleNavigationPositionUpdate(geo.Position position) async {
-    final target = _activeNavigationTarget;
-    if (target == null || !_isNavigationRunning) return;
-
-    final remainingDistance = _distanceBetweenMeters(
-      position.latitude,
-      position.longitude,
-      target.latitude,
-      target.longitude,
-    );
-
-    if (remainingDistance <= _arrivalThresholdMeters) {
-      await _stopNavigation(clearMapRoute: false);
-      if (!mounted) return;
-      await _showPopupMessage(
-        'Anda sudah sampai di ${_toTitleCase(target.name)}.',
-        type: AppPopupType.success,
-        title: 'Tujuan Tercapai',
-      );
-      return;
-    }
-
-    if (_activeStepIndex < _activeRouteSteps.length) {
-      final currentStep = _activeRouteSteps[_activeStepIndex];
-      final stepDistance = _distanceBetweenMeters(
-        position.latitude,
-        position.longitude,
-        currentStep.latitude,
-        currentStep.longitude,
-      );
-      if (stepDistance <= 15 &&
-          _activeStepIndex < _activeRouteSteps.length - 1) {
-        _activeStepIndex++;
-      }
-    }
-
-    final offRouteDistance = _distanceFromRouteMeters(position);
-    if (offRouteDistance > _offRouteThresholdMeters) {
-      await _tryReroute(position);
-    }
-
-    if (!mounted) return;
-    setState(() {
-      _navigationInstruction = _activeRouteSteps.isNotEmpty
-          ? _activeRouteSteps[_activeStepIndex].instruction
-          : 'Lanjutkan ke tujuan';
-      _navigationModifier = _activeRouteSteps.isNotEmpty
-          ? _activeRouteSteps[_activeStepIndex].modifier
-          : 'straight';
-      _navigationRemainingMeters = remainingDistance;
-      const walkingMetersPerSecond = 1.39;
-      _navigationRemainingSeconds = remainingDistance / walkingMetersPerSecond;
-      _navigationEta = DateTime.now().add(
-        Duration(seconds: _navigationRemainingSeconds.ceil()),
-      );
-      _updateNextInstruction();
-    });
   }
 
   Future<void> _getRouteDirection(UserModel user) async {
@@ -1397,19 +1156,80 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  void _openHelpChat(UserModel user) {
-    Navigator.pushNamed(
+  Future<bool> _confirmHelpRequest(UserModel user) async {
+    final officerName =
+        user.name.trim().isEmpty ? 'petugas haji' : _toTitleCase(user.name);
+    return showAppConfirmPopup(
       context,
-      '/help_chat',
-      arguments: {
-        'peerId': user.userId,
-        'peerName':
-            user.name.trim().isEmpty ? 'Petugas Haji' : _toTitleCase(user.name),
-        'peerImageUrl': user.imageUrl,
-        'peerIsPetugas': true,
-        'peerRole': user.roles,
-      },
+      type: AppPopupType.info,
+      title: 'Need Help?',
+      message: 'Kamu akan meminta bantuan kepada $officerName. '
+          'Lokasi kamu akan dibagikan.',
+      confirmText: 'Continue',
+      cancelText: 'Cancel',
     );
+  }
+
+  Future<void> _openHelpChat(UserModel user) async {
+    if (_isSendingHelpRequest) return;
+
+    final peerName =
+        user.name.trim().isEmpty ? 'Petugas Haji' : _toTitleCase(user.name);
+    final peerRole =
+        user.roles.trim().isEmpty ? 'Petugas Haji' : user.roles.trim();
+
+    final shouldContinue = await _confirmHelpRequest(user);
+    if (!shouldContinue || !mounted) return;
+
+    setState(() {
+      _isSendingHelpRequest = true;
+    });
+
+    try {
+      final position = await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.high,
+      );
+      await _userService.updateCurrentUserLocation(
+        position.latitude,
+        position.longitude,
+      );
+
+      final handle = await _helpService.ensureConversationWithPeer(
+        peerId: user.userId,
+        peerName: peerName,
+        peerImageUrl: user.imageUrl,
+        peerIsPetugas: true,
+        peerRole: peerRole,
+      );
+
+      if (!mounted) return;
+      Navigator.pushNamed(
+        context,
+        '/help_chat',
+        arguments: {
+          'peerId': user.userId,
+          'peerName': peerName,
+          'peerImageUrl': user.imageUrl,
+          'peerIsPetugas': true,
+          'peerRole': peerRole,
+          'conversationId': handle.conversationId,
+        },
+      );
+    } catch (e) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Gagal Mengirim Bantuan',
+        message: 'Permintaan bantuan tidak dapat dikirim: $e',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingHelpRequest = false;
+        });
+      }
+    }
   }
 
   Widget buildUserList(UserModel user) {

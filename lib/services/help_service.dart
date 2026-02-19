@@ -31,7 +31,48 @@ class HelpService {
     'Jika darurat medis, saya koordinasikan tim kesehatan.',
   ];
 
+  static const Map<String, List<String>> defaultOfficerQuickRepliesByRequest = {
+    'Saya tersesat': [
+      'Tenang, saya akan menjemput Anda. Tetap di lokasi aman.',
+      'Mohon kirim patokan terdekat. Saya segera ke sana.',
+      'Saya menuju Anda sekarang. Tetap di tempat aman.',
+    ],
+    'Saya butuh pertolongan medis': [
+      'Saya koordinasikan tim kesehatan sekarang.',
+      'Mohon tetap tenang, bantuan medis segera datang.',
+      'Saya akan datangi lokasi Anda. Jika darurat, mohon hubungi petugas terdekat.',
+    ],
+    'Saya terpisah dari rombongan': [
+      'Tetap di lokasi saat ini, saya akan membantu Anda.',
+      'Mohon informasikan patokan terdekat. Saya segera ke sana.',
+      'Saya menuju lokasi Anda sekarang.',
+    ],
+    'Saya tidak menemukan tenda/kloter saya': [
+      'Mohon beri nomor kloter, saya bantu arahkan.',
+      'Saya akan bantu Anda menuju tenda/kloter.',
+      'Mohon tunggu di titik aman, saya segera ke sana.',
+    ],
+    'Saya kehabisan air atau makanan': [
+      'Saya segera menuju lokasi Anda dengan bantuan logistik.',
+      'Mohon tunggu di tempat aman terdekat.',
+      'Saya akan bantu Anda, tetap tenang.',
+    ],
+  };
+
+  static List<String> officerRepliesForRequest(String request) {
+    return defaultOfficerQuickRepliesByRequest[request] ??
+        defaultOfficerQuickReplies;
+  }
+
+  static const List<String> defaultPilgrimFollowUpReplies = [
+    'Alhamdulillah, terima kasih banyak 🙏🏻',
+    'Baik, saya tunggu!',
+    'Terima kasih, saya akan mengikuti arahan.',
+  ];
+
   DatabaseReference get _conversationsRef => _database.ref('helpConversations');
+  DatabaseReference get _activeSessionsRef =>
+      _database.ref('helpConversationSessions');
 
   Exception _permissionDeniedError() {
     return Exception(
@@ -47,15 +88,34 @@ class HelpService {
     return 0;
   }
 
+  double _toDoubleValue(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
   Future<_CurrentUserContext> _currentUserContext() async {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('Silakan login untuk menggunakan fitur bantuan.');
     }
 
-    final profile = await _userService.fetchCurrentUserProfile() ??
-        _userService.getCachedCurrentUserProfile() ??
-        <String, dynamic>{};
+    Map<String, dynamic> profile =
+        await _userService.fetchCurrentUserProfile() ??
+            _userService.getCachedCurrentUserProfile() ??
+            <String, dynamic>{};
+
+    final cachedLat = _toDoubleValue(profile['latitude']);
+    final cachedLng = _toDoubleValue(profile['longitude']);
+    if (cachedLat == 0.0 || cachedLng == 0.0) {
+      final refreshed = await _userService.fetchCurrentUserProfile(
+        forceRefresh: true,
+      );
+      if (refreshed != null && refreshed.isNotEmpty) {
+        profile = refreshed;
+      }
+    }
     final role = profile['roles']?.toString() ?? 'Jemaah Haji';
     final name = toTitleCaseName(
       profile['displayName']?.toString().trim().isNotEmpty == true
@@ -66,6 +126,8 @@ class HelpService {
     );
     final imageUrl = profile['imageUrl']?.toString().trim() ?? '';
     final isPetugas = _userService.isPetugasHajiRole(role);
+    final latitude = _toDoubleValue(profile['latitude']);
+    final longitude = _toDoubleValue(profile['longitude']);
 
     final roleLabel = role.trim().isNotEmpty
         ? role.trim()
@@ -77,6 +139,8 @@ class HelpService {
       imageUrl: imageUrl,
       isPetugas: isPetugas,
       role: roleLabel,
+      latitude: latitude,
+      longitude: longitude,
     );
   }
 
@@ -85,6 +149,11 @@ class HelpService {
     required String officerId,
   }) {
     return '${pilgrimId}_$officerId';
+  }
+
+  String _buildSessionConversationId(String pairKey) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return '${pairKey}_$timestamp';
   }
 
   Future<HelpConversationHandle> ensureConversationWithPeer({
@@ -131,14 +200,64 @@ class HelpService {
       throw Exception('Data percakapan tidak valid.');
     }
 
-    final conversationId = buildConversationId(
+    final pairKey = buildConversationId(
       pilgrimId: pilgrimId,
       officerId: officerId,
     );
+    String conversationId = '';
+
+    try {
+      final activeSnapshot = await _activeSessionsRef.child(pairKey).get();
+      if (activeSnapshot.exists && activeSnapshot.value != null) {
+        final activeId = activeSnapshot.value.toString();
+        if (activeId.isNotEmpty) {
+          final activeConvSnap = await _conversationsRef.child(activeId).get();
+          if (activeConvSnap.exists && activeConvSnap.value is Map) {
+            final activeData =
+                Map<String, dynamic>.from(activeConvSnap.value as Map);
+            final status = activeData['status']?.toString() ?? 'open';
+            final archived = activeData['archived'] == true;
+            if (status != 'closed' && !archived) {
+              conversationId = activeId;
+            }
+          }
+        }
+      }
+    } catch (_) {
+      // If session lookup fails, fall back to legacy behavior.
+    }
+
+    if (conversationId.isEmpty) {
+      final legacyId = pairKey;
+      try {
+        final legacySnap = await _conversationsRef.child(legacyId).get();
+        if (legacySnap.exists && legacySnap.value is Map) {
+          final legacyData = Map<String, dynamic>.from(legacySnap.value as Map);
+          final status = legacyData['status']?.toString() ?? 'open';
+          final archived = legacyData['archived'] == true;
+          if (status != 'closed' && !archived) {
+            conversationId = legacyId;
+          }
+        }
+      } catch (_) {
+        // Ignore legacy lookup errors.
+      }
+    }
+
+    if (conversationId.isEmpty) {
+      conversationId = _buildSessionConversationId(pairKey);
+      try {
+        await _activeSessionsRef.child(pairKey).set(conversationId);
+      } catch (_) {
+        // Keep going even if we cannot write session pointer.
+      }
+    }
+
     final conversationRef = _conversationsRef.child(conversationId);
 
     final baseData = <String, dynamic>{
       'conversationId': conversationId,
+      'pairKey': pairKey,
       'pilgrimId': pilgrimId,
       'pilgrimName': pilgrimName,
       'pilgrimImageUrl': pilgrimImageUrl,
@@ -147,9 +266,24 @@ class HelpService {
       'officerName': officerName,
       'officerImageUrl': officerImageUrl,
       'officerRole': officerRole,
+      'status': 'open',
+      'archived': false,
+      'openedAt': ServerValue.timestamp,
       // Keep conversation heartbeat fresh for inbox ordering.
       'updatedAt': ServerValue.timestamp,
     };
+
+    if (current.latitude != 0.0 || current.longitude != 0.0) {
+      if (current.isPetugas) {
+        baseData['officerLat'] = current.latitude;
+        baseData['officerLng'] = current.longitude;
+        baseData['officerLocationUpdatedAt'] = ServerValue.timestamp;
+      } else {
+        baseData['pilgrimLat'] = current.latitude;
+        baseData['pilgrimLng'] = current.longitude;
+        baseData['pilgrimLocationUpdatedAt'] = ServerValue.timestamp;
+      }
+    }
 
     try {
       await conversationRef.update(baseData);
@@ -178,11 +312,15 @@ class HelpService {
     required String text,
     String type = 'custom',
     String templateKey = '',
+    double? senderLatitude,
+    double? senderLongitude,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
 
     final current = await _currentUserContext();
+    final messageLatitude = senderLatitude ?? current.latitude;
+    final messageLongitude = senderLongitude ?? current.longitude;
     final messageRef =
         _conversationsRef.child(conversationId).child('messages').push();
 
@@ -194,6 +332,8 @@ class HelpService {
         'senderImageUrl': current.imageUrl,
         'senderRole': current.role,
         'senderRoleType': current.isPetugas ? 'petugas' : 'jemaah',
+        'senderLat': messageLatitude,
+        'senderLng': messageLongitude,
         'text': trimmed,
         'type': type,
         'templateKey': templateKey,
@@ -206,6 +346,16 @@ class HelpService {
         'lastSenderName': current.name,
         'lastMessageAt': ServerValue.timestamp,
         'lastMessageType': type,
+        if (messageLatitude != 0.0 || messageLongitude != 0.0)
+          if (current.isPetugas) ...{
+            'officerLat': messageLatitude,
+            'officerLng': messageLongitude,
+            'officerLocationUpdatedAt': ServerValue.timestamp,
+          } else ...{
+            'pilgrimLat': messageLatitude,
+            'pilgrimLng': messageLongitude,
+            'pilgrimLocationUpdatedAt': ServerValue.timestamp,
+          },
         'readMeta/${current.uid}/lastReadAt': ServerValue.timestamp,
         'readMeta/${current.uid}/updatedAt': ServerValue.timestamp,
         'updatedAt': ServerValue.timestamp,
@@ -237,6 +387,84 @@ class HelpService {
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         return;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> closeConversation(String conversationId) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null || conversationId.trim().isEmpty) return;
+
+    try {
+      final snapshot = await _conversationsRef.child(conversationId).get();
+      if (!snapshot.exists || snapshot.value == null) return;
+      if (snapshot.value is! Map) return;
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+
+      final pilgrimId = data['pilgrimId']?.toString() ?? '';
+      final officerId = data['officerId']?.toString() ?? '';
+      final lastMessage = data['lastMessage']?.toString().trim() ?? '';
+      final messagesNode = data['messages'];
+      final hasMessages = lastMessage.isNotEmpty ||
+          (messagesNode is Map && messagesNode.isNotEmpty);
+      var hasOfficerReply = false;
+      if (messagesNode is Map) {
+        for (final value in messagesNode.values) {
+          if (value is! Map) continue;
+          final messageMap = Map<String, dynamic>.from(value);
+          final senderId = messageMap['senderId']?.toString() ?? '';
+          if (senderId == officerId && senderId.isNotEmpty) {
+            hasOfficerReply = true;
+            break;
+          }
+        }
+      }
+      final lastSenderId = data['lastSenderId']?.toString() ?? '';
+      if (lastSenderId.isNotEmpty && lastSenderId == officerId) {
+        hasOfficerReply = true;
+      }
+      final pairKey = data['pairKey']?.toString().trim().isNotEmpty == true
+          ? data['pairKey'].toString()
+          : (pilgrimId.isNotEmpty && officerId.isNotEmpty
+              ? buildConversationId(
+                  pilgrimId: pilgrimId,
+                  officerId: officerId,
+                )
+              : '');
+
+      if (!hasMessages) {
+        await _conversationsRef.child(conversationId).remove();
+        if (pairKey.isNotEmpty) {
+          await _activeSessionsRef.child(pairKey).remove();
+        }
+        return;
+      }
+
+      // If officer has never replied yet, remove the conversation entirely
+      // instead of archiving it.
+      if (!hasOfficerReply) {
+        await _conversationsRef.child(conversationId).remove();
+        if (pairKey.isNotEmpty) {
+          await _activeSessionsRef.child(pairKey).remove();
+        }
+        return;
+      }
+
+      await _conversationsRef.child(conversationId).update({
+        'status': 'closed',
+        'archived': true,
+        'closedAt': ServerValue.timestamp,
+        'closedBy': uid,
+        'updatedAt': ServerValue.timestamp,
+      });
+
+      if (pairKey.isNotEmpty) {
+        await _activeSessionsRef.child(pairKey).remove();
+      }
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw _permissionDeniedError();
       }
       rethrow;
     }
@@ -298,7 +526,11 @@ class HelpService {
           })
           .whereType<HelpMessage>()
           .toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        ..sort((a, b) {
+          final createdAtComparison = a.createdAt.compareTo(b.createdAt);
+          if (createdAtComparison != 0) return createdAtComparison;
+          return a.id.compareTo(b.id);
+        });
       return entries;
     });
   }
@@ -323,6 +555,9 @@ class HelpService {
                 map['conversationId']?.toString().isNotEmpty == true
                     ? map['conversationId'].toString()
                     : entry.key.toString();
+            final status = map['status']?.toString() ?? 'open';
+            final archived = map['archived'] == true;
+            if (status == 'closed' || archived) return null;
             return HelpConversationSummary.fromMap(
               map,
               currentUid: currentUid,
@@ -336,6 +571,133 @@ class HelpService {
 
       return summaries;
     });
+  }
+
+  Stream<List<HelpConversationSummary>> watchArchivedInbox({
+    required String currentUid,
+    required bool currentIsPetugas,
+  }) {
+    final query = currentIsPetugas
+        ? _conversationsRef.orderByChild('officerId').equalTo(currentUid)
+        : _conversationsRef.orderByChild('pilgrimId').equalTo(currentUid);
+
+    return query.onValue.map((event) {
+      final raw = event.snapshot.value;
+      if (raw is! Map) return <HelpConversationSummary>[];
+
+      final summaries = raw.entries
+          .map((entry) {
+            if (entry.value is! Map) return null;
+            final map = Map<String, dynamic>.from(entry.value as Map);
+            map['conversationId'] =
+                map['conversationId']?.toString().isNotEmpty == true
+                    ? map['conversationId'].toString()
+                    : entry.key.toString();
+            final status = map['status']?.toString() ?? 'open';
+            final archived = map['archived'] == true;
+            if (status != 'closed' && !archived) return null;
+            return HelpConversationSummary.fromMap(
+              map,
+              currentUid: currentUid,
+              currentIsPetugas: currentIsPetugas,
+              toMillis: _toMillis,
+            );
+          })
+          .whereType<HelpConversationSummary>()
+          .toList()
+        ..sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
+
+      return summaries;
+    });
+  }
+
+  Future<Map<String, dynamic>?> fetchConversationById(
+    String conversationId,
+  ) async {
+    if (conversationId.trim().isEmpty) return null;
+    try {
+      final snapshot = await _conversationsRef.child(conversationId).get();
+      if (!snapshot.exists || snapshot.value == null) return null;
+      if (snapshot.value is! Map) return null;
+      return Map<String, dynamic>.from(snapshot.value as Map);
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  Future<Map<String, double>?> fetchConversationPeerLocation({
+    required String conversationId,
+    required bool currentIsPetugas,
+  }) async {
+    if (conversationId.trim().isEmpty) return null;
+    try {
+      final snapshot = await _conversationsRef.child(conversationId).get();
+      if (!snapshot.exists || snapshot.value == null) return null;
+      if (snapshot.value is! Map) return null;
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      final latKey = currentIsPetugas ? 'pilgrimLat' : 'officerLat';
+      final lngKey = currentIsPetugas ? 'pilgrimLng' : 'officerLng';
+      final latitude = _toDoubleValue(data[latKey]);
+      final longitude = _toDoubleValue(data[lngKey]);
+      if (latitude == 0.0 || longitude == 0.0) return null;
+      return {
+        'latitude': latitude,
+        'longitude': longitude,
+      };
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  Future<Map<String, double>?> fetchLatestPeerMessageLocation({
+    required String conversationId,
+    required String peerId,
+  }) async {
+    if (conversationId.trim().isEmpty || peerId.trim().isEmpty) return null;
+    try {
+      final snapshot =
+          await _conversationsRef.child(conversationId).child('messages').get();
+      if (!snapshot.exists || snapshot.value == null) return null;
+      if (snapshot.value is! Map) return null;
+
+      final messages = Map<String, dynamic>.from(snapshot.value as Map);
+      int latestAt = 0;
+      double latestLat = 0.0;
+      double latestLng = 0.0;
+
+      for (final value in messages.values) {
+        if (value is! Map) continue;
+        final map = Map<String, dynamic>.from(value);
+        final senderId = map['senderId']?.toString() ?? '';
+        if (senderId != peerId) continue;
+        final createdAt = _toMillis(map['createdAt']);
+        final lat = _toDoubleValue(map['senderLat']);
+        final lng = _toDoubleValue(map['senderLng']);
+        if (lat == 0.0 || lng == 0.0) continue;
+        if (createdAt >= latestAt) {
+          latestAt = createdAt;
+          latestLat = lat;
+          latestLng = lng;
+        }
+      }
+
+      if (latestLat == 0.0 || latestLng == 0.0) return null;
+      return {
+        'latitude': latestLat,
+        'longitude': latestLng,
+      };
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        return null;
+      }
+      rethrow;
+    }
   }
 }
 
@@ -371,6 +733,10 @@ class HelpConversationSummary {
     required this.lastMessageAt,
     required this.lastSenderId,
     required this.unreadMessageCount,
+    required this.peerLatitude,
+    required this.peerLongitude,
+    required this.status,
+    required this.archived,
   });
 
   final String conversationId;
@@ -383,6 +749,17 @@ class HelpConversationSummary {
   final int lastMessageAt;
   final String lastSenderId;
   final int unreadMessageCount;
+  final double peerLatitude;
+  final double peerLongitude;
+  final String status;
+  final bool archived;
+
+  static double _toDoubleValue(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 
   factory HelpConversationSummary.fromMap(
     Map<String, dynamic> data, {
@@ -404,6 +781,12 @@ class HelpConversationSummary {
         : data['officerRole']?.toString().trim();
     final lastMessageAt = toMillis(data['lastMessageAt']);
     final lastSenderId = data['lastSenderId']?.toString() ?? '';
+    final pilgrimLat = _toDoubleValue(data['pilgrimLat']);
+    final pilgrimLng = _toDoubleValue(data['pilgrimLng']);
+    final officerLat = _toDoubleValue(data['officerLat']);
+    final officerLng = _toDoubleValue(data['officerLng']);
+    final status = data['status']?.toString() ?? 'open';
+    final archived = data['archived'] == true;
 
     int lastReadAt = 0;
     final readMetaRaw = data['readMeta'];
@@ -445,6 +828,10 @@ class HelpConversationSummary {
       lastMessageAt: lastMessageAt,
       lastSenderId: lastSenderId,
       unreadMessageCount: unreadMessageCount,
+      peerLatitude: currentIsPetugas ? pilgrimLat : officerLat,
+      peerLongitude: currentIsPetugas ? pilgrimLng : officerLng,
+      status: status,
+      archived: archived,
     );
   }
 }
@@ -495,6 +882,8 @@ class _CurrentUserContext {
     required this.imageUrl,
     required this.isPetugas,
     required this.role,
+    required this.latitude,
+    required this.longitude,
   });
 
   final String uid;
@@ -502,4 +891,6 @@ class _CurrentUserContext {
   final String imageUrl;
   final bool isPetugas;
   final String role;
+  final double latitude;
+  final double longitude;
 }

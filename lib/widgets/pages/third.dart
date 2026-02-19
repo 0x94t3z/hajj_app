@@ -11,7 +11,7 @@ import 'package:hajj_app/screens/features/profile/change_password.dart';
 import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ThirdWidget extends StatefulWidget {
   const ThirdWidget({Key? key}) : super(key: key);
@@ -29,7 +29,12 @@ class _ThirdWidgetState extends State<ThirdWidget> {
   late String _imageUrl = '';
   late String _roles = '';
   StreamSubscription<List<HelpConversationSummary>>? _helpInboxSubscription;
+  StreamSubscription<List<HelpConversationSummary>>?
+      _helpInboxFallbackSubscription;
+  List<HelpConversationSummary> _helpInboxPrimary = const [];
+  List<HelpConversationSummary> _helpInboxFallback = const [];
   int _totalUnreadHelpMessages = 0;
+  bool? _helpInboxIsPetugas;
 
   @override
   void initState() {
@@ -41,6 +46,7 @@ class _ThirdWidgetState extends State<ThirdWidget> {
   @override
   void dispose() {
     _helpInboxSubscription?.cancel();
+    _helpInboxFallbackSubscription?.cancel();
     super.dispose();
   }
 
@@ -48,33 +54,89 @@ class _ThirdWidgetState extends State<ThirdWidget> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
+    final cachedRole =
+        _userService.getCachedCurrentUserProfile()?['roles']?.toString() ?? '';
+    if (cachedRole.trim().isNotEmpty) {
+      await _startHelpInboxWatch(
+        uid: user.uid,
+        role: cachedRole,
+      );
+      return;
+    }
+
     final role = await _userService.fetchCurrentUserRole();
+    await _startHelpInboxWatch(
+      uid: user.uid,
+      role: role,
+    );
+  }
+
+  Future<void> _startHelpInboxWatch({
+    required String uid,
+    required String role,
+  }) async {
     final isPetugas = _userService.isPetugasHajiRole(role);
+    if (_helpInboxIsPetugas == isPetugas &&
+        _helpInboxSubscription != null) {
+      return;
+    }
+    _helpInboxIsPetugas = isPetugas;
 
     await _helpInboxSubscription?.cancel();
+    await _helpInboxFallbackSubscription?.cancel();
+
     _helpInboxSubscription = _helpService
         .watchInbox(
-      currentUid: user.uid,
-      currentIsPetugas: isPetugas,
-    )
+          currentUid: uid,
+          currentIsPetugas: isPetugas,
+        )
         .listen(
       (conversations) {
         if (!mounted) return;
-        final total = conversations.fold<int>(
-          0,
-          (sum, item) => sum + item.unreadMessageCount,
-        );
-        setState(() {
-          _totalUnreadHelpMessages = total;
-        });
+        _helpInboxPrimary = conversations;
+        _recalculateUnreadCount();
       },
       onError: (_) {
         if (!mounted) return;
-        setState(() {
-          _totalUnreadHelpMessages = 0;
-        });
+        _helpInboxPrimary = const [];
+        _recalculateUnreadCount();
       },
     );
+
+    _helpInboxFallbackSubscription = _helpService
+        .watchInbox(
+          currentUid: uid,
+          currentIsPetugas: !isPetugas,
+        )
+        .listen(
+      (conversations) {
+        if (!mounted) return;
+        _helpInboxFallback = conversations;
+        _recalculateUnreadCount();
+      },
+      onError: (_) {
+        if (!mounted) return;
+        _helpInboxFallback = const [];
+        _recalculateUnreadCount();
+      },
+    );
+  }
+
+  void _recalculateUnreadCount() {
+    final merged = <String, HelpConversationSummary>{};
+    for (final item in _helpInboxPrimary) {
+      merged[item.conversationId] = item;
+    }
+    for (final item in _helpInboxFallback) {
+      merged[item.conversationId] = item;
+    }
+    final total = merged.values.fold<int>(
+      0,
+      (sum, item) => sum + item.unreadMessageCount,
+    );
+    setState(() {
+      _totalUnreadHelpMessages = total;
+    });
   }
 
   void updateName(String newName) {
@@ -89,7 +151,9 @@ class _ThirdWidgetState extends State<ThirdWidget> {
       if (cachedProfile != null && mounted) {
         final cachedRoleRaw = cachedProfile['roles'] as String? ?? '';
         final cachedRoleStatus = _userService.isPetugasHajiRole(cachedRoleRaw)
-            ? 'Petugas Haji'
+            ? (cachedRoleRaw.trim().isNotEmpty
+                ? cachedRoleRaw.trim()
+                : 'Petugas Haji')
             : 'Jemaah Haji';
         setState(() {
           _name =
@@ -98,6 +162,10 @@ class _ThirdWidgetState extends State<ThirdWidget> {
           _imageUrl = cachedProfile['imageUrl'] as String? ?? '';
           _roles = cachedRoleStatus;
         });
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          await _startHelpInboxWatch(uid: uid, role: cachedRoleRaw);
+        }
       }
 
       final rawUserData =
@@ -114,7 +182,7 @@ class _ThirdWidgetState extends State<ThirdWidget> {
       if (userData != null) {
         final roleRaw = userData['roles'] as String? ?? '';
         final roleStatus = _userService.isPetugasHajiRole(roleRaw)
-            ? 'Petugas Haji'
+            ? (roleRaw.trim().isNotEmpty ? roleRaw.trim() : 'Petugas Haji')
             : 'Jemaah Haji';
         setState(() {
           _name = toTitleCaseName(userData['displayName'] as String? ?? '');
@@ -122,6 +190,10 @@ class _ThirdWidgetState extends State<ThirdWidget> {
           _imageUrl = userData['imageUrl'] as String? ?? '';
           _roles = roleStatus;
         });
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          await _startHelpInboxWatch(uid: uid, role: roleRaw);
+        }
       } else {
         print("No data available or data not in the expected format");
       }
