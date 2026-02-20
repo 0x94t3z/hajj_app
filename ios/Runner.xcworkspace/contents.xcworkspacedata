@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:../../../../Downloads/uin_bandung.gpx">
+   </FileRef>
+   <FileRef
+      location = "group:../../../../Downloads/zamzam_tower.gpx">
+   </FileRef>
+   <FileRef
       location = "group:Runner.xcodeproj">
    </FileRef>
    <FileRef
