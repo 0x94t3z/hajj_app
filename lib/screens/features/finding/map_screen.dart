@@ -68,7 +68,7 @@ class _MapScreenState extends State<MapScreen> {
       await mapboxMap?.style.setStyleImportConfigProperties(
         'basemap',
         {
-          'lightPreset': 'day',
+          'lightPreset': 'dusk',
           'theme': 'default',
           'show3dObjects': true,
           'showRoadLabels': true,
@@ -1104,7 +1104,7 @@ class _MapScreenState extends State<MapScreen> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(999.0),
               border: Border.all(
                 color: ColorSys.darkBlue.withValues(alpha: 0.08),
@@ -1232,7 +1232,7 @@ class _MapScreenState extends State<MapScreen> {
                       width: 14.0,
                       height: 30.0,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.white.withValues(alpha: 0.92),
                         border: Border.all(
                           color: ColorSys.darkBlue.withValues(alpha: 0.08),
                           width: 0.8,
@@ -1331,7 +1331,7 @@ class _MapScreenState extends State<MapScreen> {
       height: 200.0,
       margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(25.0),
         boxShadow: [
           BoxShadow(
@@ -1753,9 +1753,9 @@ class _MapScreenState extends State<MapScreen> {
                 },
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: Colors.white.withValues(alpha: 0.88),
                   ),
                   child: const Icon(
                     Iconsax.arrow_left_2,
@@ -1785,9 +1785,9 @@ class _MapScreenState extends State<MapScreen> {
                 },
                 child: Container(
                   padding: const EdgeInsets.all(10.0),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: Colors.white.withValues(alpha: 0.88),
                   ),
                   child: const Icon(
                     Iconsax.routing,
@@ -1821,7 +1821,7 @@ class _MapScreenState extends State<MapScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 20.0),
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withValues(alpha: 0.92),
                       borderRadius: BorderRadius.circular(18.0),
                     ),
                     child: Text(
@@ -1867,7 +1867,7 @@ class _MapScreenState extends State<MapScreen> {
               bottom: 225.0,
               right: 25.0,
               child: FloatingActionButton(
-                backgroundColor: Colors.white,
+                backgroundColor: Colors.white.withValues(alpha: 0.88),
                 child: const Icon(
                   Iconsax.location,
                   color: ColorSys.darkBlue,

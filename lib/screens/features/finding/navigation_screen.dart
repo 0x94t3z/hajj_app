@@ -12,6 +12,7 @@ import 'package:hajj_app/core/widgets/app_popup.dart';
 import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/models/user_model.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
+import 'package:hajj_app/screens/features/finding/operation_bounds.dart';
 import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:http/http.dart' as http;
@@ -105,8 +106,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     final officer = item.user;
     return Container(
       width: double.infinity,
-      height: 172.0,
-      margin: const EdgeInsets.only(bottom: 12.0),
+      height: 200.0,
+      margin: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25.0),
@@ -119,14 +120,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(18.0),
+      padding: const EdgeInsets.all(25.0),
       child: Row(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(25.0),
             child: SizedBox(
-              height: 100.0,
-              width: 98.0,
+              height: 122.0,
+              width: 120.0,
               child: _buildOfficerCardImage(officer.imageUrl),
             ),
           ),
@@ -142,18 +143,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           ? '${_toTitleCase(officer.name).substring(0, 20)}...'
                           : _toTitleCase(officer.name),
                       style: textStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: ColorSys.darkBlue,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4.0),
+                    const SizedBox(height: 5.0),
                     Row(
                       children: [
                         const Icon(
                           Icons.directions_walk,
-                          size: 13.0,
+                          size: 14.0,
                           color: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 4.0),
@@ -161,15 +162,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           child: Text(
                             officer.distance,
                             style: textStyle(
-                              fontSize: 12.5,
+                              fontSize: 14,
                               color: ColorSys.darkBlue,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8.0),
+                        const SizedBox(width: 10.0),
                         const Icon(
                           Iconsax.clock,
-                          size: 13.0,
+                          size: 14.0,
                           color: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 4.0),
@@ -177,14 +178,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           child: Text(
                             officer.duration,
                             style: textStyle(
-                              fontSize: 12.5,
+                              fontSize: 14,
                               color: ColorSys.darkBlue,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14.0),
+                    const SizedBox(height: 20.0),
                     Row(
                       children: [
                         ElevatedButton.icon(
@@ -209,16 +210,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: ColorSys.darkBlue,
                             textStyle: const TextStyle(
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
-                            fixedSize: const Size(84, 40),
+                            fixedSize: const Size(90, 50),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25.0),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8.0),
+                        const SizedBox(width: 10.0),
                         ElevatedButton.icon(
                           onPressed: () => _openHelpChat(officer),
                           icon: const Icon(
@@ -232,10 +233,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             textStyle: const TextStyle(
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
-                            fixedSize: const Size(92, 40),
+                            fixedSize: const Size(100, 50),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25.0),
                             ),
@@ -373,16 +374,33 @@ class _NavigationScreenState extends State<NavigationScreen> {
             desiredAccuracy: geo.LocationAccuracy.high,
           );
 
+      if (!isInsideMakkahOperationArea(
+        currentPosition.latitude,
+        currentPosition.longitude,
+      )) {
+        if (!mounted) return;
+        setState(() {
+          _officerRoutes = <_OfficerRouteItem>[];
+          _errorMessage =
+              'Lokasi Anda di luar area operasional $supportedOperationAreaLabel.';
+          if (showLoading) {
+            _isLoading = false;
+          }
+        });
+        return;
+      }
+
       final usersMap = await fetchModelsFromFirebase();
       final petugasHaji = usersMap['petugasHaji'] ?? <UserModel>[];
 
       // Thesis requirement: list order is based on Haversine distance.
-      final routes = petugasHaji
+      final ranked = petugasHaji
           .where(
         (user) =>
             user.userId != currentUser.uid &&
             user.latitude != 0.0 &&
-            user.longitude != 0.0,
+            user.longitude != 0.0 &&
+            isInsideMakkahOperationArea(user.latitude, user.longitude),
       )
           .map((user) {
         final distanceKm = calculateHaversineDistance(
@@ -391,11 +409,19 @@ class _NavigationScreenState extends State<NavigationScreen> {
           user.latitude,
           user.longitude,
         );
+        return MapEntry(user, distanceKm);
+      }).toList()
+        ..sort((a, b) => a.value.compareTo(b.value));
+
+      final routes = ranked
+          .where((entry) => entry.value <= maxNearbyOfficerDistanceKm)
+          .map((entry) {
+        final user = entry.key;
+        final distanceKm = entry.value;
         user.distance = '${distanceKm.toStringAsFixed(2)} Km';
         user.duration = _estimateWalkDuration(distanceKm);
         return _OfficerRouteItem(user: user, distanceKm: distanceKm);
-      }).toList()
-        ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
+      }).toList();
 
       if (!mounted) return;
       setState(() {
@@ -512,7 +538,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                         ],
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.zero,
                         itemCount: _officerRoutes.length,
                         itemBuilder: (context, index) {
                           final item = _officerRoutes[index];
@@ -899,6 +925,9 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     final position = await geo.Geolocator.getCurrentPosition(
       desiredAccuracy: geo.LocationAccuracy.high,
     );
+    if (!isInsideMakkahOperationArea(position.latitude, position.longitude)) {
+      return <_NearbyOfficer>[];
+    }
     final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final usersMap = await fetchModelsFromFirebase();
     final petugas = usersMap['petugasHaji'] ?? <UserModel>[];
@@ -908,7 +937,8 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       (user) =>
           user.userId != currentUid &&
           user.latitude != 0.0 &&
-          user.longitude != 0.0,
+          user.longitude != 0.0 &&
+          isInsideMakkahOperationArea(user.latitude, user.longitude),
     )
         .map((user) {
       final distanceKm = calculateHaversineDistance(
@@ -921,7 +951,10 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     }).toList()
       ..sort((a, b) => a.distanceKm.compareTo(b.distanceKm));
 
-    return nearest.take(limit).toList();
+    return nearest
+        .where((item) => item.distanceKm <= maxNearbyOfficerDistanceKm)
+        .take(limit)
+        .toList();
   }
 
   Future<void> _showNearestOfficersSheet() async {
@@ -945,11 +978,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                 children: [
                   Text(
                     'Nearest Hajj Officers',
-                    style: textStyle(
-                      color: ColorSys.darkBlue,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: textStyle(color: ColorSys.primary),
                   ),
                   const SizedBox(height: 10),
                   if (nearest.isEmpty)
@@ -1651,7 +1680,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(999.0),
               border: Border.all(
                 color: ColorSys.darkBlue.withValues(alpha: 0.08),
@@ -1749,7 +1778,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                       width: 14.0,
                       height: 30.0,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Colors.white.withValues(alpha: 0.92),
                         border: Border.all(
                           color: ColorSys.darkBlue.withValues(alpha: 0.08),
                           width: 0.8,
