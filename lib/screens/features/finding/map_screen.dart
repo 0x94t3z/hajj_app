@@ -35,6 +35,8 @@ class _MapScreenState extends State<MapScreen> {
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager;
   Uint8List? _destinationMarker;
+  Uint8List? _customMapPuckImage;
+  Uint8List? _transparentPuckImage;
   final PageController _pageController = PageController();
   bool _hideBackButton = false;
   List<UserModel> users = [];
@@ -140,6 +142,8 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
+    _customMapPuckImage ??= await _buildCustomMapPuckImage();
+    _transparentPuckImage ??= await _buildTransparentPuckImage();
     unawaited(_applyStandardMapStyle());
     mapboxMap?.setCamera(
       CameraOptions(
@@ -157,7 +161,13 @@ class _MapScreenState extends State<MapScreen> {
         showAccuracyRing: false,
         puckBearingEnabled: true,
         puckBearing: PuckBearing.HEADING,
-        locationPuck: LocationPuck(locationPuck2D: DefaultLocationPuck2D()),
+        locationPuck: LocationPuck(
+          locationPuck2D: LocationPuck2D(
+            topImage: _transparentPuckImage,
+            bearingImage: _customMapPuckImage,
+            shadowImage: _transparentPuckImage,
+          ),
+        ),
       ),
     );
     _pointAnnotationManager ??=
@@ -201,6 +211,77 @@ class _MapScreenState extends State<MapScreen> {
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, size * 0.06, innerDotPaint);
 
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.toInt(), size.toInt());
+    final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    return pngBytes!.buffer.asUint8List();
+  }
+
+  Future<Uint8List> _buildCustomMapPuckImage() async {
+    const size = 180.0;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final center = const Offset(size / 2, size / 2);
+
+    final conePath = Path()
+      ..moveTo(center.dx - 14.0, center.dy + 14.0)
+      ..quadraticBezierTo(
+        center.dx - 44.0,
+        center.dy + 56.0,
+        center.dx - 58.0,
+        size - 14.0,
+      )
+      ..lineTo(center.dx + 58.0, size - 14.0)
+      ..quadraticBezierTo(
+        center.dx + 44.0,
+        center.dy + 56.0,
+        center.dx + 14.0,
+        center.dy + 14.0,
+      )
+      ..close();
+
+    final conePaint = Paint()
+      ..shader = ui.Gradient.linear(
+        Offset(center.dx, center.dy + 14.0),
+        Offset(center.dx, size - 14.0),
+        const [
+          Color(0xCC245CFF),
+          Color(0x7A245CFF),
+          Color(0x10245CFF),
+        ],
+        const [0.0, 0.55, 1.0],
+      );
+    canvas.drawPath(conePath, conePaint);
+
+    final haloPaint = Paint()
+      ..color = const Color(0x33245CFF)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 34.0, haloPaint);
+
+    final ringPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 24.0, ringPaint);
+
+    final corePaint = Paint()
+      ..color = const Color(0xFF245CFF)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 16.0, corePaint);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.toInt(), size.toInt());
+    final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    return pngBytes!.buffer.asUint8List();
+  }
+
+  Future<Uint8List> _buildTransparentPuckImage() async {
+    const size = 8.0;
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final clearPaint = Paint()
+      ..blendMode = BlendMode.clear
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(const Rect.fromLTWH(0, 0, size, size), clearPaint);
     final picture = recorder.endRecording();
     final image = await picture.toImage(size.toInt(), size.toInt());
     final pngBytes = await image.toByteData(format: ui.ImageByteFormat.png);
