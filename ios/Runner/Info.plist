@@ -30,8 +30,14 @@
 	<string>$(MAPBOX_ACCESS_TOKEN)</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Aplikasi membutuhkan akses lokasi di latar belakang untuk pembaruan posisi.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Aplikasi membutuhkan akses lokasi terus-menerus agar posisi dapat diperbarui secara real-time.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Aplikasi membutuhkan akses lokasi untuk menampilkan petugas terdekat.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

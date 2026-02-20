@@ -35,16 +35,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
   List<_OfficerRouteItem> _officerRoutes = [];
   bool _isSendingHelpRequest = false;
   StreamSubscription<geo.Position>? _nearestPositionSubscription;
-  DateTime? _lastNearestRefresh;
   bool _isNearestRefreshInFlight = false;
-
-  static const Duration _nearestRefreshInterval = Duration(seconds: 20);
+  bool _hasLoggedLocationPermissionIssue = false;
 
   @override
   void initState() {
     super.initState();
-    _loadOfficerRoutes();
-    _startNearestUpdates();
+    unawaited(_loadOfficerRoutes());
+    unawaited(_startNearestUpdates());
   }
 
   @override
@@ -100,6 +98,55 @@ class _NavigationScreenState extends State<NavigationScreen> {
   String _estimateWalkDuration(double distanceKm) {
     final minutes = _estimateWalkDurationMinutes(distanceKm).ceil();
     return '$minutes Min';
+  }
+
+  bool _isIgnoredIosLocationError(Object error) {
+    final text = error.toString();
+    return text.contains('kCLErrorDomain') && text.contains('error 1');
+  }
+
+  Future<bool> _ensureLocationPermission() async {
+    final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!_hasLoggedLocationPermissionIssue) {
+        _hasLoggedLocationPermissionIssue = true;
+        debugPrint('Navigation screen: location service is disabled.');
+      }
+      return false;
+    }
+
+    var permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+    }
+
+    final granted = permission == geo.LocationPermission.always ||
+        permission == geo.LocationPermission.whileInUse;
+    if (!granted && !_hasLoggedLocationPermissionIssue) {
+      _hasLoggedLocationPermissionIssue = true;
+      debugPrint(
+        'Navigation screen: location permission not granted: $permission',
+      );
+    }
+    if (granted) {
+      _hasLoggedLocationPermissionIssue = false;
+    }
+    return granted;
+  }
+
+  Future<geo.Position?> _getCurrentPositionWithPermission() async {
+    final hasPermission = await _ensureLocationPermission();
+    if (!hasPermission) return null;
+    try {
+      return await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
+      );
+    } catch (e) {
+      if (!_isIgnoredIosLocationError(e)) {
+        debugPrint('Navigation screen: failed getting current position: $e');
+      }
+      return null;
+    }
   }
 
   Widget _buildOfficerListCard(_OfficerRouteItem item) {
@@ -284,9 +331,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     });
 
     try {
-      final position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.high,
-      );
+      final position = await _getCurrentPositionWithPermission();
+      if (position == null) return;
       await _userService.updateCurrentUserLocation(
         position.latitude,
         position.longitude,
@@ -369,10 +415,19 @@ class _NavigationScreenState extends State<NavigationScreen> {
         return;
       }
 
-      final currentPosition = position ??
-          await geo.Geolocator.getCurrentPosition(
-            desiredAccuracy: geo.LocationAccuracy.high,
-          );
+      final currentPosition =
+          position ?? await _getCurrentPositionWithPermission();
+      if (currentPosition == null) {
+        if (!mounted) return;
+        setState(() {
+          _officerRoutes = <_OfficerRouteItem>[];
+          _errorMessage = 'Izin lokasi diperlukan untuk memuat daftar petugas.';
+          if (showLoading) {
+            _isLoading = false;
+          }
+        });
+        return;
+      }
 
       if (!isInsideMakkahOperationArea(
         currentPosition.latitude,
@@ -449,10 +504,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
     }
   }
 
-  void _startNearestUpdates() {
+  Future<void> _startNearestUpdates() async {
     _nearestPositionSubscription?.cancel();
+    final hasPermission = await _ensureLocationPermission();
+    if (!hasPermission) return;
     const locationSettings = geo.LocationSettings(
-      accuracy: geo.LocationAccuracy.high,
+      accuracy: geo.LocationAccuracy.bestForNavigation,
       distanceFilter: 10,
     );
 
@@ -463,6 +520,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         unawaited(_refreshNearestOfficers(position));
       },
       onError: (error) {
+        if (_isIgnoredIosLocationError(error)) return;
         debugPrint('Nearest location stream error: $error');
       },
     );
@@ -470,14 +528,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   Future<void> _refreshNearestOfficers(geo.Position position) async {
     if (_isNearestRefreshInFlight) return;
-    final now = DateTime.now();
-    if (_lastNearestRefresh != null &&
-        now.difference(_lastNearestRefresh!) < _nearestRefreshInterval) {
-      return;
-    }
 
     _isNearestRefreshInFlight = true;
-    _lastNearestRefresh = now;
     try {
       await _loadOfficerRoutes(position: position, showLoading: false);
     } finally {
@@ -584,6 +636,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   DateTime? _lastCameraFollowUpdate;
   DateTime? _lastRecenterRequest;
   bool _isAutoFollowEnabled = true;
+  bool _hasLoggedLocationPermissionIssue = false;
   ViewportState _viewport = const IdleViewportState();
 
   Offset? _officerPopupOffset;
@@ -802,6 +855,53 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     }).join(' ');
   }
 
+  bool _isIgnoredIosLocationError(Object error) {
+    final text = error.toString();
+    return text.contains('kCLErrorDomain') && text.contains('error 1');
+  }
+
+  Future<bool> _ensureLocationPermission() async {
+    final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!_hasLoggedLocationPermissionIssue) {
+        _hasLoggedLocationPermissionIssue = true;
+        debugPrint('Direction screen: location service is disabled.');
+      }
+      return false;
+    }
+
+    var permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+    }
+
+    final granted = permission == geo.LocationPermission.always ||
+        permission == geo.LocationPermission.whileInUse;
+    if (!granted && !_hasLoggedLocationPermissionIssue) {
+      _hasLoggedLocationPermissionIssue = true;
+      debugPrint('Direction screen: location permission not granted: $permission');
+    }
+    if (granted) {
+      _hasLoggedLocationPermissionIssue = false;
+    }
+    return granted;
+  }
+
+  Future<geo.Position?> _getCurrentPositionWithPermission() async {
+    final hasPermission = await _ensureLocationPermission();
+    if (!hasPermission) return null;
+    try {
+      return await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
+      );
+    } catch (e) {
+      if (!_isIgnoredIosLocationError(e)) {
+        debugPrint('Direction screen: failed getting current position: $e');
+      }
+      return null;
+    }
+  }
+
   Widget _buildOfficerAvatar(String imageUrl) {
     final safeUrl = imageUrl.trim();
     return CircleAvatar(
@@ -922,9 +1022,8 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   }
 
   Future<List<_NearbyOfficer>> _fetchNearestOfficers({int limit = 10}) async {
-    final position = await geo.Geolocator.getCurrentPosition(
-      desiredAccuracy: geo.LocationAccuracy.high,
-    );
+    final position = await _getCurrentPositionWithPermission();
+    if (position == null) return <_NearbyOfficer>[];
     if (!isInsideMakkahOperationArea(position.latitude, position.longitude)) {
       return <_NearbyOfficer>[];
     }
@@ -1147,9 +1246,15 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
 
   Future<void> _startDirectionSession() async {
     try {
-      final currentPosition = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
-      );
+      final currentPosition = await _getCurrentPositionWithPermission();
+      if (currentPosition == null) {
+        if (!mounted) return;
+        setState(() {
+          _error = 'Izin lokasi diperlukan untuk memulai petunjuk arah.';
+          _isLoading = false;
+        });
+        return;
+      }
 
       await _userService.updateCurrentUserLocation(
         currentPosition.latitude,
@@ -1240,6 +1345,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       ).listen(
         _onPositionUpdated,
         onError: (error) {
+          if (_isIgnoredIosLocationError(error)) return;
           debugPrint('Direction stream error: $error');
         },
       );
@@ -1342,11 +1448,11 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     _lastCameraFollowUpdate = null;
     _setFollowPuckViewport();
     try {
-      final position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
-      );
+      final position = await _getCurrentPositionWithPermission();
+      if (position == null) return;
       _moveCameraToPosition(position);
     } catch (e) {
+      if (_isIgnoredIosLocationError(e)) return;
       debugPrint('Failed recentering to user: $e');
     }
   }

@@ -43,8 +43,8 @@ class _MapScreenState extends State<MapScreen> {
   bool _isCurrentUserPetugas = false;
   StreamSubscription<geo.Position>? _navigationPositionSubscription;
   StreamSubscription<geo.Position>? _nearestPositionSubscription;
-  DateTime? _lastNearestRefresh;
   bool _isNearestRefreshInFlight = false;
+  bool _hasLoggedLocationPermissionIssue = false;
 
   bool _isNavigationLoading = false;
   bool _isNavigationRunning = false;
@@ -62,7 +62,6 @@ class _MapScreenState extends State<MapScreen> {
   double _navigationRemainingSeconds = 0.0;
   DateTime? _navigationEta;
   static const int _maxNearestOfficers = 10;
-  static const Duration _nearestRefreshInterval = Duration(seconds: 20);
   static const double _defaultMapPitch = 50.0;
 
   Future<void> _applyStandardMapStyle() async {
@@ -98,7 +97,7 @@ class _MapScreenState extends State<MapScreen> {
     _getCurrentUserRole();
     // Start a timer to update user distances periodically
     _getCurrentPosition();
-    _startNearestUpdates();
+    unawaited(_startNearestUpdates());
     // Call a method to fetch or initialize users when the screen loads
     fetchData();
   }
@@ -130,6 +129,55 @@ class _MapScreenState extends State<MapScreen> {
       title: title,
       message: message,
     );
+  }
+
+  bool _isIgnoredIosLocationError(Object error) {
+    final text = error.toString();
+    return text.contains('kCLErrorDomain') && text.contains('error 1');
+  }
+
+  Future<bool> _ensureLocationPermission() async {
+    final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!_hasLoggedLocationPermissionIssue) {
+        _hasLoggedLocationPermissionIssue = true;
+        debugPrint('Map screen: location service is disabled.');
+      }
+      return false;
+    }
+
+    var permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+    }
+
+    final granted = permission == geo.LocationPermission.always ||
+        permission == geo.LocationPermission.whileInUse;
+
+    if (!granted && !_hasLoggedLocationPermissionIssue) {
+      _hasLoggedLocationPermissionIssue = true;
+      debugPrint('Map screen: location permission not granted: $permission');
+    }
+    if (granted) {
+      _hasLoggedLocationPermissionIssue = false;
+    }
+
+    return granted;
+  }
+
+  Future<geo.Position?> _getCurrentPositionWithPermission() async {
+    final hasPermission = await _ensureLocationPermission();
+    if (!hasPermission) return null;
+    try {
+      return await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
+      );
+    } catch (e) {
+      if (!_isIgnoredIosLocationError(e)) {
+        debugPrint('Map screen: failed getting current position: $e');
+      }
+      return null;
+    }
   }
 
   @override
@@ -412,9 +460,8 @@ class _MapScreenState extends State<MapScreen> {
       }
       _isCurrentUserPetugas = false;
 
-      final position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.high,
-      );
+      final position = await _getCurrentPositionWithPermission();
+      if (position == null) return;
       final nearestUsers = await _buildNearestPetugasList(
         currentPosition: position,
         petugasHaji: petugasHaji,
@@ -497,20 +544,10 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _refreshNearestOfficers(
-    geo.Position position, {
-    bool force = false,
-  }) async {
+  Future<void> _refreshNearestOfficers(geo.Position position) async {
     if (_isNearestRefreshInFlight) return;
-    final now = DateTime.now();
-    if (!force &&
-        _lastNearestRefresh != null &&
-        now.difference(_lastNearestRefresh!) < _nearestRefreshInterval) {
-      return;
-    }
 
     _isNearestRefreshInFlight = true;
-    _lastNearestRefresh = now;
     try {
       await _updateUserLocation(position.latitude, position.longitude);
       await _updateUserDistancesForPosition(position);
@@ -519,10 +556,12 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _startNearestUpdates() {
+  Future<void> _startNearestUpdates() async {
     _nearestPositionSubscription?.cancel();
+    final hasPermission = await _ensureLocationPermission();
+    if (!hasPermission) return;
     const locationSettings = geo.LocationSettings(
-      accuracy: geo.LocationAccuracy.high,
+      accuracy: geo.LocationAccuracy.bestForNavigation,
       distanceFilter: 10,
     );
 
@@ -533,6 +572,7 @@ class _MapScreenState extends State<MapScreen> {
         unawaited(_refreshNearestOfficers(position));
       },
       onError: (error) {
+        if (_isIgnoredIosLocationError(error)) return;
         debugPrint('Nearest location stream error: $error');
       },
     );
@@ -540,15 +580,14 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _getCurrentPosition() async {
     try {
-      geo.Position position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.high,
-      );
+      final position = await _getCurrentPositionWithPermission();
+      if (position == null) return;
 
       // Update current user's location in Firebase Realtime Database
       await _updateUserLocation(position.latitude, position.longitude);
 
       // Refresh nearest officer list (max 10)
-      await _refreshNearestOfficers(position, force: true);
+      await _refreshNearestOfficers(position);
     } catch (e) {
       debugPrint('Failed getting current position: $e');
     }
@@ -556,9 +595,8 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _getUserLocation() async {
     try {
-      geo.Position position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.high,
-      );
+      final position = await _getCurrentPositionWithPermission();
+      if (position == null) return;
 
       // Update current user's location in Firebase Realtime Database
       await _updateUserLocation(position.latitude, position.longitude);
@@ -592,6 +630,7 @@ class _MapScreenState extends State<MapScreen> {
       );
     } catch (e) {
       // Handle any errors that may occur when getting the location.
+      if (_isIgnoredIosLocationError(e)) return;
       debugPrint('Failed getting user location: $e');
     }
   }
@@ -970,9 +1009,16 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     try {
-      final currentPosition = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
-      );
+      final currentPosition = await _getCurrentPositionWithPermission();
+      if (currentPosition == null) {
+        if (!mounted) return;
+        await _showPopupMessage(
+          'Izin lokasi diperlukan untuk memulai navigasi.',
+          type: AppPopupType.warning,
+          title: 'Izin Lokasi',
+        );
+        return;
+      }
 
       if (!isInsideMakkahOperationArea(
         currentPosition.latitude,
@@ -1360,9 +1406,8 @@ class _MapScreenState extends State<MapScreen> {
     });
 
     try {
-      final position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.high,
-      );
+      final position = await _getCurrentPositionWithPermission();
+      if (position == null) return;
       await _userService.updateCurrentUserLocation(
         position.latitude,
         position.longitude,

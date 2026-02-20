@@ -65,6 +65,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   bool isLoggedIn = false;
   bool _isPermissionRequested = false;
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
+  LocationPermission _lastKnownLocationPermission = LocationPermission.denied;
   StreamSubscription<User?>? _authStateSubscription;
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<DatabaseEvent>? _helpNotificationSubscription;
@@ -72,11 +73,19 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   int _lastHelpPopupEpochMs = 0;
   bool? _cachedIsPetugas;
   String _currentRouteName = '';
+  bool _hasLoggedLocationPermissionIssue = false;
+
+  bool _isIgnoredIosLocationError(Object error) {
+    final text = error.toString();
+    return text.contains('kCLErrorDomain') && text.contains('error 1');
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _appLifecycleState =
+        WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
     _routeObserver = _AppRouteObserver(
       onRouteChanged: (routeName) {
         if (routeName == null || routeName.trim().isEmpty) return;
@@ -436,19 +445,47 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   }
 
   Future<bool> _ensureLocationPermission() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!_hasLoggedLocationPermissionIssue) {
+        _hasLoggedLocationPermissionIssue = true;
+        debugPrint('Location service is disabled.');
+      }
+      return false;
+    }
+
     LocationPermission permission = await Geolocator.checkPermission();
+    _lastKnownLocationPermission = permission;
 
     if (permission == LocationPermission.always ||
         permission == LocationPermission.whileInUse) {
+      _hasLoggedLocationPermissionIssue = false;
       return true;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (!_hasLoggedLocationPermissionIssue) {
+        _hasLoggedLocationPermissionIssue = true;
+        debugPrint('Location permission denied forever.');
+      }
+      return false;
     }
 
     if (_isPermissionRequested) return false;
     _isPermissionRequested = true;
     try {
       permission = await Geolocator.requestPermission();
-      return permission == LocationPermission.always ||
+      _lastKnownLocationPermission = permission;
+      final granted = permission == LocationPermission.always ||
           permission == LocationPermission.whileInUse;
+      if (!granted && !_hasLoggedLocationPermissionIssue) {
+        _hasLoggedLocationPermissionIssue = true;
+        debugPrint('Location permission not granted: $permission');
+      }
+      if (granted) {
+        _hasLoggedLocationPermissionIssue = false;
+      }
+      return granted;
     } finally {
       _isPermissionRequested = false;
     }
@@ -456,24 +493,27 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
 
   Future<void> _pushCurrentLocationOnce() async {
     if (FirebaseAuth.instance.currentUser == null) return;
+    if (_appLifecycleState != AppLifecycleState.resumed) return;
     final hasPermission = await _ensureLocationPermission();
     if (!hasPermission) return;
 
     try {
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
       );
       await _userService.updateCurrentUserLocation(
         position.latitude,
         position.longitude,
       );
     } catch (e) {
+      if (_isIgnoredIosLocationError(e)) return;
       debugPrint('Error updating location once: $e');
     }
   }
 
   Future<void> _startLocationTracking() async {
     if (FirebaseAuth.instance.currentUser == null) return;
+    if (_appLifecycleState != AppLifecycleState.resumed) return;
     final hasPermission = await _ensureLocationPermission();
     if (!hasPermission) return;
 
@@ -484,7 +524,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
 
     await _pushCurrentLocationOnce();
     const locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
+      accuracy: LocationAccuracy.bestForNavigation,
       distanceFilter: 10,
     );
 
@@ -502,7 +542,12 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         }
       },
       onError: (error) {
-        debugPrint('Location stream error: $error');
+        if (_isIgnoredIosLocationError(error)) return;
+        // iOS often emits transient kCLErrorDomain errors when app transitions
+        // to background. We stop tracking on background state, so skip noisy logs.
+        if (_appLifecycleState == AppLifecycleState.resumed) {
+          debugPrint('Location stream error: $error');
+        }
       },
     );
   }
@@ -515,8 +560,16 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _appLifecycleState = state;
-    if (state == AppLifecycleState.resumed && isLoggedIn) {
-      _startLocationTracking();
+    if (state == AppLifecycleState.resumed) {
+      if (isLoggedIn) {
+        unawaited(_startLocationTracking());
+      }
+      return;
+    }
+    final canTrackInBackground =
+        _lastKnownLocationPermission == LocationPermission.always;
+    if (!canTrackInBackground) {
+      unawaited(_stopLocationTracking());
     }
   }
 

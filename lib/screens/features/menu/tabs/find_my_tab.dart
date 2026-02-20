@@ -26,6 +26,7 @@ class _FindMyTabState extends State<FindMyTab> {
   geo.Position? currentPosition;
   String locationName = 'Meca, Saudi Arabia';
   String buttonLabel = 'Find Officers';
+  bool _locationPermissionDeniedLogged = false;
 
   final animationsMap = {
     'containerOnPageLoadAnimation5': AnimationInfo(
@@ -103,6 +104,35 @@ class _FindMyTabState extends State<FindMyTab> {
     await _getUserLocation();
   }
 
+  Future<bool> _ensureLocationPermission() async {
+    final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (!_locationPermissionDeniedLogged) {
+        _locationPermissionDeniedLogged = true;
+        debugPrint('Location service is disabled.');
+      }
+      return false;
+    }
+
+    var permission = await geo.Geolocator.checkPermission();
+    if (permission == geo.LocationPermission.denied) {
+      permission = await geo.Geolocator.requestPermission();
+    }
+
+    final granted = permission == geo.LocationPermission.always ||
+        permission == geo.LocationPermission.whileInUse;
+
+    if (!granted && !_locationPermissionDeniedLogged) {
+      _locationPermissionDeniedLogged = true;
+      debugPrint('Location permission denied: $permission');
+    }
+
+    if (granted) {
+      _locationPermissionDeniedLogged = false;
+    }
+    return granted;
+  }
+
   Future<void> _updateUserLocation(double latitude, double longitude) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
@@ -133,6 +163,9 @@ class _FindMyTabState extends State<FindMyTab> {
 
   Future<void> _getUserLocation() async {
     try {
+      final hasPermission = await _ensureLocationPermission();
+      if (!hasPermission) return;
+
       geo.Position position = await geo.Geolocator.getCurrentPosition(
         desiredAccuracy: geo.LocationAccuracy.high,
       );
@@ -149,6 +182,7 @@ class _FindMyTabState extends State<FindMyTab> {
       // Extract the location name
       if (placemarks.isNotEmpty) {
         String retrievedLocationName = _buildReadableLocation(placemarks.first);
+        if (!mounted) return;
         setState(() {
           locationName = retrievedLocationName;
         });
@@ -165,6 +199,7 @@ class _FindMyTabState extends State<FindMyTab> {
         MapAnimationOptions(duration: 1200),
       );
 
+      if (!mounted) return;
       setState(() {
         currentPosition = position;
       });
@@ -181,6 +216,7 @@ class _FindMyTabState extends State<FindMyTab> {
         final role = await _userService.fetchCurrentUserRole(defaultRole: '');
         final isPetugas = _userService.isPetugasHajiRole(role);
 
+        if (!mounted) return;
         setState(() {
           buttonLabel = isPetugas ? 'Find Pilgrims' : 'Find Officers';
         });
