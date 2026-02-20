@@ -14,6 +14,7 @@ import 'package:hajj_app/services/user_service.dart';
 import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/screens/features/finding/haversine_algorithm.dart';
 import 'package:hajj_app/screens/features/finding/navigation_screen.dart';
+import 'package:hajj_app/screens/features/finding/operation_bounds.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart' hide Size;
 import 'package:geolocator/geolocator.dart' as geo;
@@ -60,8 +61,9 @@ class _MapScreenState extends State<MapScreen> {
   DateTime? _navigationEta;
   static const int _maxNearestOfficers = 10;
   static const Duration _nearestRefreshInterval = Duration(seconds: 20);
+  static const double _defaultMapPitch = 50.0;
 
-  Future<void> _applyStandard3DStyle() async {
+  Future<void> _applyStandardMapStyle() async {
     try {
       await mapboxMap?.style.setStyleImportConfigProperties(
         'basemap',
@@ -78,7 +80,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _onMapStyleLoaded(StyleLoadedEventData _) {
-    unawaited(_applyStandard3DStyle());
+    unawaited(_applyStandardMapStyle());
   }
 
   void _onMapCameraChanged(CameraChangedEventData _) {
@@ -138,14 +140,14 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
-    unawaited(_applyStandard3DStyle());
+    unawaited(_applyStandardMapStyle());
     mapboxMap?.setCamera(
       CameraOptions(
         center: Point(
           coordinates: Position(39.826115, 21.422627),
         ),
         zoom: 14.0,
-        pitch: 0,
+        pitch: _defaultMapPitch,
       ),
     );
     await mapboxMap?.location.updateSettings(
@@ -257,6 +259,13 @@ class _MapScreenState extends State<MapScreen> {
     required geo.Position currentPosition,
     required List<UserModel> petugasHaji,
   }) async {
+    if (!isInsideMakkahOperationArea(
+      currentPosition.latitude,
+      currentPosition.longitude,
+    )) {
+      return <UserModel>[];
+    }
+
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
     // Thesis requirement: nearest officers are ranked by Haversine distance.
@@ -265,19 +274,21 @@ class _MapScreenState extends State<MapScreen> {
           (user) =>
               user.latitude != 0.0 &&
               user.longitude != 0.0 &&
-              user.userId != currentUid,
+              user.userId != currentUid &&
+              isInsideMakkahOperationArea(user.latitude, user.longitude),
         )
         .map(
-          (user) => MapEntry(
-            user,
-            calculateHaversineDistance(
+          (user) {
+            final distanceKm = calculateHaversineDistance(
               currentPosition.latitude,
               currentPosition.longitude,
               user.latitude,
               user.longitude,
-            ),
-          ),
+            );
+            return MapEntry(user, distanceKm);
+          },
         )
+        .where((entry) => entry.value <= maxNearbyOfficerDistanceKm)
         .toList()
       ..sort((a, b) => a.value.compareTo(b.value));
 
@@ -478,7 +489,7 @@ class _MapScreenState extends State<MapScreen> {
               coordinates: Position(position.longitude, position.latitude),
             ),
             zoom: 16.0,
-            pitch: 0.0,
+            pitch: _defaultMapPitch,
             bearing: 0.0,
           ),
           MapAnimationOptions(duration: 800),
@@ -494,6 +505,7 @@ class _MapScreenState extends State<MapScreen> {
             coordinates: Position(position.longitude, position.latitude),
           ),
           zoom: 16.0,
+          pitch: _defaultMapPitch,
         ),
         MapAnimationOptions(duration: 1200),
       );
@@ -603,6 +615,10 @@ class _MapScreenState extends State<MapScreen> {
     return '$hour:$minute $suffix';
   }
 
+  double _distanceMeters(double lat1, double lon1, double lat2, double lon2) {
+    return calculateHaversineDistance(lat1, lon1, lat2, lon2) * 1000;
+  }
+
   Future<_NavigationRouteData?> _fetchNavigationRoute({
     required double originLatitude,
     required double originLongitude,
@@ -619,6 +635,13 @@ class _MapScreenState extends State<MapScreen> {
       );
       return null;
     }
+
+    final directMeters = _distanceMeters(
+      originLatitude,
+      originLongitude,
+      destinationLatitude,
+      destinationLongitude,
+    );
 
     final response = await http.get(
       Uri.parse(
@@ -676,11 +699,43 @@ class _MapScreenState extends State<MapScreen> {
       }
     }
 
+    if (coordinates.isEmpty) {
+      return null;
+    }
+
+    final routeDistanceMeters =
+        (route['distance'] as num?)?.toDouble() ?? directMeters;
+
+    var finalDistanceMeters = routeDistanceMeters;
+    var finalDurationSeconds = (route['duration'] as num?)?.toDouble() ?? 0.0;
+    if (coordinates.isNotEmpty) {
+      final routeEnd = coordinates.last;
+      final offroadConnectorMeters = _distanceMeters(
+        routeEnd.lat.toDouble(),
+        routeEnd.lng.toDouble(),
+        destinationLatitude,
+        destinationLongitude,
+      );
+      if (offroadConnectorMeters > offroadConnectorThresholdMeters) {
+        coordinates.add(Position(destinationLongitude, destinationLatitude));
+        steps.add(
+          _RouteStep(
+            instruction: 'Lanjutkan ke titik tujuan (area bangunan/ruangan).',
+            modifier: 'straight',
+            latitude: destinationLatitude,
+            longitude: destinationLongitude,
+          ),
+        );
+        finalDistanceMeters += offroadConnectorMeters;
+        finalDurationSeconds += (offroadConnectorMeters / 1.39);
+      }
+    }
+
     return _NavigationRouteData(
       coordinates: coordinates,
       steps: steps,
-      distanceMeters: (route['distance'] as num?)?.toDouble() ?? 0,
-      durationSeconds: (route['duration'] as num?)?.toDouble() ?? 0,
+      distanceMeters: finalDistanceMeters,
+      durationSeconds: finalDurationSeconds,
     );
   }
 
@@ -693,6 +748,9 @@ class _MapScreenState extends State<MapScreen> {
 
     if (route.coordinates.isNotEmpty) {
       try {
+        await _polylineAnnotationManager?.setLineCap(LineCap.ROUND);
+        await _polylineAnnotationManager?.setLineJoin(LineJoin.ROUND);
+        await _polylineAnnotationManager?.setLineDasharray([0.01, 1.8]);
         await _polylineAnnotationManager
             ?.setLineElevationReference(LineElevationReference.GROUND);
         await _polylineAnnotationManager?.setLineZOffset(2.2);
@@ -705,13 +763,13 @@ class _MapScreenState extends State<MapScreen> {
         PolylineAnnotationOptions(
           geometry: LineString(coordinates: route.coordinates),
           lineJoin: LineJoin.ROUND,
-          lineColor: ColorSys.navigationRoutePrimary.toARGB32(),
-          lineWidth: 9.0,
+          lineColor: ColorSys.navigationRouteBorder.toARGB32(),
+          lineWidth: 8.0,
           lineBorderColor: ColorSys.navigationRouteBorder.toARGB32(),
-          lineBorderWidth: 3.0,
+          lineBorderWidth: 0.0,
           lineZOffset: 2.2,
           lineBlur: 0.2,
-          lineEmissiveStrength: 0.5,
+          lineEmissiveStrength: 0.9,
         ),
       );
     }
@@ -750,7 +808,7 @@ class _MapScreenState extends State<MapScreen> {
       final camera = await currentMap.cameraForCoordinatesPadding(
         points,
         CameraOptions(
-          pitch: 0.0,
+          pitch: _defaultMapPitch,
           bearing: 0.0,
         ),
         MbxEdgeInsets(
@@ -774,7 +832,7 @@ class _MapScreenState extends State<MapScreen> {
         CameraOptions(
           center: Point(coordinates: Position(centerLongitude, centerLatitude)),
           zoom: 15.2,
-          pitch: 0.0,
+          pitch: _defaultMapPitch,
           bearing: 0.0,
         ),
         MapAnimationOptions(duration: 900),
@@ -834,6 +892,46 @@ class _MapScreenState extends State<MapScreen> {
       final currentPosition = await geo.Geolocator.getCurrentPosition(
         desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
       );
+
+      if (!isInsideMakkahOperationArea(
+        currentPosition.latitude,
+        currentPosition.longitude,
+      )) {
+        if (!mounted) return;
+        await _showPopupMessage(
+          'Lokasi Anda di luar area operasional $supportedOperationAreaLabel.',
+          type: AppPopupType.warning,
+          title: 'Area Operasional',
+        );
+        return;
+      }
+
+      if (!isInsideMakkahOperationArea(user.latitude, user.longitude)) {
+        if (!mounted) return;
+        await _showPopupMessage(
+          'Lokasi tujuan di luar area operasional $supportedOperationAreaLabel.',
+          type: AppPopupType.warning,
+          title: 'Area Operasional',
+        );
+        return;
+      }
+
+      final directDistanceKm = calculateHaversineDistance(
+        currentPosition.latitude,
+        currentPosition.longitude,
+        user.latitude,
+        user.longitude,
+      );
+      if (directDistanceKm > maxNavigationDistanceKm) {
+        if (!mounted) return;
+        await _showPopupMessage(
+          'Tujuan terlalu jauh (${directDistanceKm.toStringAsFixed(2)} Km). Batas navigasi ${maxNavigationDistanceKm.toStringAsFixed(0)} Km.',
+          type: AppPopupType.warning,
+          title: 'Tujuan Terlalu Jauh',
+        );
+        return;
+      }
+
       await _updateUserLocation(
         currentPosition.latitude,
         currentPosition.longitude,

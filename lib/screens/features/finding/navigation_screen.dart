@@ -550,29 +550,46 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   List<_TurnStep> _steps = [];
   int _stepIndex = 0;
   String _currentInstruction = 'Menyiapkan petunjuk...';
-  String _currentModifier = 'straight';
   String _nextInstruction = '';
   String _nextModifier = 'straight';
   double _remainingMeters = 0.0;
   double _remainingSeconds = 0.0;
-  DateTime? _lastNavigationUiUpdate;
   DateTime? _lastLocationUpload;
+  DateTime? _lastCameraFollowUpdate;
+  DateTime? _lastRecenterRequest;
+  bool _isAutoFollowEnabled = true;
+  ViewportState _viewport = const IdleViewportState();
 
   Offset? _officerPopupOffset;
   bool _isResolvingOfficerPopup = false;
   bool _pendingOfficerPopupRefresh = false;
 
   static const double _arrivalThresholdMeters = 20.0;
-  static const Duration _navigationUiUpdateInterval =
-      Duration(milliseconds: 600);
   static const Duration _locationUploadInterval = Duration(seconds: 5);
+  static const Duration _cameraFollowInterval = Duration(milliseconds: 120);
+  static const Duration _gestureIgnoreAfterRecenter =
+      Duration(milliseconds: 700);
+  static const double _followZoom = 19.5;
+  static const double _followPitch = 58.0;
 
-  Future<void> _applyStandardNightStyle() async {
+  void _setFollowPuckViewport() {
+    if (_viewport is FollowPuckViewportState) return;
+    if (!mounted) return;
+    setState(() {
+      _viewport = const FollowPuckViewportState(
+        zoom: _followZoom,
+        pitch: _followPitch,
+        bearing: FollowPuckViewportStateBearingHeading(),
+      );
+    });
+  }
+
+  Future<void> _applyStandardDuskStyle() async {
     try {
       await _mapboxMap?.style.setStyleImportConfigProperties(
         'basemap',
         {
-          'lightPreset': 'night',
+          'lightPreset': 'dusk',
           'theme': 'default',
           'show3dObjects': true,
           'showRoadLabels': true,
@@ -584,12 +601,26 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   }
 
   void _onStyleLoaded(StyleLoadedEventData _) {
-    _applyStandardNightStyle();
+    _applyStandardDuskStyle();
   }
 
   void _onMapCameraChanged(CameraChangedEventData _) {
     if (_isLoading) return;
     unawaited(_refreshOfficerPopupAnchor());
+  }
+
+  void _onUserGestureLockFollow(MapContentGestureContext context) {
+    if (!_isAutoFollowEnabled || !mounted) return;
+    if (context.gestureState == GestureState.ended) return;
+    final now = DateTime.now();
+    if (_lastRecenterRequest != null &&
+        now.difference(_lastRecenterRequest!) < _gestureIgnoreAfterRecenter) {
+      return;
+    }
+    setState(() {
+      _isAutoFollowEnabled = false;
+      _viewport = const IdleViewportState();
+    });
   }
 
   @override
@@ -629,6 +660,21 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     );
 
     await _startDirectionSession();
+  }
+
+  Future<void> _applyDottedRouteStyle() async {
+    final manager = _polylineAnnotationManager;
+    if (manager == null) return;
+    try {
+      await manager.setLineCap(LineCap.ROUND);
+      await manager.setLineJoin(LineJoin.ROUND);
+      await manager.setLineDasharray([0.01, 1.8]);
+      await manager.setLineElevationReference(LineElevationReference.GROUND);
+      await manager.setLineZOffset(2.2);
+      await manager.setLineDepthOcclusionFactor(0.0);
+    } catch (e) {
+      debugPrint('Failed applying dotted route style: $e');
+    }
   }
 
   Future<Uint8List> _buildOfficerCircleMarkerBytes() async {
@@ -808,11 +854,6 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   }
 
   IconData _directionIcon(String modifier, {String? instruction}) {
-    final instructionText = (instruction ?? '').toLowerCase();
-    if (instructionText.contains('berjalan') ||
-        instructionText.contains('mulai')) {
-      return Icons.directions_walk;
-    }
     final value = modifier.toLowerCase();
     if (value.contains('left')) return Icons.turn_left;
     if (value.contains('right')) return Icons.turn_right;
@@ -985,6 +1026,27 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     return calculateHaversineDistance(lat1, lon1, lat2, lon2) * 1000;
   }
 
+  double? _normalizedHeading(geo.Position position) {
+    final heading = position.heading;
+    if (!heading.isFinite || heading < 0) return null;
+    final normalized = heading % 360;
+    return normalized < 0 ? normalized + 360 : normalized;
+  }
+
+  void _moveCameraToPosition(geo.Position position) {
+    final heading = _normalizedHeading(position);
+    _mapboxMap?.setCamera(
+      CameraOptions(
+        center: Point(
+          coordinates: Position(position.longitude, position.latitude),
+        ),
+        zoom: _followZoom,
+        pitch: _followPitch,
+        bearing: heading,
+      ),
+    );
+  }
+
   Future<_RouteData?> _fetchRoute(geo.Position origin) async {
     final token = dotenv.env['MAPBOX_SECRET_KEY']?.trim() ?? '';
     if (token.isEmpty) {
@@ -1079,7 +1141,6 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       _stepIndex = 0;
       _currentInstruction =
           _steps.isNotEmpty ? _steps.first.instruction : 'Lanjutkan ke tujuan';
-      _currentModifier = _steps.isNotEmpty ? _steps.first.modifier : 'straight';
       _remainingMeters = route.distanceMeters;
       _remainingSeconds = route.durationSeconds;
       _updateNextInstruction();
@@ -1087,17 +1148,36 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       await _polylineAnnotationManager?.deleteAll();
       await _pointAnnotationManager?.deleteAll();
 
-      if (route.coordinates.isNotEmpty) {
+      final routeCoordinates = List<Position>.from(route.coordinates);
+      if (routeCoordinates.isNotEmpty) {
+        final first = routeCoordinates.first;
+        final connectorDistance = _distanceMeters(
+          currentPosition.latitude,
+          currentPosition.longitude,
+          first.lat.toDouble(),
+          first.lng.toDouble(),
+        );
+        if (connectorDistance > 3) {
+          routeCoordinates.insert(
+            0,
+            Position(currentPosition.longitude, currentPosition.latitude),
+          );
+        }
+      }
+
+      if (routeCoordinates.isNotEmpty) {
+        await _applyDottedRouteStyle();
         await _polylineAnnotationManager?.create(
           PolylineAnnotationOptions(
-            geometry: LineString(coordinates: route.coordinates),
-            lineColor: 0xFF74C1FF,
-            lineWidth: 9.0,
-            lineBorderColor: 0xFF2D6CFF,
-            lineBorderWidth: 3.0,
-            lineBlur: 0.2,
-            lineEmissiveStrength: 0.5,
+            geometry: LineString(coordinates: routeCoordinates),
             lineJoin: LineJoin.ROUND,
+            lineColor: ColorSys.navigationRouteBorder.toARGB32(),
+            lineWidth: 8.0,
+            lineBorderColor: ColorSys.navigationRouteBorder.toARGB32(),
+            lineBorderWidth: 0.0,
+            lineZOffset: 2.2,
+            lineBlur: 0.2,
+            lineEmissiveStrength: 0.9,
           ),
         );
       }
@@ -1118,22 +1198,12 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
         );
       }
 
-      _mapboxMap?.setCamera(
-        CameraOptions(
-          center: Point(
-            coordinates:
-                Position(currentPosition.longitude, currentPosition.latitude),
-          ),
-          zoom: 18,
-          pitch: 70,
-          bearing: currentPosition.heading > 0 ? currentPosition.heading : 0,
-        ),
-      );
+      _moveCameraToPosition(currentPosition);
 
       await _positionStream?.cancel();
       const locationSettings = geo.LocationSettings(
         accuracy: geo.LocationAccuracy.bestForNavigation,
-        distanceFilter: 2,
+        distanceFilter: 1,
       );
 
       _positionStream = geo.Geolocator.getPositionStream(
@@ -1149,6 +1219,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       setState(() {
         _isLoading = false;
       });
+      _setFollowPuckViewport();
 
       unawaited(_refreshOfficerPopupAnchor());
     } catch (e) {
@@ -1171,12 +1242,12 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       );
     }
 
-    if (_lastNavigationUiUpdate != null &&
-        now.difference(_lastNavigationUiUpdate!) <
-            _navigationUiUpdateInterval) {
-      return;
+    final shouldFollowCamera = _lastCameraFollowUpdate == null ||
+        now.difference(_lastCameraFollowUpdate!) >= _cameraFollowInterval;
+    if (_isAutoFollowEnabled && shouldFollowCamera) {
+      _lastCameraFollowUpdate = now;
+      _setFollowPuckViewport();
     }
-    _lastNavigationUiUpdate = now;
 
     final remaining = _distanceMeters(
       position.latitude,
@@ -1219,27 +1290,36 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       _remainingSeconds = remaining / walkingMetersPerSecond;
       if (_steps.isNotEmpty) {
         _currentInstruction = _steps[_stepIndex].instruction;
-        _currentModifier = _steps[_stepIndex].modifier;
       }
       _updateNextInstruction();
     });
-
-    _mapboxMap?.setCamera(
-      CameraOptions(
-        center: Point(
-          coordinates: Position(position.longitude, position.latitude),
-        ),
-        zoom: 18,
-        pitch: 70,
-        bearing: position.heading > 0 ? position.heading : 0,
-      ),
-    );
   }
 
   Future<void> _backToMaps() async {
     await _positionStream?.cancel();
     if (!mounted) return;
     Navigator.of(context).pop();
+  }
+
+  Future<void> _recenterToUser() async {
+    _lastRecenterRequest = DateTime.now();
+    if (mounted) {
+      setState(() {
+        _isAutoFollowEnabled = true;
+      });
+    } else {
+      _isAutoFollowEnabled = true;
+    }
+    _lastCameraFollowUpdate = null;
+    _setFollowPuckViewport();
+    try {
+      final position = await geo.Geolocator.getCurrentPosition(
+        desiredAccuracy: geo.LocationAccuracy.bestForNavigation,
+      );
+      _moveCameraToPosition(position);
+    } catch (e) {
+      debugPrint('Failed recentering to user: $e');
+    }
   }
 
   Widget _buildTopBanner() {
@@ -1334,15 +1414,12 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        _directionIcon(
-                          _currentModifier,
-                          instruction: primary,
-                        ),
+                      const Icon(
+                        Icons.directions_walk,
                         color: Colors.white,
-                        size: 32,
+                        size: 22,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           '${_formatDurationCompact(_remainingSeconds)} • ${_formatDistanceMiles(_remainingMeters)}',
@@ -1753,9 +1830,12 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
         children: [
           MapWidget(
             styleUri: MapboxStyles.STANDARD,
+            viewport: _viewport,
             onMapCreated: _onMapCreated,
             onStyleLoadedListener: _onStyleLoaded,
             onCameraChangeListener: _onMapCameraChanged,
+            onScrollListener: _onUserGestureLockFollow,
+            onZoomListener: _onUserGestureLockFollow,
           ),
           _buildOfficerPopup(),
           Positioned(
@@ -1770,6 +1850,16 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
               right: 0,
               bottom: 18,
               child: _buildBottomDock(),
+            ),
+          if (!_isLoading && _error == null)
+            Positioned(
+              right: 28,
+              bottom: 118,
+              child: _buildDockButton(
+                icon: Iconsax.location,
+                iconColor: Colors.white,
+                onTap: _recenterToUser,
+              ),
             ),
         ],
       ),
