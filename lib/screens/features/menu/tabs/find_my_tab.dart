@@ -108,12 +108,9 @@ class _FindMyTabState extends State<FindMyTab> {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
         await _userService.updateCurrentUserLocation(latitude, longitude);
-        print('User location updated successfully.');
-      } else {
-        print('User is not authenticated.');
       }
     } catch (e) {
-      print('Error updating user location: $e');
+      debugPrint('Error updating user location: $e');
     }
   }
 
@@ -155,8 +152,6 @@ class _FindMyTabState extends State<FindMyTab> {
         setState(() {
           locationName = retrievedLocationName;
         });
-      } else {
-        print('No location name found for the coordinates.');
       }
 
       // Update the map camera to center around the user's location.
@@ -175,7 +170,7 @@ class _FindMyTabState extends State<FindMyTab> {
       });
     } catch (e) {
       // Handle any errors that may occur when getting the location.
-      print(e.toString());
+      debugPrint('Failed getting user location: $e');
     }
   }
 
@@ -199,7 +194,7 @@ class _FindMyTabState extends State<FindMyTab> {
         message: e.message ?? 'Failed to read user role.',
       );
     } catch (e) {
-      print('Error fetching user role: $e');
+      debugPrint('Error fetching user role: $e');
     }
   }
 

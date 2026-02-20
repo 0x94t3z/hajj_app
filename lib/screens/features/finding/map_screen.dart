@@ -307,7 +307,6 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> fetchData() async {
     try {
       String currentUserRole = await _getCurrentUserRole();
-      print('Current user role: $currentUserRole');
 
       Map<String, List<UserModel>> usersMap =
           await fetchModelsFromFirebase(); // Fetch users
@@ -343,9 +342,9 @@ class _MapScreenState extends State<MapScreen> {
         );
         return;
       }
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data: $e');
     } catch (e) {
-      print('Error fetching data: $e');
+      debugPrint('Error fetching data: $e');
     }
   }
 
@@ -354,12 +353,9 @@ class _MapScreenState extends State<MapScreen> {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
         await _userService.updateCurrentUserLocation(latitude, longitude);
-        print('User location updated successfully.');
-      } else {
-        print('User is not authenticated.');
       }
     } catch (e) {
-      print('Error updating user location: $e');
+      debugPrint('Error updating user location: $e');
     }
   }
 
@@ -369,7 +365,6 @@ class _MapScreenState extends State<MapScreen> {
     try {
       // Get the current user's role
       String currentUserRole = await _getCurrentUserRole();
-      print('Current user role: $currentUserRole');
 
       // Fetch users from Firebase
       Map<String, List<UserModel>> usersMap = await fetchModelsFromFirebase();
@@ -404,9 +399,9 @@ class _MapScreenState extends State<MapScreen> {
         );
         return;
       }
-      print('Error updating user distances: $e');
+      debugPrint('Error updating user distances: $e');
     } catch (e) {
-      print('Error updating user distances: ${e.toString()}');
+      debugPrint('Error updating user distances: $e');
     }
   }
 
@@ -446,7 +441,7 @@ class _MapScreenState extends State<MapScreen> {
         unawaited(_refreshNearestOfficers(position));
       },
       onError: (error) {
-        print('Nearest location stream error: $error');
+        debugPrint('Nearest location stream error: $error');
       },
     );
   }
@@ -463,7 +458,7 @@ class _MapScreenState extends State<MapScreen> {
       // Refresh nearest officer list (max 10)
       await _refreshNearestOfficers(position, force: true);
     } catch (e) {
-      print(e.toString());
+      debugPrint('Failed getting current position: $e');
     }
   }
 
@@ -504,7 +499,7 @@ class _MapScreenState extends State<MapScreen> {
       );
     } catch (e) {
       // Handle any errors that may occur when getting the location.
-      print(e.toString());
+      debugPrint('Failed getting user location: $e');
     }
   }
 
@@ -867,7 +862,7 @@ class _MapScreenState extends State<MapScreen> {
         route: route,
       );
     } catch (e) {
-      print('Failed to start navigation: $e');
+      debugPrint('Failed to start navigation: $e');
       if (!mounted) return;
       await _showPopupMessage(
         'Gagal memulai navigasi.',

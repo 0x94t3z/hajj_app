@@ -386,6 +386,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     bool showFindPilgrimButton = false,
   }) {
     final isMine = message.senderId == currentUid;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final bubbleMaxWidth =
+        (screenWidth * (isMine ? 0.82 : 0.78)).clamp(220.0, 420.0).toDouble();
     final bubbleColor = _isArchived
         ? (isMine ? ColorSys.darkBlue : const Color(0xFFEFF3F7))
         : (isMine
@@ -400,7 +403,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     final bubble = Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-      constraints: const BoxConstraints(maxWidth: 290),
+      constraints: BoxConstraints(maxWidth: bubbleMaxWidth),
       decoration: BoxDecoration(
         color: bubbleColor,
         borderRadius: BorderRadius.circular(14),
@@ -422,6 +425,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
           if (!isMine) const SizedBox(height: 2),
           Text(
             message.text,
+            textAlign: TextAlign.start,
             style: textStyle(
               fontSize: 14,
               color: isMine ? Colors.white : incomingMessageColor,
@@ -430,6 +434,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
           const SizedBox(height: 4),
           Align(
             alignment: Alignment.centerRight,
+            widthFactor: 1,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
