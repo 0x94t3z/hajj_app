@@ -105,15 +105,25 @@ class _MenuShellScreenState extends State<MenuShellScreen> {
               onMyProfileTap: () => _setCurrentTab(2, animated: true),
             )
           : null,
-      body: PageView(
+      body: PageView.builder(
         controller: _pageController,
         physics: const BouncingScrollPhysics(),
         onPageChanged: _onPageChanged,
-        children: [
-          const HomeClockTab(),
-          FindMyTab(refreshTick: _findMyRefreshTick),
-          const SettingsTab(),
-        ],
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          switch (index) {
+            case 0:
+              return const HomeClockTab();
+            case 1:
+              return FindMyTab(
+                refreshTick: _findMyRefreshTick,
+                isActive: _currentIndex == 1,
+              );
+            case 2:
+            default:
+              return const SettingsTab();
+          }
+        },
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _currentIndex,

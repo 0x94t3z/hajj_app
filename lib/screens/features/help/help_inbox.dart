@@ -19,9 +19,9 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
 
   bool _isLoading = true;
   bool _currentIsPetugas = false;
-  String? _currentUid;
   String? _errorMessage;
   bool _showArchiveList = false;
+  Stream<List<HelpConversationSummary>>? _allInboxStream;
 
   @override
   void initState() {
@@ -38,8 +38,11 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
       final role = await _userService.fetchCurrentUserRole(forceRefresh: true);
       if (!mounted) return;
       setState(() {
-        _currentUid = user.uid;
         _currentIsPetugas = _userService.isPetugasHajiRole(role);
+        _allInboxStream = _helpService.watchAllInbox(
+          currentUid: user.uid,
+          currentIsPetugas: _userService.isPetugasHajiRole(role),
+        );
         _isLoading = false;
       });
     } catch (e) {
@@ -276,193 +279,113 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      StreamBuilder<List<HelpConversationSummary>>(
-                        stream: _helpService.watchInbox(
-                          currentUid: _currentUid!,
-                          currentIsPetugas: _currentIsPetugas,
-                        ),
-                        builder: (context, activeSnapshot) {
-                          if (activeSnapshot.hasError) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 6),
-                              child: Text(
-                                'Akses inbox bantuan ditolak. '
-                                'Periksa Firebase Rules untuk helpConversations.',
-                                textAlign: TextAlign.center,
-                                style: textStyle(
-                                  fontSize: 13,
-                                  color: ColorSys.darkBlue,
-                                  fontWeight: FontWeight.w600,
+                      if (_allInboxStream == null)
+                        const Center(child: CircularProgressIndicator())
+                      else
+                        StreamBuilder<List<HelpConversationSummary>>(
+                          stream: _allInboxStream,
+                          builder: (context, inboxSnapshot) {
+                            if (inboxSnapshot.hasError) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 6),
+                                child: Text(
+                                  'Akses inbox bantuan ditolak. '
+                                  'Periksa Firebase Rules untuk helpConversations.',
+                                  textAlign: TextAlign.center,
+                                  style: textStyle(
+                                    fontSize: 13,
+                                    color: ColorSys.darkBlue,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            );
-                          }
-
-                          if (activeSnapshot.connectionState ==
-                                  ConnectionState.waiting &&
-                              !activeSnapshot.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          final activeItems = (activeSnapshot.data ??
-                                  <HelpConversationSummary>[])
-                              .take(5)
-                              .toList();
-
-                          return StreamBuilder<List<HelpConversationSummary>>(
-                            stream: _helpService.watchArchivedInbox(
-                              currentUid: _currentUid!,
-                              currentIsPetugas: _currentIsPetugas,
-                            ),
-                            builder: (context, archiveSnapshot) {
-                              final archivedItems = archiveSnapshot.data ??
-                                  <HelpConversationSummary>[];
-                              final archiveCount = archivedItems.length;
-                              final visibleArchiveCount =
-                                  archivedItems.length >= 3
-                                      ? 3
-                                      : archivedItems.length;
-                              final archiveListHeight = visibleArchiveCount == 0
-                                  ? 0.0
-                                  : (visibleArchiveCount * 78.0) +
-                                      ((visibleArchiveCount - 1) * 10.0);
-
-                              final hasActive = activeItems.isNotEmpty;
-                              final hasArchived = archivedItems.isNotEmpty;
-                              final totalUnread = activeItems.fold<int>(
-                                0,
-                                (sum, item) => sum + item.unreadMessageCount,
                               );
+                            }
 
-                              if (!hasActive && !hasArchived) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  child: Text(
-                                    _currentIsPetugas
-                                        ? 'Belum ada permintaan bantuan masuk.'
-                                        : 'Belum ada permintaan bantuan. Gunakan tombol Help pada daftar petugas.',
-                                    style: textStyle(
-                                      fontSize: 13,
-                                      color: ColorSys.textSecondary,
-                                    ),
+                            if (inboxSnapshot.connectionState ==
+                                    ConnectionState.waiting &&
+                                !inboxSnapshot.hasData) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            final allItems = inboxSnapshot.data ??
+                                <HelpConversationSummary>[];
+                            final activeItems = allItems
+                                .where((item) =>
+                                    item.status != 'closed' && !item.archived)
+                                .take(5)
+                                .toList();
+                            final archivedItems = allItems
+                                .where((item) =>
+                                    item.status == 'closed' || item.archived)
+                                .toList();
+                            final archiveCount = archivedItems.length;
+                            final visibleArchiveCount =
+                                archivedItems.length >= 3
+                                    ? 3
+                                    : archivedItems.length;
+                            final archiveListHeight = visibleArchiveCount == 0
+                                ? 0.0
+                                : (visibleArchiveCount * 78.0) +
+                                    ((visibleArchiveCount - 1) * 10.0);
+
+                            final hasActive = activeItems.isNotEmpty;
+                            final hasArchived = archivedItems.isNotEmpty;
+                            final totalUnread = activeItems.fold<int>(
+                              0,
+                              (sum, item) => sum + item.unreadMessageCount,
+                            );
+
+                            if (!hasActive && !hasArchived) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  _currentIsPetugas
+                                      ? 'Belum ada permintaan bantuan masuk.'
+                                      : 'Belum ada permintaan bantuan. Gunakan tombol Help pada daftar petugas.',
+                                  style: textStyle(
+                                    fontSize: 13,
+                                    color: ColorSys.textSecondary,
                                   ),
-                                );
-                              }
+                                ),
+                              );
+                            }
 
-                              final sections = <Widget>[];
+                            final sections = <Widget>[];
 
-                              if (hasArchived) {
-                                sections.add(
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          setState(() {
-                                            _showArchiveList =
-                                                !_showArchiveList;
-                                          });
-                                        },
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.archive_rounded,
-                                              color: ColorSys.darkBlue,
-                                              size: 18,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Archived',
-                                              style: textStyle(
-                                                fontSize: 14,
-                                                color: ColorSys.darkBlue,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                            if (archiveCount > 0 &&
-                                                !_showArchiveList) ...[
-                                              const SizedBox(width: 8),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 2,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: ColorSys.primaryTint,
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                child: Text(
-                                                  archiveCount.toString(),
-                                                  style: textStyle(
-                                                    fontSize: 11,
-                                                    color: ColorSys.darkBlue,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                            const Spacer(),
-                                            Icon(
-                                              _showArchiveList
-                                                  ? Icons
-                                                      .keyboard_arrow_up_rounded
-                                                  : Icons
-                                                      .keyboard_arrow_down_rounded,
-                                              color: ColorSys.darkBlue,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (_showArchiveList) ...[
-                                        const SizedBox(height: 10),
-                                        SizedBox(
-                                          height: archiveListHeight,
-                                          child: ListView.separated(
-                                            itemCount: archivedItems.length,
-                                            separatorBuilder: (_, __) =>
-                                                const SizedBox(height: 10),
-                                            itemBuilder: (context, index) {
-                                              return _buildConversationTile(
-                                                archivedItems[index],
-                                                archived: true,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                );
-                              }
-
-                              if (hasActive) {
-                                if (sections.isNotEmpty) {
-                                  sections.add(const SizedBox(height: 18));
-                                }
-                                sections.add(
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
+                            if (hasArchived) {
+                              sections.add(
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () {
+                                        setState(() {
+                                          _showArchiveList = !_showArchiveList;
+                                        });
+                                      },
+                                      child: Row(
                                         children: [
+                                          const Icon(
+                                            Icons.archive_rounded,
+                                            color: ColorSys.darkBlue,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 8),
                                           Text(
-                                            'Active Requests',
+                                            'Archived',
                                             style: textStyle(
                                               fontSize: 14,
                                               color: ColorSys.darkBlue,
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
-                                          if (totalUnread > 0) ...[
+                                          if (archiveCount > 0 &&
+                                              !_showArchiveList) ...[
                                             const SizedBox(width: 8),
                                             Container(
                                               padding:
@@ -471,50 +394,122 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                                                 vertical: 2,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: ColorSys.error,
+                                                color: ColorSys.primaryTint,
                                                 borderRadius:
                                                     BorderRadius.circular(10),
                                               ),
                                               child: Text(
-                                                totalUnread.toString(),
+                                                archiveCount.toString(),
                                                 style: textStyle(
                                                   fontSize: 11,
-                                                  color: Colors.white,
+                                                  color: ColorSys.darkBlue,
                                                   fontWeight: FontWeight.w700,
                                                 ),
                                               ),
                                             ),
                                           ],
+                                          const Spacer(),
+                                          Icon(
+                                            _showArchiveList
+                                                ? Icons
+                                                    .keyboard_arrow_up_rounded
+                                                : Icons
+                                                    .keyboard_arrow_down_rounded,
+                                            color: ColorSys.darkBlue,
+                                          ),
                                         ],
                                       ),
+                                    ),
+                                    if (_showArchiveList) ...[
                                       const SizedBox(height: 10),
                                       SizedBox(
-                                        height: 260,
+                                        height: archiveListHeight,
                                         child: ListView.separated(
-                                          itemCount: activeItems.length,
+                                          itemCount: archivedItems.length,
                                           separatorBuilder: (_, __) =>
                                               const SizedBox(height: 10),
                                           itemBuilder: (context, index) {
                                             return _buildConversationTile(
-                                              activeItems[index],
-                                              archived: false,
+                                              archivedItems[index],
+                                              archived: true,
                                             );
                                           },
                                         ),
                                       ),
                                     ],
-                                  ),
-                                );
-                              }
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: sections,
+                                  ],
+                                ),
                               );
-                            },
-                          );
-                        },
-                      ),
+                            }
+
+                            if (hasActive) {
+                              if (sections.isNotEmpty) {
+                                sections.add(const SizedBox(height: 18));
+                              }
+                              sections.add(
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Active Requests',
+                                          style: textStyle(
+                                            fontSize: 14,
+                                            color: ColorSys.darkBlue,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        if (totalUnread > 0) ...[
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: ColorSys.error,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              totalUnread.toString(),
+                                              style: textStyle(
+                                                fontSize: 11,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                      height: 260,
+                                      child: ListView.separated(
+                                        itemCount: activeItems.length,
+                                        separatorBuilder: (_, __) =>
+                                            const SizedBox(height: 10),
+                                        itemBuilder: (context, index) {
+                                          return _buildConversationTile(
+                                            activeItems[index],
+                                            archived: false,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: sections,
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),

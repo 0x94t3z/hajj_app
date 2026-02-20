@@ -69,6 +69,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   StreamSubscription<User?>? _authStateSubscription;
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<DatabaseEvent>? _helpNotificationSubscription;
+  String? _helpNotificationListenerUid;
   final Set<String> _seenHelpNotificationIds = <String>{};
   int _lastHelpPopupEpochMs = 0;
   bool? _cachedIsPetugas;
@@ -117,21 +118,22 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     final auth = FirebaseAuth.instance;
     final user = auth.currentUser;
 
-    if (user != null) {
-      setState(() {
-        isLoggedIn = true;
-      });
-      await _startLocationTracking();
-      await _startHelpNotificationListener();
-    }
+    setState(() {
+      isLoggedIn = user != null;
+    });
   }
 
   Future<void> _startHelpNotificationListener() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
+    if (_helpNotificationListenerUid == user.uid &&
+        _helpNotificationSubscription != null) {
+      return;
+    }
 
     await _helpNotificationSubscription?.cancel();
     _helpNotificationSubscription = null;
+    _helpNotificationListenerUid = user.uid;
     // Keep seen ids during runtime to prevent repeated popups when
     // listener is reattached (e.g. initial auth sync).
 
@@ -284,20 +286,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   }
 
   Future<bool> _isConversationActive(String conversationId) async {
-    try {
-      final snapshot = await FirebaseDatabase.instance
-          .ref('helpConversations/$conversationId')
-          .get();
-      if (!snapshot.exists || snapshot.value == null) return false;
-      if (snapshot.value is! Map) return false;
-      final data = Map<String, dynamic>.from(snapshot.value as Map);
-      final status = data['status']?.toString() ?? 'open';
-      final archived = data['archived'] == true;
-      return status != 'closed' && !archived;
-    } catch (_) {
-      // If conversation status can't be read, keep notifications visible.
-      return true;
-    }
+    // Avoid extra per-notification reads at startup. In strict rules setups,
+    // probing unknown/non-participant conversation ids can trigger
+    // permission-denied log spam from native Firebase SDK.
+    return conversationId.trim().isNotEmpty;
   }
 
   Future<bool> _resolveIsPetugas() async {
@@ -441,6 +433,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   Future<void> _stopHelpNotificationListener() async {
     await _helpNotificationSubscription?.cancel();
     _helpNotificationSubscription = null;
+    _helpNotificationListenerUid = null;
     _seenHelpNotificationIds.clear();
   }
 

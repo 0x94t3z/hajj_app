@@ -51,6 +51,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   String _resolvedPeerRole = '';
   String _lastMarkedReadMessageId = '';
   String? _errorMessage;
+  Stream<List<HelpMessage>>? _messagesStream;
 
   @override
   void initState() {
@@ -68,6 +69,10 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     _messageController.dispose();
     _messageFocusNode.dispose();
     super.dispose();
+  }
+
+  void _bindMessagesStream(String conversationId) {
+    _messagesStream = _helpService.watchMessages(conversationId);
   }
 
   Future<void> _prepareConversation() async {
@@ -93,6 +98,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       if (!mounted) return;
       setState(() {
         _conversationId = handle.conversationId;
+        _bindMessagesStream(handle.conversationId);
         _currentIsPetugas = handle.currentIsPetugas;
         _resolvedPeerRole = peerRoleForConversation.isNotEmpty
             ? peerRoleForConversation
@@ -132,6 +138,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       if (!mounted) return;
       setState(() {
         _conversationId = conversationId;
+        _bindMessagesStream(conversationId);
         _currentIsPetugas = currentIsPetugas;
         _resolvedPeerRole = peerRole.isNotEmpty ? peerRole : widget.peerRole;
         _isArchived = widget.readOnly || archived;
@@ -707,162 +714,173 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                         ),
                       ),
                     Expanded(
-                      child: StreamBuilder<List<HelpMessage>>(
-                        stream: _helpService.watchMessages(_conversationId!),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                child: Text(
-                                  'Akses pesan bantuan ditolak. '
-                                  'Periksa Firebase Rules untuk helpConversations.',
-                                  textAlign: TextAlign.center,
-                                  style: textStyle(
-                                    fontSize: 13,
-                                    color: ColorSys.darkBlue,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-
-                          if (snapshot.connectionState ==
-                                  ConnectionState.waiting &&
-                              !snapshot.hasData) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          final messages = snapshot.data ?? <HelpMessage>[];
-                          if (messages.isEmpty) {
-                            if (_isArchived) {
-                              return Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                  child: Text(
-                                    'Session ini sudah diarsipkan.',
-                                    textAlign: TextAlign.center,
-                                    style: textStyle(
-                                      fontSize: 13,
-                                      color: ColorSys.darkBlue,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            final emptyTemplates =
-                                _resolveQuickTemplates(messages, currentUid);
-                            return Column(
-                              children: [
-                                if (emptyTemplates.isNotEmpty) ...[
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    child: _buildQuickTemplateList(
-                                      emptyTemplates,
-                                    ),
-                                  ),
-                                ],
-                                Expanded(
-                                  child: Center(
+                      child: (_messagesStream == null)
+                          ? const Center(child: CircularProgressIndicator())
+                          : StreamBuilder<List<HelpMessage>>(
+                              stream: _messagesStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return Center(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 16,
-                                      ),
+                                          horizontal: 20),
                                       child: Text(
-                                        'Belum ada pesan. Kirim bantuan sekarang.',
+                                        'Akses pesan bantuan ditolak. '
+                                        'Periksa Firebase Rules untuk helpConversations.',
                                         textAlign: TextAlign.center,
                                         style: textStyle(
                                           fontSize: 13,
                                           color: ColorSys.darkBlue,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
+                                  );
+                                }
 
-                          final orderedMessages = [
-                            ...messages
-                          ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                                if (snapshot.connectionState ==
+                                        ConnectionState.waiting &&
+                                    !snapshot.hasData) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
 
-                          final latestMessage = messages.last;
-                          if (latestMessage.senderId != currentUid &&
-                              latestMessage.id != _lastMarkedReadMessageId) {
-                            _lastMarkedReadMessageId = latestMessage.id;
-                            unawaited(
-                              _helpService.markConversationAsRead(
-                                _conversationId!,
-                              ),
-                            );
-                          }
-
-                          final templates =
-                              _resolveQuickTemplates(messages, currentUid);
-                          final showQuickReplies = templates.isNotEmpty;
-                          var latestPilgrimMessageId = '';
-                          if (_currentIsPetugas && !widget.peerIsPetugas) {
-                            for (var i = messages.length - 1; i >= 0; i--) {
-                              final candidate = messages[i];
-                              if (candidate.senderId == widget.peerId) {
-                                latestPilgrimMessageId = candidate.id;
-                                break;
-                              }
-                            }
-                          }
-
-                          return Column(
-                            children: [
-                              if (showQuickReplies) ...[
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  child: _buildQuickTemplateList(templates),
-                                ),
-                              ],
-                              Expanded(
-                                child: ListView.builder(
-                                  reverse: true,
-                                  padding:
-                                      const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                                  itemCount: orderedMessages.length,
-                                  itemBuilder: (context, index) {
-                                    final message = orderedMessages[index];
-                                    final showFindPilgrimButton =
-                                        !_isArchived &&
-                                            _currentIsPetugas &&
-                                            !widget.peerIsPetugas &&
-                                            latestPilgrimMessageId.isNotEmpty &&
-                                            message.senderId == widget.peerId &&
-                                            message.id ==
-                                                latestPilgrimMessageId;
-                                    return _buildMessageBubble(
-                                      message,
-                                      currentUid,
-                                      showFindPilgrimButton:
-                                          showFindPilgrimButton,
+                                final messages =
+                                    snapshot.data ?? <HelpMessage>[];
+                                if (messages.isEmpty) {
+                                  if (_isArchived) {
+                                    return Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 16,
+                                        ),
+                                        child: Text(
+                                          'Session ini sudah diarsipkan.',
+                                          textAlign: TextAlign.center,
+                                          style: textStyle(
+                                            fontSize: 13,
+                                            color: ColorSys.darkBlue,
+                                          ),
+                                        ),
+                                      ),
                                     );
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
+                                  }
+                                  final emptyTemplates = _resolveQuickTemplates(
+                                      messages, currentUid);
+                                  return Column(
+                                    children: [
+                                      if (emptyTemplates.isNotEmpty) ...[
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
+                                          child: _buildQuickTemplateList(
+                                            emptyTemplates,
+                                          ),
+                                        ),
+                                      ],
+                                      Expanded(
+                                        child: Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 16,
+                                            ),
+                                            child: Text(
+                                              'Belum ada pesan. Kirim bantuan sekarang.',
+                                              textAlign: TextAlign.center,
+                                              style: textStyle(
+                                                fontSize: 13,
+                                                color: ColorSys.darkBlue,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                final orderedMessages = [...messages]..sort(
+                                    (a, b) =>
+                                        b.createdAt.compareTo(a.createdAt));
+
+                                final latestMessage = messages.last;
+                                if (latestMessage.senderId != currentUid &&
+                                    latestMessage.id !=
+                                        _lastMarkedReadMessageId) {
+                                  _lastMarkedReadMessageId = latestMessage.id;
+                                  unawaited(
+                                    _helpService.markConversationAsRead(
+                                      _conversationId!,
+                                    ),
+                                  );
+                                }
+
+                                final templates = _resolveQuickTemplates(
+                                    messages, currentUid);
+                                final showQuickReplies = templates.isNotEmpty;
+                                var latestPilgrimMessageId = '';
+                                if (_currentIsPetugas &&
+                                    !widget.peerIsPetugas) {
+                                  for (var i = messages.length - 1;
+                                      i >= 0;
+                                      i--) {
+                                    final candidate = messages[i];
+                                    if (candidate.senderId == widget.peerId) {
+                                      latestPilgrimMessageId = candidate.id;
+                                      break;
+                                    }
+                                  }
+                                }
+
+                                return Column(
+                                  children: [
+                                    if (showQuickReplies) ...[
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 8,
+                                        ),
+                                        child:
+                                            _buildQuickTemplateList(templates),
+                                      ),
+                                    ],
+                                    Expanded(
+                                      child: ListView.builder(
+                                        reverse: true,
+                                        padding: const EdgeInsets.fromLTRB(
+                                            16, 12, 16, 12),
+                                        itemCount: orderedMessages.length,
+                                        itemBuilder: (context, index) {
+                                          final message =
+                                              orderedMessages[index];
+                                          final showFindPilgrimButton =
+                                              !_isArchived &&
+                                                  _currentIsPetugas &&
+                                                  !widget.peerIsPetugas &&
+                                                  latestPilgrimMessageId
+                                                      .isNotEmpty &&
+                                                  message.senderId ==
+                                                      widget.peerId &&
+                                                  message.id ==
+                                                      latestPilgrimMessageId;
+                                          return _buildMessageBubble(
+                                            message,
+                                            currentUid,
+                                            showFindPilgrimButton:
+                                                showFindPilgrimButton,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
                     ),
                     if (!_isArchived)
                       SafeArea(

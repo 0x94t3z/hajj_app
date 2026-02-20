@@ -211,37 +211,13 @@ class HelpService {
       if (activeSnapshot.exists && activeSnapshot.value != null) {
         final activeId = activeSnapshot.value.toString();
         if (activeId.isNotEmpty) {
-          final activeConvSnap = await _conversationsRef.child(activeId).get();
-          if (activeConvSnap.exists && activeConvSnap.value is Map) {
-            final activeData =
-                Map<String, dynamic>.from(activeConvSnap.value as Map);
-            final status = activeData['status']?.toString() ?? 'open';
-            final archived = activeData['archived'] == true;
-            if (status != 'closed' && !archived) {
-              conversationId = activeId;
-            }
-          }
+          // Reuse active session pointer directly to avoid extra read checks
+          // that can be denied by strict rules when target node is missing.
+          conversationId = activeId;
         }
       }
     } catch (_) {
       // If session lookup fails, fall back to legacy behavior.
-    }
-
-    if (conversationId.isEmpty) {
-      final legacyId = pairKey;
-      try {
-        final legacySnap = await _conversationsRef.child(legacyId).get();
-        if (legacySnap.exists && legacySnap.value is Map) {
-          final legacyData = Map<String, dynamic>.from(legacySnap.value as Map);
-          final status = legacyData['status']?.toString() ?? 'open';
-          final archived = legacyData['archived'] == true;
-          if (status != 'closed' && !archived) {
-            conversationId = legacyId;
-          }
-        }
-      } catch (_) {
-        // Ignore legacy lookup errors.
-      }
     }
 
     if (conversationId.isEmpty) {
@@ -540,7 +516,7 @@ class HelpService {
     });
   }
 
-  Stream<List<HelpConversationSummary>> watchInbox({
+  Stream<List<HelpConversationSummary>> watchAllInbox({
     required String currentUid,
     required bool currentIsPetugas,
   }) {
@@ -560,9 +536,6 @@ class HelpService {
                 map['conversationId']?.toString().isNotEmpty == true
                     ? map['conversationId'].toString()
                     : entry.key.toString();
-            final status = map['status']?.toString() ?? 'open';
-            final archived = map['archived'] == true;
-            if (status == 'closed' || archived) return null;
             return HelpConversationSummary.fromMap(
               map,
               currentUid: currentUid,
@@ -578,41 +551,31 @@ class HelpService {
     });
   }
 
+  Stream<List<HelpConversationSummary>> watchInbox({
+    required String currentUid,
+    required bool currentIsPetugas,
+  }) {
+    return watchAllInbox(
+      currentUid: currentUid,
+      currentIsPetugas: currentIsPetugas,
+    ).map((items) {
+      return items
+          .where((item) => item.status != 'closed' && !item.archived)
+          .toList();
+    });
+  }
+
   Stream<List<HelpConversationSummary>> watchArchivedInbox({
     required String currentUid,
     required bool currentIsPetugas,
   }) {
-    final query = currentIsPetugas
-        ? _conversationsRef.orderByChild('officerId').equalTo(currentUid)
-        : _conversationsRef.orderByChild('pilgrimId').equalTo(currentUid);
-
-    return query.onValue.map((event) {
-      final raw = event.snapshot.value;
-      if (raw is! Map) return <HelpConversationSummary>[];
-
-      final summaries = raw.entries
-          .map((entry) {
-            if (entry.value is! Map) return null;
-            final map = Map<String, dynamic>.from(entry.value as Map);
-            map['conversationId'] =
-                map['conversationId']?.toString().isNotEmpty == true
-                    ? map['conversationId'].toString()
-                    : entry.key.toString();
-            final status = map['status']?.toString() ?? 'open';
-            final archived = map['archived'] == true;
-            if (status != 'closed' && !archived) return null;
-            return HelpConversationSummary.fromMap(
-              map,
-              currentUid: currentUid,
-              currentIsPetugas: currentIsPetugas,
-              toMillis: _toMillis,
-            );
-          })
-          .whereType<HelpConversationSummary>()
-          .toList()
-        ..sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
-
-      return summaries;
+    return watchAllInbox(
+      currentUid: currentUid,
+      currentIsPetugas: currentIsPetugas,
+    ).map((items) {
+      return items
+          .where((item) => item.status == 'closed' || item.archived)
+          .toList();
     });
   }
 

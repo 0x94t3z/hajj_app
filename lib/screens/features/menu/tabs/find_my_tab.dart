@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hajj_app/core/widgets/app_popup.dart';
@@ -12,8 +14,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 class FindMyTab extends StatefulWidget {
   final int refreshTick;
+  final bool isActive;
 
-  const FindMyTab({Key? key, this.refreshTick = 0}) : super(key: key);
+  const FindMyTab({
+    Key? key,
+    this.refreshTick = 0,
+    this.isActive = false,
+  }) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -27,6 +34,9 @@ class _FindMyTabState extends State<FindMyTab> {
   String locationName = 'Meca, Saudi Arabia';
   String buttonLabel = 'Find Officers';
   bool _locationPermissionDeniedLogged = false;
+  bool _mapReady = false;
+  bool _enableMap = false;
+  bool _pendingRefreshOnActivate = false;
 
   final animationsMap = {
     'containerOnPageLoadAnimation5': AnimationInfo(
@@ -68,19 +78,36 @@ class _FindMyTabState extends State<FindMyTab> {
   @override
   void initState() {
     super.initState();
+    _enableMap = widget.isActive;
     _setButtonLabel();
   }
 
   @override
   void didUpdateWidget(covariant FindMyTab oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !_enableMap) {
+      setState(() {
+        _enableMap = true;
+      });
+    }
+
+    if (widget.isActive && _pendingRefreshOnActivate && _mapReady) {
+      _pendingRefreshOnActivate = false;
+      unawaited(_getUserLocation());
+    }
+
     if (widget.refreshTick != oldWidget.refreshTick) {
-      _getUserLocation();
+      if (widget.isActive && _mapReady) {
+        _getUserLocation();
+      } else {
+        _pendingRefreshOnActivate = true;
+      }
     }
   }
 
   Future<void> _onMapCreated(MapboxMap map) async {
     mapboxMap = map;
+    _mapReady = true;
     mapboxMap?.setCamera(
       CameraOptions(
         center: Point(
@@ -162,6 +189,7 @@ class _FindMyTabState extends State<FindMyTab> {
   }
 
   Future<void> _getUserLocation() async {
+    if (!_mapReady) return;
     try {
       final hasPermission = await _ensureLocationPermission();
       if (!hasPermission) return;
@@ -260,7 +288,7 @@ class _FindMyTabState extends State<FindMyTab> {
                             borderRadius: BorderRadius.circular(25.0),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
+                                color: Colors.grey.withValues(alpha: 0.2),
                                 spreadRadius: 3,
                                 blurRadius: 3,
                                 offset: const Offset(0, 3),
@@ -278,10 +306,40 @@ class _FindMyTabState extends State<FindMyTab> {
                                       borderRadius: BorderRadius.circular(20.0),
                                       child: SizedBox(
                                         width: double.infinity,
-                                        child: MapWidget(
-                                          onMapCreated: _onMapCreated,
-                                          styleUri: MapboxStyles.MAPBOX_STREETS,
-                                        ),
+                                        child: _enableMap
+                                            ? MapWidget(
+                                                onMapCreated: _onMapCreated,
+                                                styleUri:
+                                                    MapboxStyles.MAPBOX_STREETS,
+                                              )
+                                            : Container(
+                                                color: Colors.grey.shade100,
+                                                alignment: Alignment.center,
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(
+                                                      Iconsax.map_1,
+                                                      color: ColorSys.darkBlue,
+                                                      size: 34,
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Text(
+                                                      'Map will load when this tab is opened',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: textStyle(
+                                                        fontSize: 12,
+                                                        color:
+                                                            ColorSys.darkBlue,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                       ),
                                     ),
                                     Positioned(

@@ -4,16 +4,30 @@ import 'package:hijri/hijri_calendar.dart';
 import 'package:analog_clock/analog_clock.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz_data;
 
-class HomeClockTab extends StatelessWidget {
+class HomeClockTab extends StatefulWidget {
   const HomeClockTab({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    tz.initializeTimeZones(); // Initialize time zones
-    tz.setLocalLocation(tz.getLocation('UTC')); // Set the local time zone
+  State<HomeClockTab> createState() => _HomeClockTabState();
+}
 
+class _HomeClockTabState extends State<HomeClockTab> {
+  static bool _timeZoneInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!_timeZoneInitialized) {
+      tz_data.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('UTC'));
+      _timeZoneInitialized = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     HijriCalendar today = HijriCalendar.now(); // Get current date in Hijri
 
     return Scaffold(
@@ -42,7 +56,7 @@ class HomeClockTab extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
+                        color: Colors.black.withValues(alpha: 0.25),
                         spreadRadius: 2,
                         blurRadius: 8,
                         offset: const Offset(0, 3),
@@ -97,7 +111,7 @@ class HomeClockTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(25.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             spreadRadius: 3,
             blurRadius: 3,
             offset: const Offset(0, 3),

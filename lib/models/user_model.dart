@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hajj_app/core/utils/name_formatter.dart';
 
 class UserModel {
@@ -77,9 +78,9 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase({
   }
 
   final usersRef = FirebaseDatabase.instance.ref('users');
-  late DatabaseEvent event;
+  late DataSnapshot snapshot;
   try {
-    event = await usersRef.once();
+    snapshot = await usersRef.get();
   } on FirebaseException catch (e) {
     if (e.code == 'permission-denied') {
       throw UserDataAccessException(
@@ -90,7 +91,7 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase({
   }
 
   List<UserModel> allUsers = []; // Fetch all users
-  final values = event.snapshot.value as Map<dynamic, dynamic>?;
+  final values = snapshot.value as Map<dynamic, dynamic>?;
   if (values != null) {
     final rootMap = Map<String, dynamic>.from(values);
     final isSingleUserObject = rootMap.containsKey('userId') ||
@@ -160,7 +161,7 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase({
   if (logPetugasJson) {
     final prettyJson =
         const JsonEncoder.withIndent('  ').convert(petugasRawJson);
-    print('PETUGAS_HAJI_JSON: $prettyJson');
+    debugPrint('PETUGAS_HAJI_JSON: $prettyJson');
   }
 
   return {

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,16 +28,15 @@ class _SettingsTabState extends State<SettingsTab> {
   late String _imageUrl = '';
   late String _roles = '';
   StreamSubscription<List<HelpConversationSummary>>? _helpInboxSubscription;
-  StreamSubscription<List<HelpConversationSummary>>?
-      _helpInboxFallbackSubscription;
   List<HelpConversationSummary> _helpInboxPrimary = const [];
-  List<HelpConversationSummary> _helpInboxFallback = const [];
   int _totalUnreadHelpMessages = 0;
   bool? _helpInboxIsPetugas;
+  late final Future<PackageInfo> _packageInfoFuture;
 
   @override
   void initState() {
     super.initState();
+    _packageInfoFuture = PackageInfo.fromPlatform();
     getData();
     _watchUnreadHelpMessages();
   }
@@ -46,7 +44,6 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   void dispose() {
     _helpInboxSubscription?.cancel();
-    _helpInboxFallbackSubscription?.cancel();
     super.dispose();
   }
 
@@ -82,7 +79,6 @@ class _SettingsTabState extends State<SettingsTab> {
     _helpInboxIsPetugas = isPetugas;
 
     await _helpInboxSubscription?.cancel();
-    await _helpInboxFallbackSubscription?.cancel();
 
     _helpInboxSubscription = _helpService
         .watchInbox(
@@ -101,35 +97,10 @@ class _SettingsTabState extends State<SettingsTab> {
         _recalculateUnreadCount();
       },
     );
-
-    _helpInboxFallbackSubscription = _helpService
-        .watchInbox(
-      currentUid: uid,
-      currentIsPetugas: !isPetugas,
-    )
-        .listen(
-      (conversations) {
-        if (!mounted) return;
-        _helpInboxFallback = conversations;
-        _recalculateUnreadCount();
-      },
-      onError: (_) {
-        if (!mounted) return;
-        _helpInboxFallback = const [];
-        _recalculateUnreadCount();
-      },
-    );
   }
 
   void _recalculateUnreadCount() {
-    final merged = <String, HelpConversationSummary>{};
-    for (final item in _helpInboxPrimary) {
-      merged[item.conversationId] = item;
-    }
-    for (final item in _helpInboxFallback) {
-      merged[item.conversationId] = item;
-    }
-    final total = merged.values.fold<int>(
+    final total = _helpInboxPrimary.fold<int>(
       0,
       (sum, item) => sum + item.unreadMessageCount,
     );
@@ -161,22 +132,10 @@ class _SettingsTabState extends State<SettingsTab> {
           _imageUrl = cachedProfile['imageUrl'] as String? ?? '';
           _roles = cachedRoleStatus;
         });
-        final uid = FirebaseAuth.instance.currentUser?.uid;
-        if (uid != null) {
-          await _startHelpInboxWatch(uid: uid, role: cachedRoleRaw);
-        }
       }
 
-      final rawUserData =
-          await _userService.fetchCurrentUserData(forceRefresh: true);
       final userData =
           await _userService.fetchCurrentUserProfile(forceRefresh: true);
-      debugPrint(
-        '[SETTINGS] rawUserData=${jsonEncode(rawUserData ?? <String, dynamic>{})}',
-      );
-      debugPrint(
-        '[SETTINGS] resolvedProfile=${jsonEncode(userData ?? <String, dynamic>{})}',
-      );
       if (!mounted) return;
       if (userData != null) {
         final roleRaw = userData['roles'] as String? ?? '';
@@ -189,22 +148,18 @@ class _SettingsTabState extends State<SettingsTab> {
           _imageUrl = userData['imageUrl'] as String? ?? '';
           _roles = roleStatus;
         });
-        final uid = FirebaseAuth.instance.currentUser?.uid;
-        if (uid != null) {
-          await _startHelpInboxWatch(uid: uid, role: roleRaw);
-        }
       } else {
-        print("No data available or data not in the expected format");
+        debugPrint("No data available or data not in the expected format");
       }
     } catch (error) {
-      print("Error fetching data: $error");
+      debugPrint("Error fetching data: $error");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PackageInfo>(
-      future: PackageInfo.fromPlatform(),
+      future: _packageInfoFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           final packageInfo = snapshot.data;
@@ -560,7 +515,7 @@ class _SettingsTabState extends State<SettingsTab> {
                           Navigator.pushReplacementNamed(context, '/login');
                         } catch (e) {
                           // Handle sign-out errors, if any
-                          print("Error while logging out: $e");
+                          debugPrint("Error while logging out: $e");
                           // Display error message or take appropriate action
                         }
                       },
