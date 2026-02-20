@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:analog_clock/analog_clock.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-class FirstWidget extends StatelessWidget {
-  const FirstWidget({Key? key}) : super(key: key);
+class HomeClockTab extends StatelessWidget {
+  const HomeClockTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

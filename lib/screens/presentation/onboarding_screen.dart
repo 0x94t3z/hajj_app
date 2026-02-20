@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/helpers/strings.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
+import 'package:hajj_app/core/constants/onboarding_strings.dart';
 import 'package:hajj_app/widgets/onboarding/onboarding_page.dart';
 
-class Introduction extends StatefulWidget {
-  const Introduction({Key? key}) : super(key: key);
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _IntroductionState createState() => _IntroductionState();
+  _OnboardingScreenState createState() => _OnboardingScreenState();
 }
 
-class _IntroductionState extends State<Introduction> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   late PageController _pageController;
   int currentIndex = 0;
 
@@ -68,19 +68,19 @@ class _IntroductionState extends State<Introduction> {
             controller: _pageController,
             children: <Widget>[
               OnboardingPage(
-                image: Strings.stepOneImage,
-                title: Strings.stepOneTitle,
-                content: Strings.stepOneContent,
+                image: OnboardingStrings.stepOneImage,
+                title: OnboardingStrings.stepOneTitle,
+                content: OnboardingStrings.stepOneContent,
               ),
               OnboardingPage(
-                image: Strings.stepTwoImage,
-                title: Strings.stepTwoTitle,
-                content: Strings.stepTwoContent,
+                image: OnboardingStrings.stepTwoImage,
+                title: OnboardingStrings.stepTwoTitle,
+                content: OnboardingStrings.stepTwoContent,
               ),
               OnboardingPage(
-                image: Strings.stepThreeImage,
-                title: Strings.stepThreeTitle,
-                content: Strings.stepThreeContent,
+                image: OnboardingStrings.stepThreeImage,
+                title: OnboardingStrings.stepThreeTitle,
+                content: OnboardingStrings.stepThreeContent,
               ),
             ],
           ),

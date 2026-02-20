@@ -20,10 +20,7 @@ double calculateHaversineDistance(
   final double sinHalfDLat = math.sin(dLat / 2);
   final double sinHalfDLon = math.sin(dLon / 2);
   final double a = (sinHalfDLat * sinHalfDLat) +
-      (math.cos(lat1Rad) *
-          math.cos(lat2Rad) *
-          sinHalfDLon *
-          sinHalfDLon);
+      (math.cos(lat1Rad) * math.cos(lat2Rad) * sinHalfDLon * sinHalfDLon);
 
   // Clamp to avoid NaN from tiny floating-point drift outside [0, 1].
   final double normalizedA = a.clamp(0.0, 1.0).toDouble();

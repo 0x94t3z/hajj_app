@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
+import 'package:hajj_app/core/widgets/app_popup.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/auth/register.dart';
-import 'package:hajj_app/screens/features/menu/home.dart';
-import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/helpers/strings.dart';
+import 'package:hajj_app/screens/features/menu/home_screen.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
+import 'package:hajj_app/core/constants/onboarding_strings.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -222,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepOneImage,
+                            OnboardingStrings.stepOneImage,
                             height: 400,
                           ),
                         ),
@@ -237,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           duration: const Duration(seconds: 1),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepTwoImage,
+                            OnboardingStrings.stepTwoImage,
                             height: 400,
                           ),
                         ),
@@ -252,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           duration: const Duration(seconds: 1),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepThreeImage,
+                            OnboardingStrings.stepThreeImage,
                             height: 400,
                           ),
                         ),
@@ -267,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           duration: const Duration(seconds: 1),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepTwoImage,
+                            OnboardingStrings.stepTwoImage,
                             height: 400,
                           ),
                         ),

@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
+import 'package:hajj_app/core/widgets/app_popup.dart';
 import 'package:hajj_app/widgets/radar/finding.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -10,17 +10,17 @@ import 'package:geolocator/geolocator.dart' as geo;
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-class SecondWidget extends StatefulWidget {
+class FindMyTab extends StatefulWidget {
   final int refreshTick;
 
-  const SecondWidget({Key? key, this.refreshTick = 0}) : super(key: key);
+  const FindMyTab({Key? key, this.refreshTick = 0}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _SecondWidgetState createState() => _SecondWidgetState();
+  _FindMyTabState createState() => _FindMyTabState();
 }
 
-class _SecondWidgetState extends State<SecondWidget> {
+class _FindMyTabState extends State<FindMyTab> {
   final UserService _userService = UserService();
   MapboxMap? mapboxMap;
   geo.Position? currentPosition;
@@ -71,7 +71,7 @@ class _SecondWidgetState extends State<SecondWidget> {
   }
 
   @override
-  void didUpdateWidget(covariant SecondWidget oldWidget) {
+  void didUpdateWidget(covariant FindMyTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.refreshTick != oldWidget.refreshTick) {
       _getUserLocation();

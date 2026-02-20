@@ -5,12 +5,12 @@ import 'package:animate_do/animate_do.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
+import 'package:hajj_app/core/widgets/app_popup.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:hajj_app/helpers/name_formatter.dart';
-import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/helpers/strings.dart';
+import 'package:hajj_app/core/utils/name_formatter.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
+import 'package:hajj_app/core/constants/onboarding_strings.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -222,7 +222,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepOneImage,
+                            OnboardingStrings.stepOneImage,
                             height: 400,
                           ),
                         ),
@@ -237,7 +237,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           duration: const Duration(seconds: 1),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepTwoImage,
+                            OnboardingStrings.stepTwoImage,
                             height: 400,
                           ),
                         ),
@@ -252,7 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           duration: const Duration(seconds: 1),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepThreeImage,
+                            OnboardingStrings.stepThreeImage,
                             height: 400,
                           ),
                         ),
@@ -267,7 +267,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           duration: const Duration(seconds: 1),
                           curve: Curves.linear,
                           child: Image.asset(
-                            Strings.stepTwoImage,
+                            OnboardingStrings.stepTwoImage,
                             height: 400,
                           ),
                         ),

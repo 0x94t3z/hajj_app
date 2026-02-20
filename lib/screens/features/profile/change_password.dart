@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/widgets/app_popup.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:iconsax/iconsax.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -186,7 +186,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               fontSize: 18.0,
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: ColorSys.darkBlue, width: 1.5),
+              borderSide:
+                  const BorderSide(color: ColorSys.darkBlue, width: 1.5),
               borderRadius: BorderRadius.circular(10.0),
             ),
             suffixIcon: IconButton(

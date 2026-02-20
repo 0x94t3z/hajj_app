@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/services/user_service.dart';
 
 class FindingWidget extends StatefulWidget {

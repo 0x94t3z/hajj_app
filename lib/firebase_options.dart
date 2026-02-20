@@ -80,7 +80,8 @@ class DefaultFirebaseOptions {
     projectId: 'hajjapp-3da80',
     databaseURL: 'https://hajjapp-3da80-default-rtdb.firebaseio.com',
     storageBucket: 'hajjapp-3da80.appspot.com',
-    iosClientId: '744668372957-stdich7h8pldvb3bfqq059c3vhr3bhbn.apps.googleusercontent.com',
+    iosClientId:
+        '744668372957-stdich7h8pldvb3bfqq059c3vhr3bhbn.apps.googleusercontent.com',
     iosBundleId: 'com.example.hajiApp.RunnerTests',
   );
 }

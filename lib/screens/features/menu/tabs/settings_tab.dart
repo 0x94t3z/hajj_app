@@ -3,8 +3,8 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/name_formatter.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/utils/name_formatter.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/screens/features/help/help_inbox.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:hajj_app/screens/features/profile/change_password.dart';
@@ -13,15 +13,15 @@ import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class ThirdWidget extends StatefulWidget {
-  const ThirdWidget({Key? key}) : super(key: key);
+class SettingsTab extends StatefulWidget {
+  const SettingsTab({Key? key}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
-  _ThirdWidgetState createState() => _ThirdWidgetState();
+  _SettingsTabState createState() => _SettingsTabState();
 }
 
-class _ThirdWidgetState extends State<ThirdWidget> {
+class _SettingsTabState extends State<SettingsTab> {
   final UserService _userService = UserService();
   final HelpService _helpService = HelpService();
   late String _name = '';
@@ -76,8 +76,7 @@ class _ThirdWidgetState extends State<ThirdWidget> {
     required String role,
   }) async {
     final isPetugas = _userService.isPetugasHajiRole(role);
-    if (_helpInboxIsPetugas == isPetugas &&
-        _helpInboxSubscription != null) {
+    if (_helpInboxIsPetugas == isPetugas && _helpInboxSubscription != null) {
       return;
     }
     _helpInboxIsPetugas = isPetugas;
@@ -87,9 +86,9 @@ class _ThirdWidgetState extends State<ThirdWidget> {
 
     _helpInboxSubscription = _helpService
         .watchInbox(
-          currentUid: uid,
-          currentIsPetugas: isPetugas,
-        )
+      currentUid: uid,
+      currentIsPetugas: isPetugas,
+    )
         .listen(
       (conversations) {
         if (!mounted) return;
@@ -105,9 +104,9 @@ class _ThirdWidgetState extends State<ThirdWidget> {
 
     _helpInboxFallbackSubscription = _helpService
         .watchInbox(
-          currentUid: uid,
-          currentIsPetugas: !isPetugas,
-        )
+      currentUid: uid,
+      currentIsPetugas: !isPetugas,
+    )
         .listen(
       (conversations) {
         if (!mounted) return;

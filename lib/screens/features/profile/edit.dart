@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/app_popup.dart';
-import 'package:hajj_app/helpers/name_formatter.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/widgets/app_popup.dart';
+import 'package:hajj_app/core/utils/name_formatter.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/screens/features/profile/change_name.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:iconsax/iconsax.dart';
@@ -274,7 +274,6 @@ class _EditScreenState extends State<EditScreen> {
                         ),
                       ),
                     );
-
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

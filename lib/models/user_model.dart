@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:hajj_app/helpers/name_formatter.dart';
+import 'package:hajj_app/core/utils/name_formatter.dart';
 
 class UserModel {
   final String userId;

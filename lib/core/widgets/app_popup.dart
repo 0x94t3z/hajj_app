@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 
 enum AppPopupType { info, success, warning, error }
 

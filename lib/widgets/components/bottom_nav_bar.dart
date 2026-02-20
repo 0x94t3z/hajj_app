@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;

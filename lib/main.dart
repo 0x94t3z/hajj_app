@@ -6,19 +6,19 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:hajj_app/helpers/styles.dart';
-import 'package:hajj_app/screens/features/finding/maps.dart';
-import 'package:hajj_app/screens/features/finding/navigation.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
+import 'package:hajj_app/screens/features/finding/map_screen.dart';
+import 'package:hajj_app/screens/features/finding/navigation_screen.dart';
 import 'package:hajj_app/screens/features/help/help_chat.dart';
 import 'package:hajj_app/screens/features/help/help_inbox.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
-import 'package:hajj_app/screens/presentation/introduction.dart';
+import 'package:hajj_app/screens/presentation/onboarding_screen.dart';
 import 'package:hajj_app/screens/auth/login.dart';
 import 'package:hajj_app/screens/auth/register.dart';
 import 'package:hajj_app/screens/auth/forgot.dart';
-import 'package:hajj_app/screens/features/menu/home.dart';
-import 'package:hajj_app/screens/features/menu/find_my.dart';
-import 'package:hajj_app/screens/features/menu/setting.dart';
+import 'package:hajj_app/screens/features/menu/home_screen.dart';
+import 'package:hajj_app/screens/features/menu/find_my_screen.dart';
+import 'package:hajj_app/screens/features/menu/settings_screen.dart';
 import 'package:hajj_app/services/local_notification_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart'
@@ -537,7 +537,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       navigatorObservers: <NavigatorObserver>[_routeObserver],
       initialRoute: isLoggedIn ? '/home' : '/introduction',
       routes: {
-        '/introduction': (context) => const Introduction(),
+        '/introduction': (context) => const OnboardingScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/forgot': (context) => const ForgotPasswordScreen(),
@@ -546,7 +546,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         '/finding': (context) => const MapScreen(),
         '/navigation': (context) => const NavigationScreen(),
         '/help_inbox': (context) => const HelpInboxScreen(),
-        '/setting': (context) => const SettingScreen(),
+        '/setting': (context) => const SettingsScreen(),
         '/edit': (context) => const EditScreen(),
       },
       onGenerateRoute: (settings) {

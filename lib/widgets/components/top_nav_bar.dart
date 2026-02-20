@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hajj_app/helpers/styles.dart';
+import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:hajj_app/services/user_service.dart';
 
