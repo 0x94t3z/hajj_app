@@ -246,11 +246,6 @@ class HelpService {
 
     if (conversationId.isEmpty) {
       conversationId = _buildSessionConversationId(pairKey);
-      try {
-        await _activeSessionsRef.child(pairKey).set(conversationId);
-      } catch (_) {
-        // Keep going even if we cannot write session pointer.
-      }
     }
 
     final conversationRef = _conversationsRef.child(conversationId);
@@ -287,6 +282,16 @@ class HelpService {
 
     try {
       await conversationRef.update(baseData);
+
+      // Persist active session pointer only after the conversation exists.
+      // This allows Firebase Rules to validate participants from the conversation node.
+      if (pairKey.isNotEmpty) {
+        try {
+          await _activeSessionsRef.child(pairKey).set(conversationId);
+        } catch (_) {
+          // Keep going even if we cannot write session pointer.
+        }
+      }
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw _permissionDeniedError();

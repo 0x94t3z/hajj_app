@@ -5,6 +5,7 @@
     <application
         android:label="Hajj App"
         android:name="${applicationName}"
+        android:theme="@style/NormalTheme"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
