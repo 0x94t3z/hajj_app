@@ -51,9 +51,9 @@ Future<void> _configureFirebaseAppCheck() async {
     if (kIsWeb) return;
     await FirebaseAppCheck.instance.activate(
       androidProvider:
-          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+          kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
       appleProvider:
-          kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
+          kReleaseMode ? AppleProvider.deviceCheck : AppleProvider.debug,
     );
   } catch (e) {
     debugPrint('Firebase App Check activation failed: $e');
@@ -95,6 +95,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   bool? _cachedIsPetugas;
   String _currentRouteName = '';
   bool _hasLoggedLocationPermissionIssue = false;
+  bool _realtimeDbOnline = true;
 
   bool _isIgnoredIosLocationError(Object error) {
     final text = error.toString();
@@ -125,13 +126,29 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       if (user == null) {
         await _stopLocationTracking();
         await _stopHelpNotificationListener();
+        _setRealtimeDatabaseOnline(false);
         _userService.clearCurrentUserCache();
         return;
       }
 
+      _setRealtimeDatabaseOnline(true);
       await _startLocationTracking();
       await _startHelpNotificationListener();
     });
+  }
+
+  void _setRealtimeDatabaseOnline(bool online) {
+    if (_realtimeDbOnline == online) return;
+    _realtimeDbOnline = online;
+    try {
+      if (online) {
+        FirebaseDatabase.instance.goOnline();
+      } else {
+        FirebaseDatabase.instance.goOffline();
+      }
+    } catch (_) {
+      // Keep auth/session transitions resilient even when DB transport toggles fail.
+    }
   }
 
   Future<void> checkLoginStatus() async {
@@ -599,6 +616,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     _authStateSubscription?.cancel();
     _stopLocationTracking();
     _stopHelpNotificationListener();
+    _setRealtimeDatabaseOnline(false);
     super.dispose();
   }
 

@@ -41,7 +41,6 @@ class _SettingsTabState extends State<SettingsTab> {
     super.initState();
     _packageInfoFuture = PackageInfo.fromPlatform();
     getData();
-    _watchUnreadHelpMessages();
     _authStateSubscription =
         FirebaseAuth.instance.authStateChanges().listen((user) async {
       if (!mounted) return;
