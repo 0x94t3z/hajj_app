@@ -50,10 +50,14 @@ Future<void> _configureFirebaseAppCheck() async {
   try {
     if (kIsWeb) return;
     await FirebaseAppCheck.instance.activate(
-      androidProvider:
-          kReleaseMode ? AndroidProvider.playIntegrity : AndroidProvider.debug,
-      appleProvider:
-          kReleaseMode ? AppleProvider.deviceCheck : AppleProvider.debug,
+      providerAndroid:
+          kReleaseMode
+              ? const AndroidPlayIntegrityProvider()
+              : const AndroidDebugProvider(),
+      providerApple:
+          kReleaseMode
+              ? const AppleDeviceCheckProvider()
+              : const AppleDebugProvider(),
     );
   } catch (e) {
     debugPrint('Firebase App Check activation failed: $e');

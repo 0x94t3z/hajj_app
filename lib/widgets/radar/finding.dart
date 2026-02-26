@@ -432,19 +432,23 @@ class _FindingWidgetState extends State<FindingWidget>
                           ),
                         ],
                       ),
-                      Positioned(
-                        top: 10.0,
-                        right: 4.0,
-                        child: IconButton(
+                      Align(
+                        alignment: const AlignmentDirectional(1.0, -1.0),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: ColorSys.moreDarkBlue,
+                            backgroundColor: ColorSys.darkBlue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
                           onPressed: () async {
                             Navigator.pop(context);
                           },
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: const Icon(
+                          child: const Icon(
                             Icons.close,
-                            color: Colors.red,
-                            size: 32.0,
+                            color: Colors.white,
+                            size: 24.0,
                           ),
                         ).animateOnPageLoad(
                             animationsMap['iconButtonOnPageLoadAnimation']!),
