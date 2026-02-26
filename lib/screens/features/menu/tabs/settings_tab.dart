@@ -27,11 +27,12 @@ class _SettingsTabState extends State<SettingsTab> {
   late String _email = '';
   late String _imageUrl = '';
   late String _roles = '';
-  StreamSubscription<List<HelpConversationSummary>>? _helpInboxSubscription;
+  Timer? _helpInboxPollTimer;
   List<HelpConversationSummary> _helpInboxPrimary = const [];
   int _totalUnreadHelpMessages = 0;
   bool? _helpInboxIsPetugas;
   String? _helpInboxUid;
+  bool _isFetchingUnread = false;
   StreamSubscription<User?>? _authStateSubscription;
   late final Future<PackageInfo> _packageInfoFuture;
   bool _isLoggingOut = false;
@@ -41,11 +42,12 @@ class _SettingsTabState extends State<SettingsTab> {
     super.initState();
     _packageInfoFuture = PackageInfo.fromPlatform();
     getData();
+    _watchUnreadHelpMessages();
     _authStateSubscription =
         FirebaseAuth.instance.authStateChanges().listen((user) async {
       if (!mounted) return;
       if (user == null) {
-        await _stopHelpInboxWatch();
+        await _stopHelpInboxPolling();
         return;
       }
       await _watchUnreadHelpMessages();
@@ -55,7 +57,7 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   void dispose() {
     _authStateSubscription?.cancel();
-    _helpInboxSubscription?.cancel();
+    _helpInboxPollTimer?.cancel();
     super.dispose();
   }
 
@@ -65,26 +67,32 @@ class _SettingsTabState extends State<SettingsTab> {
 
     final cachedRole =
         _userService.getCachedCurrentUserProfile()?['roles']?.toString() ?? '';
+    late final String role;
     if (cachedRole.trim().isNotEmpty) {
-      await _startHelpInboxWatch(
-        uid: user.uid,
-        role: cachedRole,
-      );
-      return;
+      role = cachedRole;
+    } else {
+      role = await _userService.fetchCurrentUserRole();
     }
-
-    final role = await _userService.fetchCurrentUserRole();
-    await _startHelpInboxWatch(
+    final isPetugas = _userService.isPetugasHajiRole(role);
+    final shouldRestartPolling = _helpInboxUid != user.uid ||
+        _helpInboxIsPetugas != isPetugas ||
+        _helpInboxPollTimer == null;
+    _helpInboxUid = user.uid;
+    _helpInboxIsPetugas = isPetugas;
+    if (shouldRestartPolling) {
+      _startHelpInboxPolling(uid: user.uid, isPetugas: isPetugas);
+    }
+    await _refreshUnreadHelpMessages(
       uid: user.uid,
-      role: role,
+      isPetugas: isPetugas,
     );
   }
 
-  Future<void> _stopHelpInboxWatch() async {
-    await _helpInboxSubscription?.cancel();
+  Future<void> _stopHelpInboxPolling() async {
+    _helpInboxPollTimer?.cancel();
+    _helpInboxPollTimer = null;
     if (!mounted) return;
     setState(() {
-      _helpInboxSubscription = null;
       _helpInboxUid = null;
       _helpInboxIsPetugas = null;
       _helpInboxPrimary = const [];
@@ -92,38 +100,45 @@ class _SettingsTabState extends State<SettingsTab> {
     });
   }
 
-  Future<void> _startHelpInboxWatch({
+  void _startHelpInboxPolling({
     required String uid,
-    required String role,
+    required bool isPetugas,
+  }) {
+    _helpInboxPollTimer?.cancel();
+    _helpInboxPollTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (!mounted) return;
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null || currentUser.uid != uid) return;
+      unawaited(
+        _refreshUnreadHelpMessages(
+          uid: uid,
+          isPetugas: isPetugas,
+        ),
+      );
+    });
+  }
+
+  Future<void> _refreshUnreadHelpMessages({
+    required String uid,
+    required bool isPetugas,
   }) async {
-    final isPetugas = _userService.isPetugasHajiRole(role);
-    if (_helpInboxUid == uid &&
-        _helpInboxIsPetugas == isPetugas &&
-        _helpInboxSubscription != null) {
-      return;
+    if (_isFetchingUnread) return;
+    _isFetchingUnread = true;
+    try {
+      final conversations = await _helpService.fetchInboxOnce(
+        currentUid: uid,
+        currentIsPetugas: isPetugas,
+      );
+      if (!mounted) return;
+      _helpInboxPrimary = conversations;
+      _recalculateUnreadCount();
+    } catch (_) {
+      if (!mounted) return;
+      _helpInboxPrimary = const [];
+      _recalculateUnreadCount();
+    } finally {
+      _isFetchingUnread = false;
     }
-    _helpInboxUid = uid;
-    _helpInboxIsPetugas = isPetugas;
-
-    await _helpInboxSubscription?.cancel();
-
-    _helpInboxSubscription = _helpService
-        .watchInbox(
-      currentUid: uid,
-      currentIsPetugas: isPetugas,
-    )
-        .listen(
-      (conversations) {
-        if (!mounted) return;
-        _helpInboxPrimary = conversations;
-        _recalculateUnreadCount();
-      },
-      onError: (_) {
-        if (!mounted) return;
-        _helpInboxPrimary = const [];
-        _recalculateUnreadCount();
-      },
-    );
   }
 
   void _recalculateUnreadCount() {
@@ -539,7 +554,7 @@ class _SettingsTabState extends State<SettingsTab> {
                         });
                         // Perform Firebase sign-out
                         try {
-                          await _stopHelpInboxWatch();
+                          await _stopHelpInboxPolling();
                           _userService.clearCurrentUserCache();
                           await FirebaseAuth.instance.signOut();
                           // Navigate to the login screen after successfully logging out

@@ -87,7 +87,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   LocationPermission _lastKnownLocationPermission = LocationPermission.denied;
   StreamSubscription<User?>? _authStateSubscription;
   StreamSubscription<Position>? _positionSubscription;
-  StreamSubscription<DatabaseEvent>? _helpNotificationSubscription;
+  Timer? _helpNotificationPollTimer;
+  bool _isPollingHelpNotifications = false;
   String? _helpNotificationListenerUid;
   int _helpNotificationListenerEpoch = 0;
   final Set<String> _seenHelpNotificationIds = <String>{};
@@ -164,25 +165,53 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     if (_helpNotificationListenerUid == user.uid &&
-        _helpNotificationSubscription != null) {
+        _helpNotificationPollTimer != null) {
       return;
     }
 
-    await _helpNotificationSubscription?.cancel();
-    _helpNotificationSubscription = null;
+    _helpNotificationPollTimer?.cancel();
+    _helpNotificationPollTimer = null;
     _helpNotificationListenerUid = user.uid;
+    _isPollingHelpNotifications = false;
     final listenerEpoch = ++_helpNotificationListenerEpoch;
     // Keep seen ids during runtime to prevent repeated popups when
     // listener is reattached (e.g. initial auth sync).
 
-    final query = FirebaseDatabase.instance
-        .ref('helpNotificationRequests')
-        .orderByChild('receiverUid')
-        .equalTo(user.uid);
+    unawaited(
+      _pollHelpNotifications(
+        listenerEpoch: listenerEpoch,
+        receiverUid: user.uid,
+      ),
+    );
 
-    _helpNotificationSubscription = query.onValue.listen((event) async {
+    _helpNotificationPollTimer = Timer.periodic(
+      const Duration(seconds: 12),
+      (_) {
+        unawaited(
+          _pollHelpNotifications(
+            listenerEpoch: listenerEpoch,
+            receiverUid: user.uid,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pollHelpNotifications({
+    required int listenerEpoch,
+    required String receiverUid,
+  }) async {
+    if (_isPollingHelpNotifications) return;
+    if (listenerEpoch != _helpNotificationListenerEpoch) return;
+    _isPollingHelpNotifications = true;
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref('helpNotificationRequests')
+          .orderByChild('receiverUid')
+          .equalTo(receiverUid)
+          .get();
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
-      final raw = event.snapshot.value;
+      final raw = snapshot.value;
       if (raw is! Map) return;
 
       final items = raw.entries
@@ -249,7 +278,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         if (listenerEpoch != _helpNotificationListenerEpoch) return;
         if (_seenHelpNotificationIds.contains(item.id)) continue;
         if (item.status != 'pending') continue;
-        if (item.senderUid == user.uid) continue;
+        if (item.senderUid == receiverUid) continue;
         final conversationId = item.conversationId.trim();
         if (conversationId.isNotEmpty) {
           final isConversationActive =
@@ -325,7 +354,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           // Keep app stable if notification status update is denied by rules.
         }
       }
-    });
+    } finally {
+      _isPollingHelpNotifications = false;
+    }
   }
 
   Future<bool> _isConversationActive(String conversationId) async {
@@ -475,8 +506,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
 
   Future<void> _stopHelpNotificationListener() async {
     _helpNotificationListenerEpoch++;
-    await _helpNotificationSubscription?.cancel();
-    _helpNotificationSubscription = null;
+    _helpNotificationPollTimer?.cancel();
+    _helpNotificationPollTimer = null;
+    _isPollingHelpNotifications = false;
     _helpNotificationListenerUid = null;
     _seenHelpNotificationIds.clear();
   }

@@ -525,30 +525,64 @@ class HelpService {
         : _conversationsRef.orderByChild('pilgrimId').equalTo(currentUid);
 
     return query.onValue.map((event) {
-      final raw = event.snapshot.value;
-      if (raw is! Map) return <HelpConversationSummary>[];
-
-      final summaries = raw.entries
-          .map((entry) {
-            if (entry.value is! Map) return null;
-            final map = Map<String, dynamic>.from(entry.value as Map);
-            map['conversationId'] =
-                map['conversationId']?.toString().isNotEmpty == true
-                    ? map['conversationId'].toString()
-                    : entry.key.toString();
-            return HelpConversationSummary.fromMap(
-              map,
-              currentUid: currentUid,
-              currentIsPetugas: currentIsPetugas,
-              toMillis: _toMillis,
-            );
-          })
-          .whereType<HelpConversationSummary>()
-          .toList()
-        ..sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
-
-      return summaries;
+      return _mapInboxSummaries(
+        event.snapshot.value,
+        currentUid: currentUid,
+        currentIsPetugas: currentIsPetugas,
+      );
     });
+  }
+
+  Future<List<HelpConversationSummary>> fetchAllInboxOnce({
+    required String currentUid,
+    required bool currentIsPetugas,
+  }) async {
+    final query = currentIsPetugas
+        ? _conversationsRef.orderByChild('officerId').equalTo(currentUid)
+        : _conversationsRef.orderByChild('pilgrimId').equalTo(currentUid);
+
+    try {
+      final snapshot = await query.get();
+      return _mapInboxSummaries(
+        snapshot.value,
+        currentUid: currentUid,
+        currentIsPetugas: currentIsPetugas,
+      );
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        return <HelpConversationSummary>[];
+      }
+      rethrow;
+    }
+  }
+
+  List<HelpConversationSummary> _mapInboxSummaries(
+    dynamic raw, {
+    required String currentUid,
+    required bool currentIsPetugas,
+  }) {
+    if (raw is! Map) return <HelpConversationSummary>[];
+
+    final summaries = raw.entries
+        .map((entry) {
+          if (entry.value is! Map) return null;
+          final map = Map<String, dynamic>.from(entry.value as Map);
+          map['conversationId'] =
+              map['conversationId']?.toString().isNotEmpty == true
+                  ? map['conversationId'].toString()
+                  : entry.key.toString();
+          return HelpConversationSummary.fromMap(
+            map,
+            currentUid: currentUid,
+            currentIsPetugas: currentIsPetugas,
+            toMillis: _toMillis,
+          );
+        })
+        .whereType<HelpConversationSummary>()
+        .toList()
+      ..sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
+
+    return summaries;
   }
 
   Stream<List<HelpConversationSummary>> watchInbox({
@@ -563,6 +597,19 @@ class HelpService {
           .where((item) => item.status != 'closed' && !item.archived)
           .toList();
     });
+  }
+
+  Future<List<HelpConversationSummary>> fetchInboxOnce({
+    required String currentUid,
+    required bool currentIsPetugas,
+  }) async {
+    final items = await fetchAllInboxOnce(
+      currentUid: currentUid,
+      currentIsPetugas: currentIsPetugas,
+    );
+    return items
+        .where((item) => item.status != 'closed' && !item.archived)
+        .toList();
   }
 
   Stream<List<HelpConversationSummary>> watchArchivedInbox({
