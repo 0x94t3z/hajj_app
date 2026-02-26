@@ -26,6 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int activeIndex = 2;
   late Timer _timer;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
@@ -117,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       position = null;
     }
 
-    final imageUrl = UserService.defaultProfileImageUrl;
+    const imageUrl = UserService.defaultProfileImageUrl;
 
     try {
       final usersRef = FirebaseDatabase.instance.ref().child('users');
@@ -377,8 +378,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: TextField(
                     controller: passwordController,
                     cursorColor: ColorSys.darkBlue,
-                    obscureText:
-                        true, // Set this to true to hide the input text
+                    obscureText: _obscurePassword,
                     style: textStyle(
                       color: ColorSys.textPrimary,
                       fontSize: 14.0,
@@ -400,6 +400,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Iconsax.key,
                         color: ColorSys.darkBlue,
                         size: 18,
+                      ),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                        icon: Icon(
+                          _obscurePassword ? Iconsax.eye : Iconsax.eye_slash,
+                          color: ColorSys.darkBlue,
+                          size: 18,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderSide:

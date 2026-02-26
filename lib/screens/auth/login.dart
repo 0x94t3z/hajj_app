@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   int activeIndex = 1;
   late Timer _timer;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -124,20 +124,19 @@ class _LoginScreenState extends State<LoginScreen> {
         // Refresh in background so UI can render instantly with cached values.
         unawaited(() async {
           final profileData = await _userService.primeCurrentUserCache();
-          final rawUserData = await _userService.fetchCurrentUserData();
+          final name =
+              (profileData?['displayName']?.toString().trim().isNotEmpty ??
+                      false)
+                  ? profileData!['displayName'].toString().trim()
+                  : (firebaseUser.displayName?.trim().isNotEmpty ?? false)
+                      ? firebaseUser.displayName!.trim()
+                      : 'Unknown User';
+          final roles =
+              (profileData?['roles']?.toString().trim().isNotEmpty ?? false)
+                  ? profileData!['roles'].toString().trim()
+                  : 'Unknown Role';
           debugPrint(
-            '[LOGIN] authUser=${jsonEncode({
-                  'uid': firebaseUser.uid,
-                  'email': firebaseUser.email ?? '',
-                  'displayName': firebaseUser.displayName ?? '',
-                  'photoURL': firebaseUser.photoURL ?? '',
-                })}',
-          );
-          debugPrint(
-            '[LOGIN] rawUserData=${jsonEncode(rawUserData ?? <String, dynamic>{})}',
-          );
-          debugPrint(
-            '[LOGIN] resolvedProfile=${jsonEncode(profileData ?? <String, dynamic>{})}',
+            '[LOGIN] name=$name, roles=$roles',
           );
         }());
 
@@ -330,8 +329,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextField(
                     controller: _passwordController,
                     cursorColor: ColorSys.darkBlue,
-                    obscureText:
-                        true, // Set this to true to hide the input text
+                    obscureText: _obscurePassword,
                     style: textStyle(
                       color: ColorSys.textPrimary,
                       fontSize: 14.0,
@@ -353,6 +351,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         Iconsax.key,
                         color: ColorSys.darkBlue,
                         size: 18,
+                      ),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                        icon: Icon(
+                          _obscurePassword ? Iconsax.eye : Iconsax.eye_slash,
+                          color: ColorSys.darkBlue,
+                          size: 18,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderSide:
