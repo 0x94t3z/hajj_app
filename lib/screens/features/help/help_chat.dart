@@ -52,10 +52,26 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   String _lastMarkedReadMessageId = '';
   String? _errorMessage;
   Stream<List<HelpMessage>>? _messagesStream;
+  StreamSubscription<User?>? _authStateSubscription;
+  int _conversationEpoch = 0;
 
   @override
   void initState() {
     super.initState();
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
+      (user) {
+        if (!mounted) return;
+        if (user == null) {
+          _conversationEpoch++;
+          setState(() {
+            _messagesStream = null;
+            _conversationId = null;
+            _errorMessage = 'Sesi berakhir. Silakan login kembali.';
+            _isLoading = false;
+          });
+        }
+      },
+    );
     final presetConversationId = widget.conversationId?.trim();
     if (presetConversationId != null && presetConversationId.isNotEmpty) {
       _loadConversationById(presetConversationId);
@@ -66,6 +82,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
 
   @override
   void dispose() {
+    _authStateSubscription?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
     super.dispose();
@@ -76,6 +93,13 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   }
 
   Future<void> _prepareConversation() async {
+    final currentEpoch = ++_conversationEpoch;
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
     try {
       var peerRoleForConversation = widget.peerRole.trim();
       try {
@@ -95,7 +119,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         peerIsPetugas: widget.peerIsPetugas,
         peerRole: peerRoleForConversation,
       );
-      if (!mounted) return;
+      if (!mounted || currentEpoch != _conversationEpoch) return;
       setState(() {
         _conversationId = handle.conversationId;
         _bindMessagesStream(handle.conversationId);
@@ -108,15 +132,23 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       });
       unawaited(_helpService.markConversationAsRead(handle.conversationId));
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || currentEpoch != _conversationEpoch) return;
       setState(() {
         _errorMessage = e.toString();
+        _messagesStream = null;
         _isLoading = false;
       });
     }
   }
 
   Future<void> _loadConversationById(String conversationId) async {
+    final currentEpoch = ++_conversationEpoch;
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -135,7 +167,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       final status = data['status']?.toString() ?? 'open';
       final archived = data['archived'] == true || status == 'closed';
 
-      if (!mounted) return;
+      if (!mounted || currentEpoch != _conversationEpoch) return;
       setState(() {
         _conversationId = conversationId;
         _bindMessagesStream(conversationId);
@@ -146,9 +178,10 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       });
       unawaited(_helpService.markConversationAsRead(conversationId));
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || currentEpoch != _conversationEpoch) return;
       setState(() {
         _errorMessage = e.toString();
+        _messagesStream = null;
         _isLoading = false;
       });
     }

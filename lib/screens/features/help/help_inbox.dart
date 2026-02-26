@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hajj_app/core/utils/name_formatter.dart';
@@ -22,21 +24,52 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
   String? _errorMessage;
   bool _showArchiveList = false;
   Stream<List<HelpConversationSummary>>? _allInboxStream;
+  StreamSubscription<User?>? _authStateSubscription;
+  int _prepareEpoch = 0;
 
   @override
   void initState() {
     super.initState();
+    _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
+      (user) {
+        if (!mounted) return;
+        if (user == null) {
+          setState(() {
+            _allInboxStream = null;
+            _errorMessage = 'Sesi berakhir. Silakan login kembali.';
+            _isLoading = false;
+          });
+          return;
+        }
+        if (_allInboxStream == null && !_isLoading) {
+          _prepareInbox();
+        }
+      },
+    );
     _prepareInbox();
   }
 
+  @override
+  void dispose() {
+    _authStateSubscription?.cancel();
+    super.dispose();
+  }
+
   Future<void> _prepareInbox() async {
+    final currentEpoch = ++_prepareEpoch;
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception('Silakan login untuk melihat pesan bantuan.');
       }
       final role = await _userService.fetchCurrentUserRole(forceRefresh: true);
-      if (!mounted) return;
+      if (!mounted || currentEpoch != _prepareEpoch) return;
       setState(() {
         _currentIsPetugas = _userService.isPetugasHajiRole(role);
         _allInboxStream = _helpService.watchAllInbox(
@@ -46,9 +79,10 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted || currentEpoch != _prepareEpoch) return;
       setState(() {
         _errorMessage = e.toString();
+        _allInboxStream = null;
         _isLoading = false;
       });
     }

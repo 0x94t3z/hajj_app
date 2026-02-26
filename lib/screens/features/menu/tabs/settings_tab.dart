@@ -34,6 +34,7 @@ class _SettingsTabState extends State<SettingsTab> {
   String? _helpInboxUid;
   StreamSubscription<User?>? _authStateSubscription;
   late final Future<PackageInfo> _packageInfoFuture;
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -45,15 +46,7 @@ class _SettingsTabState extends State<SettingsTab> {
         FirebaseAuth.instance.authStateChanges().listen((user) async {
       if (!mounted) return;
       if (user == null) {
-        await _helpInboxSubscription?.cancel();
-        if (!mounted) return;
-        setState(() {
-          _helpInboxSubscription = null;
-          _helpInboxUid = null;
-          _helpInboxIsPetugas = null;
-          _helpInboxPrimary = const [];
-          _totalUnreadHelpMessages = 0;
-        });
+        await _stopHelpInboxWatch();
         return;
       }
       await _watchUnreadHelpMessages();
@@ -86,6 +79,18 @@ class _SettingsTabState extends State<SettingsTab> {
       uid: user.uid,
       role: role,
     );
+  }
+
+  Future<void> _stopHelpInboxWatch() async {
+    await _helpInboxSubscription?.cancel();
+    if (!mounted) return;
+    setState(() {
+      _helpInboxSubscription = null;
+      _helpInboxUid = null;
+      _helpInboxIsPetugas = null;
+      _helpInboxPrimary = const [];
+      _totalUnreadHelpMessages = 0;
+    });
   }
 
   Future<void> _startHelpInboxWatch({
@@ -529,8 +534,13 @@ class _SettingsTabState extends State<SettingsTab> {
                     const SizedBox(height: 20),
                     InkWell(
                       onTap: () async {
+                        if (_isLoggingOut) return;
+                        setState(() {
+                          _isLoggingOut = true;
+                        });
                         // Perform Firebase sign-out
                         try {
+                          await _stopHelpInboxWatch();
                           _userService.clearCurrentUserCache();
                           await FirebaseAuth.instance.signOut();
                           // Navigate to the login screen after successfully logging out
@@ -540,6 +550,12 @@ class _SettingsTabState extends State<SettingsTab> {
                           // Handle sign-out errors, if any
                           debugPrint("Error while logging out: $e");
                           // Display error message or take appropriate action
+                        } finally {
+                          if (mounted) {
+                            setState(() {
+                              _isLoggingOut = false;
+                            });
+                          }
                         }
                       },
                       child: Padding(
