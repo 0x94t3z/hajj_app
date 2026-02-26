@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -33,12 +35,29 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await _configureFirebaseAppCheck();
 
   await dotenv.load();
   _configureMapboxAccessToken();
   await LocalNotificationService.initialize();
 
   runApp(const HajjApp());
+}
+
+Future<void> _configureFirebaseAppCheck() async {
+  // Debug provider removes noisy "No AppCheckProvider installed" warnings
+  // while keeping release builds ready for real provider attestation.
+  try {
+    if (kIsWeb) return;
+    await FirebaseAppCheck.instance.activate(
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider:
+          kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
+    );
+  } catch (e) {
+    debugPrint('Firebase App Check activation failed: $e');
+  }
 }
 
 void _configureMapboxAccessToken() {
@@ -70,6 +89,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<DatabaseEvent>? _helpNotificationSubscription;
   String? _helpNotificationListenerUid;
+  int _helpNotificationListenerEpoch = 0;
   final Set<String> _seenHelpNotificationIds = <String>{};
   int _lastHelpPopupEpochMs = 0;
   bool? _cachedIsPetugas;
@@ -134,6 +154,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     await _helpNotificationSubscription?.cancel();
     _helpNotificationSubscription = null;
     _helpNotificationListenerUid = user.uid;
+    final listenerEpoch = ++_helpNotificationListenerEpoch;
     // Keep seen ids during runtime to prevent repeated popups when
     // listener is reattached (e.g. initial auth sync).
 
@@ -143,6 +164,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         .equalTo(user.uid);
 
     _helpNotificationSubscription = query.onValue.listen((event) async {
+      if (listenerEpoch != _helpNotificationListenerEpoch) return;
       final raw = event.snapshot.value;
       if (raw is! Map) return;
 
@@ -207,6 +229,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       })>[];
 
       for (final item in items) {
+        if (listenerEpoch != _helpNotificationListenerEpoch) return;
         if (_seenHelpNotificationIds.contains(item.id)) continue;
         if (item.status != 'pending') continue;
         if (item.senderUid == user.uid) continue;
@@ -225,6 +248,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       }
 
       for (final item in staleItems) {
+        if (listenerEpoch != _helpNotificationListenerEpoch) return;
         try {
           await FirebaseDatabase.instance
               .ref('helpNotificationRequests/${item.key}')
@@ -238,6 +262,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       }
 
       if (newItems.isEmpty) return;
+      if (listenerEpoch != _helpNotificationListenerEpoch) return;
 
       final isPetugas = await _resolveIsPetugas();
       final uniqueSenderUids = newItems
@@ -271,6 +296,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       }
 
       for (final item in newItems) {
+        if (listenerEpoch != _helpNotificationListenerEpoch) return;
         try {
           await FirebaseDatabase.instance
               .ref('helpNotificationRequests/${item.key}')
@@ -431,6 +457,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   }
 
   Future<void> _stopHelpNotificationListener() async {
+    _helpNotificationListenerEpoch++;
     await _helpNotificationSubscription?.cancel();
     _helpNotificationSubscription = null;
     _helpNotificationListenerUid = null;
