@@ -31,6 +31,8 @@ class _SettingsTabState extends State<SettingsTab> {
   List<HelpConversationSummary> _helpInboxPrimary = const [];
   int _totalUnreadHelpMessages = 0;
   bool? _helpInboxIsPetugas;
+  String? _helpInboxUid;
+  StreamSubscription<User?>? _authStateSubscription;
   late final Future<PackageInfo> _packageInfoFuture;
 
   @override
@@ -39,10 +41,28 @@ class _SettingsTabState extends State<SettingsTab> {
     _packageInfoFuture = PackageInfo.fromPlatform();
     getData();
     _watchUnreadHelpMessages();
+    _authStateSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((user) async {
+      if (!mounted) return;
+      if (user == null) {
+        await _helpInboxSubscription?.cancel();
+        if (!mounted) return;
+        setState(() {
+          _helpInboxSubscription = null;
+          _helpInboxUid = null;
+          _helpInboxIsPetugas = null;
+          _helpInboxPrimary = const [];
+          _totalUnreadHelpMessages = 0;
+        });
+        return;
+      }
+      await _watchUnreadHelpMessages();
+    });
   }
 
   @override
   void dispose() {
+    _authStateSubscription?.cancel();
     _helpInboxSubscription?.cancel();
     super.dispose();
   }
@@ -73,9 +93,12 @@ class _SettingsTabState extends State<SettingsTab> {
     required String role,
   }) async {
     final isPetugas = _userService.isPetugasHajiRole(role);
-    if (_helpInboxIsPetugas == isPetugas && _helpInboxSubscription != null) {
+    if (_helpInboxUid == uid &&
+        _helpInboxIsPetugas == isPetugas &&
+        _helpInboxSubscription != null) {
       return;
     }
+    _helpInboxUid = uid;
     _helpInboxIsPetugas = isPetugas;
 
     await _helpInboxSubscription?.cancel();
