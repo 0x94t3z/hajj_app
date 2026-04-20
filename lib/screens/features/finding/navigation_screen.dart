@@ -879,7 +879,8 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
         permission == geo.LocationPermission.whileInUse;
     if (!granted && !_hasLoggedLocationPermissionIssue) {
       _hasLoggedLocationPermissionIssue = true;
-      debugPrint('Direction screen: location permission not granted: $permission');
+      debugPrint(
+          'Direction screen: location permission not granted: $permission');
     }
     if (granted) {
       _hasLoggedLocationPermissionIssue = false;
@@ -1261,6 +1262,12 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
         currentPosition.longitude,
       );
 
+      debugPrint(
+        '[THESIS_LOG][ACTIVE_PILGRIM_POINT] '
+        'latitude=${currentPosition.latitude.toStringAsFixed(6)} '
+        'longitude=${currentPosition.longitude.toStringAsFixed(6)}',
+      );
+
       final route = await _fetchRoute(currentPosition);
       if (route == null) {
         if (!mounted) return;
@@ -1270,6 +1277,21 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
         });
         return;
       }
+
+      final directDistanceKm = calculateHaversineDistance(
+        currentPosition.latitude,
+        currentPosition.longitude,
+        widget.officer.latitude,
+        widget.officer.longitude,
+      );
+      final routeDistanceKm = route.distanceMeters / 1000;
+      final deltaKm = routeDistanceKm - directDistanceKm;
+      debugPrint(
+        '[THESIS_LOG][DISTANCE_COMPARISON] officer=${widget.officer.name} '
+        'haversine=${directDistanceKm.toStringAsFixed(3)}km '
+        'mapbox=${routeDistanceKm.toStringAsFixed(3)}km '
+        'delta=${deltaKm.toStringAsFixed(3)}km',
+      );
 
       _steps = route.steps;
       _stepIndex = 0;

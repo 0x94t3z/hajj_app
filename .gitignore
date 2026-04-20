@@ -56,3 +56,7 @@ app.*.map.json
 
 # Ignore data directory within assets in hajj_app project
 /assets/data/
+
+notes.md
+.qlpreview/
+.qltmp/

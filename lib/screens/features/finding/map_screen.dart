@@ -388,6 +388,12 @@ class _MapScreenState extends State<MapScreen> {
     required geo.Position currentPosition,
     required List<UserModel> petugasHaji,
   }) async {
+    debugPrint(
+      '[THESIS_LOG][ACTIVE_PILGRIM_POINT] '
+      'latitude=${currentPosition.latitude.toStringAsFixed(6)} '
+      'longitude=${currentPosition.longitude.toStringAsFixed(6)}',
+    );
+
     if (!isInsideMakkahOperationArea(
       currentPosition.latitude,
       currentPosition.longitude,
@@ -423,6 +429,15 @@ class _MapScreenState extends State<MapScreen> {
 
     final nearestRanked = rankedUsers.take(_maxNearestOfficers).toList();
     final nearestUsers = <UserModel>[];
+
+    for (var i = 0; i < nearestRanked.length; i++) {
+      final rankedUser = nearestRanked[i];
+      debugPrint(
+        '[THESIS_LOG][HAVERSINE_RANKING] rank=${i + 1} '
+        'officer=${rankedUser.key.name} '
+        'distance=${rankedUser.value.toStringAsFixed(3)}km',
+      );
+    }
 
     for (final rankedUser in nearestRanked) {
       final user = rankedUser.key;
@@ -1080,6 +1095,15 @@ class _MapScreenState extends State<MapScreen> {
         );
         return;
       }
+
+      final routeDistanceKm = route.distanceMeters / 1000;
+      final deltaKm = routeDistanceKm - directDistanceKm;
+      debugPrint(
+        '[THESIS_LOG][DISTANCE_COMPARISON] officer=${user.name} '
+        'haversine=${directDistanceKm.toStringAsFixed(3)}km '
+        'mapbox=${routeDistanceKm.toStringAsFixed(3)}km '
+        'delta=${deltaKm.toStringAsFixed(3)}km',
+      );
 
       await _renderNavigationRoute(
         origin: currentPosition,
