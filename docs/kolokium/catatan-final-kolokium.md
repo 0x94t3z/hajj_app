@@ -11,10 +11,10 @@ Catatan ini bukan naskah untuk dibaca kata per kata. Gunakan sebagai pegangan la
 
 Pegangan utama saat presentasi:
 
-- Slide cukup dijadikan penanda poin.
+- Materi presentasi cukup dijadikan penanda poin.
 - Penjelasan lisan mengikuti catatan ini.
-- Jangan terlalu panjang di slide awal.
-- Demo utama dilakukan pada slide 14.
+- Jangan terlalu panjang di bagian awal.
+- Demo utama dilakukan pada bagian 14.
 - Jika dosen memotong atau bertanya, jawab dengan batasan penelitian yang aman.
 
 Dasar isi catatan:
@@ -61,28 +61,28 @@ Sampaikan bahwa sistem berhasil menjalankan fungsi utama, tetapi tetap memiliki 
 
 ## Kapan Harus Demo
 
-Demo utama dilakukan saat membahas **Slide 14 - Validasi Alur Aplikasi**.
+Demo utama dilakukan saat membahas **Bagian 14 - Validasi Alur Aplikasi**.
 
-Sebelum slide 14, jangan membuka aplikasi terlalu banyak. Gunakan screenshot pada slide untuk menjelaskan antarmuka. Ini membuat alur presentasi lebih rapi dan dosen tidak merasa presentasi meloncat dari konsep ke demo terlalu cepat.
+Sebelum bagian 14, jangan membuka aplikasi terlalu banyak. Gunakan screenshot pada bagian untuk menjelaskan antarmuka. Ini membuat alur presentasi lebih rapi dan dosen tidak merasa presentasi meloncat dari konsep ke demo terlalu cepat.
 
 **DEMO - Mini-demo opsional:**
 
-- Slide 11: boleh tunjukkan tampilan login/home dari screenshot saja.
-- Slide 12: jika ditanya, boleh buka Find My sebentar.
-- Slide 13: jika ditanya, jelaskan singkat sebagai fitur pendukung, bukan fokus rumusan masalah.
-- Slide 14: demo lengkap, tetapi slide tetap ditulis sebagai validasi fungsi utama.
+- Bagian 11: boleh tunjukkan tampilan login/home dari screenshot saja.
+- Bagian 12: jika ditanya, boleh buka Find My sebentar.
+- Bagian 13: jika ditanya, jelaskan singkat sebagai fitur pendukung, bukan fokus rumusan masalah.
+- Bagian 14: demo lengkap, tetapi materi tetap ditulis sebagai validasi fungsi utama.
 
 **JELASKAN DENGAN KATA SENDIRI - Jika waktu presentasi hanya 8-10 menit:**
 
-- Slide 1-5: 2 menit.
-- Slide 6-10: 3 menit.
-- Slide 11-13: 2 menit.
-- Slide 14: 3 menit.
-- Slide 15-17: 1-2 menit.
+- Bagian 1-5: 2 menit.
+- Bagian 6-10: 3 menit.
+- Bagian 11-13: 2 menit.
+- Bagian 14: 3 menit.
+- Bagian 15-17: 1-2 menit.
 
-## Slide 01 - Seminar Kolokium Tugas Akhir
+## Bagian 01 - Seminar Kolokium Tugas Akhir
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Membuka presentasi dan memperkenalkan identitas penelitian.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -113,9 +113,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Setelah memperkenalkan judul, saya akan masuk ke latar belakang kenapa topik ini diangkat.
 
-## Slide 02 - Latar Belakang
+## Bagian 02 - Latar Belakang
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan masalah utama dan alasan penelitian ini penting.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -144,9 +144,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Dari latar belakang tersebut, rumusan masalah penelitian saya fokuskan pada implementasi perhitungan jarak dan penampilan lokasi petugas dalam aplikasi mobile.
 
-## Slide 03 - Rumusan Masalah
+## Bagian 03 - Rumusan Masalah
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menunjukkan fokus penelitian agar pembahasan tidak melebar.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -154,16 +154,13 @@ BAB I bagian Perumusan Masalah Penelitian.
 
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
-- Pada skripsi, rumusan masalah utama adalah implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat berdasarkan latitude dan longitude.
-- Slide memecah fokus tersebut menjadi aspek perhitungan, tampilan lokasi petugas, serta visualisasi peta/rute agar alur presentasi mudah dipahami.
-- Fitur bantuan/chat tidak dijadikan fokus rumusan masalah.
+- Rumusan pertama: implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat berdasarkan koordinat latitude dan longitude pada aplikasi mobile.
+- Rumusan kedua: membangun aplikasi mobile yang dapat menentukan dan menampilkan lokasi petugas haji terdekat menggunakan Mapbox API.
+- Fitur bantuan/chat tidak termasuk dalam rumusan masalah penelitian.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Berdasarkan latar belakang tadi, fokus penelitian saya adalah bagaimana Haversine Formula diimplementasikan untuk menghitung dan mengurutkan petugas haji terdekat berdasarkan koordinat latitude dan longitude. Pada slide, fokus tersebut saya uraikan menjadi proses perhitungan, penampilan lokasi petugas pada aplikasi mobile, serta visualisasi peta dan rute setelah petugas dipilih. Jadi pembahasan tetap diarahkan pada pencarian petugas terdekat, bukan pada fitur komunikasi.
-
-**TANYA JAWAB - Jika dosen bertanya kenapa slide memuat beberapa poin:**
-Jawab: poin pada slide adalah pemecahan alur teknis agar mudah dijelaskan. Rumusan utama pada skripsi tetap implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat.
+Berdasarkan latar belakang tadi, rumusan masalah penelitian ini ada dua. Pertama, bagaimana mengimplementasikan algoritma Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat berdasarkan koordinat latitude dan longitude pada aplikasi mobile. Kedua, bagaimana membangun aplikasi mobile yang dapat menentukan dan menampilkan lokasi petugas haji terdekat menggunakan Mapbox API. Jadi pembahasan rumusan masalah tetap diarahkan pada pencarian petugas terdekat, perhitungan Haversine, dan penampilan lokasi melalui aplikasi mobile.
 
 **DEMO:**
 Tidak ada demo.
@@ -171,9 +168,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Setelah rumusan masalah, saya jelaskan tujuan dan manfaat penelitian.
 
-## Slide 04 - Tujuan dan Manfaat
+## Bagian 04 - Tujuan dan Manfaat
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan output yang ingin dicapai dari penelitian.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -200,9 +197,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Supaya klaim penelitian tetap proporsional, saya jelaskan batasan masalah penelitian.
 
-## Slide 05 - Batasan Masalah Penelitian
+## Bagian 05 - Batasan Masalah Penelitian
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjaga klaim penelitian tetap aman dan sesuai skripsi.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -235,9 +232,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Setelah batasan, saya masuk ke komponen teknologi yang digunakan dalam aplikasi.
 
-## Slide 06 - Teknologi dan Komponen Sistem
+## Bagian 06 - Teknologi dan Komponen Sistem
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan komponen aplikasi dan hubungan antarteknologi.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -270,9 +267,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Setelah komponen teknologi, saya jelaskan tahapan metodologi penelitian.
 
-## Slide 07 - Metodologi Penelitian
+## Bagian 07 - Metodologi Penelitian
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menunjukkan proses penelitian dari perencanaan sampai implementasi.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -301,9 +298,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Berikutnya saya jelaskan alur sistem pencarian dari login sampai hasil petugas ditampilkan.
 
-## Slide 08 - Alur Sistem Pencarian
+## Bagian 08 - Alur Sistem Pencarian
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan proses inti aplikasi secara runtut.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -335,9 +332,9 @@ Tidak ada demo live. Ini masih penjelasan konsep.
 **BACA / UCAPKAN - Transisi:**
 Setelah alur sistem, saya jelaskan algoritma Haversine yang menjadi inti perhitungan jarak.
 
-## Slide 09 - Implementasi Haversine Formula
+## Bagian 09 - Implementasi Haversine Formula
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan rumus dan perannya tanpa terlalu matematis.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -377,7 +374,7 @@ Haversine Formula digunakan untuk menghitung jarak antara dua titik koordinat pa
 - `sin²`: dibaca "sinus kuadrat".
 - `×`: dibaca "dikali".
 
-**BACA / UCAPKAN - Cara membaca rumus di slide:**
+**BACA / UCAPKAN - Cara membaca rumus:**
 
 Untuk rumus pertama, saya baca: nilai `a` sama dengan sinus kuadrat dari delta latitude dibagi dua, ditambah kosinus latitude satu dikali kosinus latitude dua, dikali sinus kuadrat dari delta longitude dibagi dua.
 
@@ -398,7 +395,7 @@ Untuk rumus kedua, jarak `d` sama dengan dua dikali radius bumi, dikali arc sinu
 9. Hasil jarak dibandingkan, lalu daftar petugas diurutkan dari nilai paling kecil.
 
 **TANYA JAWAB - Catatan validasi rumus:**
-Rumus di slide sudah sesuai dengan rumus Haversine. Di kode aplikasi, bentuk akhirnya memakai `atan2(√a, √(1-a))` setelah nilai `a` di-clamp. Bentuk tersebut ekuivalen dengan `asin(√a)` untuk nilai `a` pada rentang 0 sampai 1, sehingga aman dijelaskan sebagai Haversine Formula.
+Rumus yang ditampilkan sudah sesuai dengan rumus Haversine. Di kode aplikasi, bentuk akhirnya memakai `atan2(√a, √(1-a))` setelah nilai `a` di-clamp. Bentuk tersebut ekuivalen dengan `asin(√a)` untuk nilai `a` pada rentang 0 sampai 1, sehingga aman dijelaskan sebagai Haversine Formula.
 
 **TANYA JAWAB - Validasi sederhana jika ditanya:**
 Jika titik jemaah dan titik petugas sama, hasil jaraknya 0 km. Jika terdapat selisih koordinat, nilai jarak bertambah sesuai perbedaan posisi. Contoh pembanding umum, selisih 1 derajat longitude di ekuator menghasilkan jarak sekitar 111.195 km dengan radius bumi 6371.0088 km. Ini menunjukkan rumus dan implementasi berada pada skala yang benar.
@@ -415,9 +412,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Setelah jarak awal dihitung dengan Haversine, sistem membutuhkan peta dan rute. Bagian itu menggunakan Mapbox.
 
-## Slide 10 - Integrasi Mapbox
+## Bagian 10 - Integrasi Mapbox
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan peran Mapbox dan batasannya.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -448,9 +445,9 @@ Tidak ada demo live.
 **BACA / UCAPKAN - Transisi:**
 Setelah menjelaskan bagian teknis, saya tampilkan implementasi antarmuka aplikasi.
 
-## Slide 11 - Implementasi Antarmuka Aplikasi
+## Bagian 11 - Implementasi Antarmuka Aplikasi
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menunjukkan tampilan aplikasi secara umum sebelum demo.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -463,7 +460,7 @@ BAB III perancangan UI dan BAB IV implementasi halaman Login, Home, dan Find Off
 - Home menjadi titik masuk setelah login.
 - Find My menjadi pusat pencarian lokasi.
 - Tombol Find Officers digunakan oleh jemaah untuk mencari petugas terdekat.
-- UI yang ditampilkan pada slide merupakan tampilan final aplikasi.
+- UI yang ditampilkan pada bagian merupakan tampilan final aplikasi.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
@@ -478,9 +475,9 @@ Belum demo utama. Tunjukkan screenshot saja.
 **BACA / UCAPKAN - Transisi:**
 Setelah tampilan dasar, saya jelaskan fitur pencarian dan navigasi.
 
-## Slide 12 - Fitur Pencarian dan Navigasi
+## Bagian 12 - Fitur Pencarian dan Navigasi
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan hasil utama sistem dari sisi jemaah.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -505,14 +502,14 @@ Fitur pencarian adalah bagian utama dari penelitian ini. Ketika jemaah menekan F
 Pada pengujian BAB IV, sistem mampu mengurutkan 10 petugas terdekat. Contoh hasil terdekat adalah Souq Al-Khalil dengan jarak Haversine 0.542 km dari titik uji.
 
 **DEMO:**
-Belum demo lengkap. Jika dosen meminta, boleh buka app sampai Find My, lalu kembali ke slide.
+Belum demo lengkap. Jika dosen meminta, boleh buka app sampai Find My, lalu kembali ke presentasi.
 
 **BACA / UCAPKAN - Transisi:**
 Setelah pencarian dan navigasi, saya jelaskan singkat fitur pendukung jemaah agar tidak menggeser fokus penelitian.
 
-## Slide 13 - Fitur Pendukung dan Peran Akun
+## Bagian 13 - Fitur Pendukung dan Peran Akun
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan fitur pendukung secara singkat tanpa menjadikannya fokus utama penelitian.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -527,7 +524,7 @@ BAB III dan BAB IV bagian perancangan serta implementasi fitur pendukung aplikas
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Pada slide ini, saya hanya menunjukkan bahwa aplikasi memiliki fitur pendukung berdasarkan role akun. Namun bagian ini tidak saya jadikan pembahasan utama, karena rumusan masalah penelitian berfokus pada implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat. Jadi penjelasan slide ini cukup singkat, lalu saya kembali ke alur validasi pencarian dan rute.
+Pada bagian ini, saya hanya menunjukkan bahwa aplikasi memiliki fitur pendukung berdasarkan role akun. Namun bagian ini tidak saya jadikan pembahasan utama, karena rumusan masalah penelitian berfokus pada implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat. Jadi penjelasan bagian ini cukup singkat, lalu saya kembali ke alur validasi pencarian dan rute.
 
 **TANYA JAWAB - Jawaban aman:**
 Fitur pendukung ini bukan bagian utama evaluasi penelitian dan bukan prosedur resmi penanganan darurat.
@@ -538,9 +535,9 @@ Belum demo utama. Screenshot cukup.
 **BACA / UCAPKAN - Transisi:**
 Setelah menjelaskan fitur, saya masuk ke validasi alur aplikasi.
 
-## Slide 14 - Validasi Alur Aplikasi
+## Bagian 14 - Validasi Alur Aplikasi
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan validasi alur fungsi utama aplikasi, lalu menggunakannya sebagai momen demo.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -588,21 +585,21 @@ Fitur ini membutuhkan izin lokasi. Jika saat demo lokasi tidak terbaca, saya men
 
 **TANYA JAWAB - Jika Firebase bermasalah:**
 
-Data petugas diambil dari Firebase Realtime Database. Jika koneksi atau rules Firebase bermasalah saat demo, saya jelaskan menggunakan slide alur sistem dan dokumentasi final UI.
+Data petugas diambil dari Firebase Realtime Database. Jika koneksi atau rules Firebase bermasalah saat demo, saya jelaskan menggunakan bagian alur sistem dan dokumentasi final UI.
 
 **TANYA JAWAB - Jika Mapbox bermasalah:**
 
 Mapbox digunakan untuk peta dan rute. Jika peta tidak tampil, saya tetap dapat menjelaskan bahwa Haversine sudah berperan pada ranking, sedangkan Mapbox hanya pada visualisasi dan rute.
 
 **DEMO:**
-Demo utama dilakukan di slide ini.
+Demo utama dilakukan pada bagian ini.
 
 **BACA / UCAPKAN - Transisi:**
 Setelah demo, saya jelaskan rencana pengujian dan indikator keberhasilan sistem.
 
-## Slide 15 - Rencana Pengujian dan Indikator
+## Bagian 15 - Rencana Pengujian dan Indikator
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan bagaimana sistem dievaluasi.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -633,14 +630,14 @@ Pengujian pada penelitian ini difokuskan pada fungsi utama sistem. Aplikasi diuj
 Pengukuran performa teknis rinci seperti memori, frame rate, dan waktu render belum menjadi fokus utama penelitian. Fokus penelitian adalah keberhasilan fungsi pencarian, pengurutan, peta, dan navigasi.
 
 **DEMO:**
-Tidak ada demo baru. Gunakan hasil demo slide 14 sebagai pembuktian.
+Tidak ada demo baru. Gunakan hasil demo bagian 14 sebagai pembuktian.
 
 **BACA / UCAPKAN - Transisi:**
 Setelah pengujian, saya masuk ke penutup kolokium.
 
-## Slide 16 - Penutup Kolokium
+## Bagian 16 - Penutup Kolokium
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menyampaikan simpulan sementara dan arah pengembangan.
 
 **JANGAN DIBACA - Sumber skripsi:**
@@ -668,9 +665,9 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Terakhir, saya tampilkan kontak dan siap menerima pertanyaan.
 
-## Slide 17 - Kontak
+## Bagian 17 - Kontak
 
-**JANGAN DIBACA - Tujuan slide:**
+**JANGAN DIBACA - Tujuan bagian:**
 Menutup presentasi dan membuka sesi tanya jawab.
 
 **JANGAN DIBACA - Sumber skripsi:**
