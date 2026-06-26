@@ -48,7 +48,7 @@ Perkenalkan identitas, judul, dan fokus penelitian.
 Saat melaksanakan ibadah haji, jemaah dapat mengalami kendala seperti sakit, tersesat, terpisah dari rombongan, atau membutuhkan arahan. Dalam kondisi area yang padat dan tidak familiar, informasi petugas terdekat menjadi penting.
 
 **JELASKAN DENGAN KATA SENDIRI - Solusi:**
-Aplikasi mobile membaca lokasi pengguna, mengambil data lokasi petugas, menghitung jarak awal dengan Haversine Formula, lalu menampilkan petugas terdekat pada peta.
+Aplikasi mobile membaca lokasi jemaah, mengambil data lokasi petugas, menghitung jarak awal dengan Haversine Formula, lalu menampilkan petugas terdekat pada peta.
 
 **JELASKAN DENGAN KATA SENDIRI - Teknis:**
 Flutter sebagai mobile app, Firebase untuk autentikasi dan database, GPS untuk koordinat, Haversine untuk ranking jarak, Mapbox untuk peta dan rute.
@@ -99,7 +99,7 @@ Halaman judul dan abstrak.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Assalamu'alaikum warahmatullahi wabarakatuh. Terima kasih kepada Bapak/Ibu dosen dan hadirin yang telah menyempatkan waktu untuk hadir pada kolokium ini. Perkenalkan, saya Muhamad Taopik, NIM 1197050081, dari Program Studi Teknik Informatika UIN Sunan Gunung Djati Bandung. Pada kolokium ini saya akan mempresentasikan tugas akhir berjudul "Pencarian Lokasi Terdekat Petugas Haji pada Ibadah Haji Menggunakan Algoritma Haversine Formula Berbasis Mobile". Secara umum, penelitian ini membahas aplikasi mobile yang membantu jemaah mengetahui petugas haji terdekat berdasarkan lokasi pengguna.
+Assalamu'alaikum warahmatullahi wabarakatuh. Terima kasih kepada Bapak/Ibu dosen dan hadirin yang telah menyempatkan waktu untuk hadir pada kolokium ini. Perkenalkan, saya Muhamad Taopik, NIM 1197050081, dari Program Studi Teknik Informatika UIN Sunan Gunung Djati Bandung. Pada kolokium ini saya akan mempresentasikan tugas akhir berjudul "Pencarian Lokasi Terdekat Petugas Haji pada Ibadah Haji Menggunakan Algoritma Haversine Formula Berbasis Mobile". Secara umum, penelitian ini membahas aplikasi mobile yang membantu jemaah mengetahui petugas haji terdekat berdasarkan lokasi jemaah.
 
 **JANGAN DIBACA:**
 
@@ -133,7 +133,7 @@ BAB I bagian Latar Belakang Penelitian.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Latar belakang penelitian ini berangkat dari kondisi ibadah haji yang melibatkan banyak jemaah dalam area yang relatif terbatas, khususnya di Makkah dan sekitarnya. Saat melaksanakan ibadah, jemaah dapat mengalami kendala seperti sakit, tersesat, terpisah dari rombongan, atau membutuhkan arahan petugas. Dalam kondisi area yang padat dan tidak selalu familiar, jemaah membutuhkan informasi petugas terdekat agar proses pencarian bantuan atau arahan menjadi lebih terarah. Pencarian secara manual masih mungkin dilakukan, tetapi dalam situasi ramai prosesnya bisa memakan waktu. Karena itu, perangkat mobile yang sudah memiliki GPS dapat dimanfaatkan untuk membaca posisi pengguna, lalu posisi tersebut digunakan sebagai dasar pencarian petugas terdekat.
+Latar belakang penelitian ini berangkat dari kondisi ibadah haji yang melibatkan banyak jemaah dalam area yang relatif terbatas, khususnya di Makkah dan sekitarnya. Saat melaksanakan ibadah, jemaah dapat mengalami kendala seperti sakit, tersesat, terpisah dari rombongan, atau membutuhkan arahan petugas. Dalam kondisi area yang padat dan tidak selalu familiar, jemaah membutuhkan informasi petugas terdekat agar proses pencarian bantuan atau arahan menjadi lebih terarah. Pencarian secara manual masih mungkin dilakukan, tetapi dalam situasi ramai prosesnya bisa memakan waktu. Karena itu, perangkat mobile yang sudah memiliki GPS dapat dimanfaatkan untuk membaca posisi jemaah, lalu posisi tersebut digunakan sebagai dasar pencarian petugas terdekat.
 
 **TANYA JAWAB - Jawaban aman:**
 Penelitian ini tidak mengambil posisi sebagai pengganti mekanisme resmi, tetapi sebagai alat bantu informasi lokasi.
@@ -221,7 +221,7 @@ BAB I bagian Batasan Masalah Penelitian.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Pada penelitian ini, ruang lingkup saya batasi agar pembahasan tetap terarah. Aplikasi dikembangkan menggunakan Flutter, data disimpan pada Firebase Realtime Database, dan peta ditampilkan menggunakan Mapbox. Perhitungan jarak dilakukan menggunakan Haversine Formula berdasarkan latitude dan longitude. Sistem menampilkan maksimal 10 petugas terdekat. Untuk rute navigasi, aplikasi menggunakan Mapbox Directions API setelah pengguna memilih petugas.
+Pada penelitian ini, ruang lingkup saya batasi agar pembahasan tetap terarah. Aplikasi dikembangkan menggunakan Flutter, data disimpan pada Firebase Realtime Database, dan peta ditampilkan menggunakan Mapbox. Perhitungan jarak dilakukan menggunakan Haversine Formula berdasarkan latitude dan longitude. Sistem menampilkan maksimal 10 petugas terdekat. Untuk rute navigasi, aplikasi menggunakan Mapbox Directions API setelah jemaah memilih petugas.
 
 **TANYA JAWAB - Jawaban paling aman:**
 Sistem ini merupakan alat bantu informasi lokasi, bukan pengganti prosedur resmi layanan darurat.
@@ -246,8 +246,8 @@ BAB III bagian Analisis Teknologi, BAB IV bagian Arsitektur Sistem, dan README p
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Flutter dan Dart: membangun antarmuka dan logic aplikasi mobile.
-- GPS/Geolocator: membaca koordinat pengguna.
-- Firebase Authentication: autentikasi pengguna.
+- GPS/Geolocator: membaca koordinat jemaah.
+- Firebase Authentication: autentikasi akun.
 - Firebase Realtime Database: menyimpan profil, role, dan koordinat lokasi.
 - Haversine Formula: menghitung jarak awal dan ranking petugas.
 - Mapbox API: menampilkan peta.
@@ -256,7 +256,7 @@ BAB III bagian Analisis Teknologi, BAB IV bagian Arsitektur Sistem, dan README p
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Komponen sistem dibagi menjadi beberapa bagian. Aplikasi mobile dikembangkan menggunakan Flutter dan Dart. Untuk autentikasi dan data pengguna, sistem memakai Firebase Authentication dan Firebase Realtime Database. Lokasi pengguna diperoleh dari GPS melalui Geolocator. Setelah koordinat pengguna dan petugas tersedia, Haversine Formula menghitung jarak awal untuk menentukan urutan petugas terdekat. Mapbox digunakan untuk peta, sedangkan Mapbox Directions API digunakan ketika pengguna membuka rute menuju petugas yang dipilih.
+Komponen sistem dibagi menjadi beberapa bagian. Aplikasi mobile dikembangkan menggunakan Flutter dan Dart. Untuk autentikasi dan data akun, sistem memakai Firebase Authentication dan Firebase Realtime Database. Lokasi jemaah diperoleh dari GPS melalui Geolocator. Setelah koordinat jemaah dan petugas tersedia, Haversine Formula menghitung jarak awal untuk menentukan urutan petugas terdekat. Mapbox digunakan untuk peta, sedangkan Mapbox Directions API digunakan ketika jemaah membuka rute menuju petugas yang dipilih.
 
 **BACA / UCAPKAN - Bagian yang perlu ditegaskan:**
 Perhitungan Haversine dilakukan pada sisi aplikasi atau frontend. Firebase menyimpan data, tetapi bukan tempat utama menghitung ranking.
@@ -282,7 +282,7 @@ BAB III Metodologi Penelitian, khususnya metode System Development Life Cycle (S
 
 - Metode penelitian yang digunakan adalah System Development Life Cycle (SDLC).
 - Planning: menentukan masalah, kebutuhan, dan ruang lingkup.
-- Analysis: menganalisis role pengguna, kebutuhan data, alur sistem, teknologi, dan keamanan.
+- Analysis: menganalisis role akun, kebutuhan data, alur sistem, teknologi, dan keamanan.
 - Design: merancang arsitektur, flow, database, dan antarmuka.
 - Development: membangun aplikasi dengan Flutter, Firebase, Haversine, dan Mapbox.
 - Testing: menguji fungsi utama, perhitungan jarak, peta, dan navigasi.
@@ -290,7 +290,7 @@ BAB III Metodologi Penelitian, khususnya metode System Development Life Cycle (S
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Metodologi penelitian yang saya gunakan adalah System Development Life Cycle atau SDLC. Tahapannya dimulai dari planning sampai implementation. Pada tahap planning, saya menentukan masalah dan ruang lingkup penelitian. Pada tahap analysis, saya menganalisis kebutuhan pengguna, role, alur sistem, teknologi, serta aspek keamanan. Tahap design digunakan untuk merancang arsitektur dan antarmuka. Setelah itu aplikasi dikembangkan menggunakan Flutter, Firebase, Haversine, dan Mapbox. Terakhir, sistem diuji untuk memastikan fungsi utama berjalan.
+Metodologi penelitian yang saya gunakan adalah System Development Life Cycle atau SDLC. Tahapannya dimulai dari planning sampai implementation. Pada tahap planning, saya menentukan masalah dan ruang lingkup penelitian. Pada tahap analysis, saya menganalisis kebutuhan sistem, role akun, alur sistem, teknologi, serta aspek keamanan. Tahap design digunakan untuk merancang arsitektur dan antarmuka. Setelah itu aplikasi dikembangkan menggunakan Flutter, Firebase, Haversine, dan Mapbox. Terakhir, sistem diuji untuk memastikan fungsi utama berjalan.
 
 **JANGAN DIBACA - Catatan valid:**
 Sebut "pengujian fungsi utama", karena skripsi memang tidak memfokuskan pengujian performa teknis rinci.
@@ -311,20 +311,20 @@ BAB III bagian Analisis Alur Sistem, Arsitektur Sistem, dan BAB IV bagian Alur D
 
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
-- Pengguna login.
-- Sistem membaca akun dan role pengguna.
-- Aplikasi mengambil koordinat pengguna melalui GPS.
-- Koordinat pengguna diperbarui ke Firebase.
+- Jemaah login.
+- Sistem membaca akun dan role jemaah.
+- Aplikasi mengambil koordinat jemaah melalui GPS.
+- Koordinat jemaah diperbarui ke Firebase.
 - Aplikasi mengambil data lokasi petugas dari Firebase.
 - Sistem memfilter data sesuai role dan area.
-- Haversine menghitung jarak dari pengguna ke tiap petugas.
+- Haversine menghitung jarak dari jemaah ke tiap petugas.
 - Hasil diurutkan dari jarak terkecil.
 - Maksimal 10 petugas terdekat ditampilkan.
 - Jika petugas dipilih, Mapbox Directions API menampilkan rute.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Alur pencarian dimulai ketika pengguna login. Setelah login, sistem membaca role pengguna, kemudian aplikasi mengambil koordinat lokasi melalui GPS. Koordinat ini diperbarui ke Firebase dan digunakan sebagai titik awal pencarian. Aplikasi mengambil data petugas dari Firebase, kemudian menghitung jarak dari posisi pengguna ke setiap petugas menggunakan Haversine Formula. Hasilnya diurutkan dari jarak terkecil dan ditampilkan sebagai daftar petugas terdekat serta marker pada peta.
+Alur pencarian dimulai ketika jemaah login. Setelah login, sistem membaca role jemaah, kemudian aplikasi mengambil koordinat lokasi melalui GPS. Koordinat ini diperbarui ke Firebase dan digunakan sebagai titik awal pencarian. Aplikasi mengambil data petugas dari Firebase, kemudian menghitung jarak dari posisi jemaah ke setiap petugas menggunakan Haversine Formula. Hasilnya diurutkan dari jarak terkecil dan ditampilkan sebagai daftar petugas terdekat serta marker pada peta.
 
 Kalimat pembeda yang penting:
 Haversine digunakan untuk urutan awal, sedangkan Mapbox digunakan untuk visualisasi peta dan rute setelah petugas dipilih.
@@ -346,7 +346,7 @@ BAB II Landasan Teori Haversine Formula, BAB III Flowchart, BAB IV Implementasi 
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Haversine Formula menghitung jarak antara dua titik koordinat di permukaan bumi.
-- Input: latitude dan longitude pengguna serta petugas.
+- Input: latitude dan longitude jemaah serta petugas.
 - Koordinat dari GPS berbentuk derajat, lalu dikonversi ke radian karena fungsi `sin`, `cos`, dan `asin` bekerja dalam radian.
 - Sistem menghitung selisih latitude dan longitude: `Δlat` dan `Δlon`.
 - Sistem menghitung nilai `a` sebagai inti rumus Haversine.
@@ -357,11 +357,11 @@ BAB II Landasan Teori Haversine Formula, BAB III Flowchart, BAB IV Implementasi 
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Haversine Formula digunakan untuk menghitung jarak antara dua titik koordinat pada permukaan bumi. Inputnya adalah latitude dan longitude pengguna serta latitude dan longitude petugas. Koordinat dari GPS masih berbentuk derajat, sehingga sistem mengubahnya terlebih dahulu ke radian. Setelah itu sistem menghitung selisih latitude dan longitude, menghitung nilai `a`, lalu menghitung jarak menggunakan radius bumi 6371.0088 kilometer. Outputnya berupa jarak dalam kilometer, kemudian sistem mengurutkan petugas dari jarak paling kecil.
+Haversine Formula digunakan untuk menghitung jarak antara dua titik koordinat pada permukaan bumi. Inputnya adalah latitude dan longitude jemaah serta latitude dan longitude petugas. Koordinat dari GPS masih berbentuk derajat, sehingga sistem mengubahnya terlebih dahulu ke radian. Setelah itu sistem menghitung selisih latitude dan longitude, menghitung nilai `a`, lalu menghitung jarak menggunakan radius bumi 6371.0088 kilometer. Outputnya berupa jarak dalam kilometer, kemudian sistem mengurutkan petugas dari jarak paling kecil.
 
 **JELASKAN DENGAN KATA SENDIRI - Cara menjelaskan perhitungan secara detail:**
 
-1. Titik pertama adalah posisi pengguna, yaitu `lat1` dan `lon1`.
+1. Titik pertama adalah posisi jemaah, yaitu `lat1` dan `lon1`.
 2. Titik kedua adalah posisi petugas, yaitu `lat2` dan `lon2`.
 3. Latitude dan longitude dikonversi dari derajat ke radian dengan rumus `derajat × π / 180`.
 4. Sistem menghitung `Δlat = lat2 - lat1` dan `Δlon = lon2 - lon1`.
@@ -377,13 +377,13 @@ Haversine Formula digunakan untuk menghitung jarak antara dua titik koordinat pa
 Rumus di slide sudah sesuai dengan rumus Haversine. Di kode aplikasi, bentuk akhirnya memakai `atan2(√a, √(1-a))` setelah nilai `a` di-clamp. Bentuk tersebut ekuivalen dengan `asin(√a)` untuk nilai `a` pada rentang 0 sampai 1, sehingga aman dijelaskan sebagai Haversine Formula.
 
 **TANYA JAWAB - Validasi sederhana jika ditanya:**
-Jika titik pengguna dan titik petugas sama, hasil jaraknya 0 km. Jika terdapat selisih koordinat, nilai jarak bertambah sesuai perbedaan posisi. Contoh pembanding umum, selisih 1 derajat longitude di ekuator menghasilkan jarak sekitar 111.195 km dengan radius bumi 6371.0088 km. Ini menunjukkan rumus dan implementasi berada pada skala yang benar.
+Jika titik jemaah dan titik petugas sama, hasil jaraknya 0 km. Jika terdapat selisih koordinat, nilai jarak bertambah sesuai perbedaan posisi. Contoh pembanding umum, selisih 1 derajat longitude di ekuator menghasilkan jarak sekitar 111.195 km dengan radius bumi 6371.0088 km. Ini menunjukkan rumus dan implementasi berada pada skala yang benar.
 
 **TANYA JAWAB - Versi sederhana jika dosen non-teknis:**
 Intinya, Haversine menghitung jarak awal antarkoordinat. Dari hasil jarak itu, sistem mengetahui kandidat petugas yang paling dekat.
 
 **TANYA JAWAB - Jika dosen bertanya kenapa tidak pakai Mapbox untuk ranking semua petugas:**
-Haversine lebih sesuai untuk tahap awal karena ringan untuk menghitung satu titik pengguna ke banyak titik petugas. Mapbox digunakan setelah tujuan dipilih, karena rute jalan membutuhkan data jaringan jalan dan Directions API.
+Haversine lebih sesuai untuk tahap awal karena ringan untuk menghitung satu titik jemaah ke banyak titik petugas. Mapbox digunakan setelah tujuan dipilih, karena rute jalan membutuhkan data jaringan jalan dan Directions API.
 
 **DEMO:**
 Tidak ada demo.
@@ -402,7 +402,7 @@ BAB I batasan, BAB III teknologi, BAB IV implementasi Mapbox dan perbandingan Ha
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Mapbox API digunakan untuk visualisasi peta.
-- Peta menampilkan lokasi pengguna dan petugas.
+- Peta menampilkan lokasi jemaah dan petugas.
 - Mapbox Directions API digunakan untuk rute setelah petugas dipilih.
 - Directions API menghasilkan rute berjalan, jarak rute, durasi, dan instruksi arah.
 - Jarak Haversine dan jarak Mapbox dapat berbeda.
@@ -410,13 +410,13 @@ BAB I batasan, BAB III teknologi, BAB IV implementasi Mapbox dan perbandingan Ha
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Mapbox pada sistem ini digunakan untuk dua kebutuhan. Pertama, menampilkan peta dan posisi pengguna maupun petugas. Kedua, melalui Mapbox Directions API, sistem menampilkan rute berjalan setelah pengguna memilih petugas. Jadi Haversine dan Mapbox memiliki fungsi berbeda. Haversine menghasilkan urutan awal petugas terdekat, sedangkan Mapbox menghasilkan rute navigasi.
+Mapbox pada sistem ini digunakan untuk dua kebutuhan. Pertama, menampilkan peta dan posisi jemaah maupun petugas. Kedua, melalui Mapbox Directions API, sistem menampilkan rute berjalan setelah jemaah memilih petugas. Jadi Haversine dan Mapbox memiliki fungsi berbeda. Haversine menghasilkan urutan awal petugas terdekat, sedangkan Mapbox menghasilkan rute navigasi.
 
 **TANYA JAWAB - Data valid dari skripsi:**
 Pada pengujian, contoh Souq Al-Khalil memiliki jarak Haversine 0.542 km, sedangkan jarak Mapbox Directions API 0.925 km. Selisih ini wajar karena Mapbox mengikuti rute jalan.
 
 **TANYA JAWAB - Jika dosen bertanya kenapa jarak Mapbox lebih besar:**
-Karena jarak rute mengikuti jalur yang tersedia, tidak selalu berupa garis langsung dari titik pengguna ke titik petugas.
+Karena jarak rute mengikuti jalur yang tersedia, tidak selalu berupa garis langsung dari titik jemaah ke titik petugas.
 
 **DEMO:**
 Tidak ada demo live.
@@ -435,7 +435,7 @@ BAB III perancangan UI dan BAB IV implementasi halaman Login, Home, dan Find Off
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Login digunakan untuk autentikasi melalui Firebase Authentication.
-- Setelah login, aplikasi membaca data pengguna dan role dari Firebase.
+- Setelah login, aplikasi membaca data akun dan role dari Firebase.
 - Home menjadi titik masuk setelah login.
 - Find My menjadi pusat pencarian lokasi.
 - Tombol Find Officers digunakan oleh jemaah untuk mencari petugas terdekat.
@@ -443,10 +443,10 @@ BAB III perancangan UI dan BAB IV implementasi halaman Login, Home, dan Find Off
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Pada bagian antarmuka, halaman login digunakan untuk autentikasi pengguna. Setelah login berhasil, aplikasi membaca profil dan role pengguna. Halaman home menjadi titik awal sebelum pengguna masuk ke fitur pencarian. Fitur Find My digunakan untuk membaca lokasi pengguna dan memulai pencarian petugas melalui tombol Find Officers.
+Pada bagian antarmuka, halaman login digunakan untuk autentikasi akun. Setelah login berhasil, aplikasi membaca profil dan role jemaah. Halaman home menjadi titik awal sebelum jemaah masuk ke fitur pencarian. Fitur Find My digunakan untuk membaca lokasi jemaah dan memulai pencarian petugas melalui tombol Find Officers.
 
 **TANYA JAWAB - Jika dosen bertanya role:**
-Role membedakan tampilan dan hak akses pengguna. Pada fokus penelitian ini, role digunakan agar pencarian diarahkan ke target pengguna yang sesuai.
+Role membedakan tampilan dan hak akses akun. Pada fokus penelitian ini, role digunakan agar pencarian diarahkan ke target pencarian yang sesuai.
 
 **DEMO:**
 Belum demo utama. Tunjukkan screenshot saja.
@@ -457,15 +457,15 @@ Setelah tampilan dasar, saya jelaskan fitur pencarian dan navigasi.
 ## Slide 12 - Fitur Pencarian dan Navigasi
 
 **JANGAN DIBACA - Tujuan slide:**
-Menjelaskan hasil utama sistem dari sisi pengguna.
+Menjelaskan hasil utama sistem dari sisi jemaah.
 
 **JANGAN DIBACA - Sumber skripsi:**
 BAB IV implementasi tampilan hasil pencarian, peta hasil pencarian, dan halaman navigasi.
 
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
-- Pengguna menekan Find Officers.
-- Sistem mengambil koordinat pengguna.
+- Jemaah menekan Find Officers.
+- Sistem mengambil koordinat jemaah.
 - Sistem membaca data petugas dari Firebase.
 - Haversine menghitung jarak ke tiap petugas.
 - Daftar petugas diurutkan berdasarkan jarak terdekat.
@@ -475,7 +475,7 @@ BAB IV implementasi tampilan hasil pencarian, peta hasil pencarian, dan halaman 
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Fitur pencarian adalah bagian utama dari penelitian ini. Ketika pengguna menekan Find Officers, aplikasi mengambil koordinat pengguna dan membaca data petugas dari Firebase. Setelah itu, Haversine menghitung jarak ke masing-masing petugas dan hasilnya diurutkan dari yang paling dekat. Pengguna dapat melihat daftar petugas terdekat, marker petugas pada peta, lalu memilih petugas untuk membuka rute navigasi.
+Fitur pencarian adalah bagian utama dari penelitian ini. Ketika jemaah menekan Find Officers, aplikasi mengambil koordinat jemaah dan membaca data petugas dari Firebase. Setelah itu, Haversine menghitung jarak ke masing-masing petugas dan hasilnya diurutkan dari yang paling dekat. Jemaah dapat melihat daftar petugas terdekat, marker petugas pada peta, lalu memilih petugas untuk membuka rute navigasi.
 
 **TANYA JAWAB - Data valid dari skripsi:**
 Pada pengujian BAB IV, sistem mampu mengurutkan 10 petugas terdekat. Contoh hasil terdekat adalah Souq Al-Khalil dengan jarak Haversine 0.542 km dari titik uji.
@@ -484,9 +484,9 @@ Pada pengujian BAB IV, sistem mampu mengurutkan 10 petugas terdekat. Contoh hasi
 Belum demo lengkap. Jika dosen meminta, boleh buka app sampai Find My, lalu kembali ke slide.
 
 **BACA / UCAPKAN - Transisi:**
-Setelah pencarian dan navigasi, saya jelaskan singkat fitur pendukung pengguna agar tidak menggeser fokus penelitian.
+Setelah pencarian dan navigasi, saya jelaskan singkat fitur pendukung jemaah agar tidak menggeser fokus penelitian.
 
-## Slide 13 - Fitur Pendukung dan Peran Pengguna
+## Slide 13 - Fitur Pendukung dan Peran Akun
 
 **JANGAN DIBACA - Tujuan slide:**
 Menjelaskan fitur pendukung secara singkat tanpa menjadikannya fokus utama penelitian.
@@ -496,14 +496,14 @@ BAB III dan BAB IV bagian perancangan serta implementasi fitur pendukung aplikas
 
 **JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
-- Role pengguna menentukan tampilan dan target pencarian.
+- Role akun menentukan tampilan dan target pencarian.
 - Fitur pendukung seperti Help Inbox dan Chat tersedia pada aplikasi.
 - Bagian ini cukup dijelaskan sebagai pelengkap penggunaan aplikasi.
 - Fokus utama penelitian tetap pencarian petugas terdekat, perhitungan Haversine, peta, dan rute.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
-Pada slide ini, saya hanya menunjukkan bahwa aplikasi memiliki fitur pendukung berdasarkan role pengguna. Namun bagian ini tidak saya jadikan pembahasan utama, karena rumusan masalah penelitian berfokus pada implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat. Jadi penjelasan slide ini cukup singkat, lalu saya kembali ke alur validasi pencarian dan rute.
+Pada slide ini, saya hanya menunjukkan bahwa aplikasi memiliki fitur pendukung berdasarkan role akun. Namun bagian ini tidak saya jadikan pembahasan utama, karena rumusan masalah penelitian berfokus pada implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat. Jadi penjelasan slide ini cukup singkat, lalu saya kembali ke alur validasi pencarian dan rute.
 
 **TANYA JAWAB - Jawaban aman:**
 Fitur pendukung ini bukan bagian utama evaluasi penelitian dan bukan prosedur resmi penanganan darurat.
@@ -537,7 +537,7 @@ BAB IV implementasi sistem, BAB IV pengujian fungsi utama, dan aplikasi Hajj App
 2. Login sebagai Jemaah Haji.
 3. Buka halaman Home.
 4. Masuk ke Find My.
-5. Sampaikan bahwa aplikasi membaca koordinat GPS pengguna.
+5. Sampaikan bahwa aplikasi membaca koordinat GPS jemaah.
 6. Gunakan tombol Find Officers.
 7. Tunjukkan daftar petugas terdekat dan marker pada peta.
 8. Sampaikan bahwa urutan berasal dari Haversine Formula.
@@ -548,11 +548,11 @@ BAB IV implementasi sistem, BAB IV pengujian fungsi utama, dan aplikasi Hajj App
 
 **BACA / UCAPKAN - Narasi saat demo:**
 
-Pada demo ini, saya menunjukkan alur utama aplikasi. Setelah pengguna login sebagai jemaah, aplikasi membaca lokasi pengguna melalui GPS. Ketika tombol Find Officers ditekan, sistem mengambil data petugas dari Firebase, lalu menghitung jarak awal menggunakan Haversine Formula. Hasilnya digunakan untuk mengurutkan petugas terdekat. Setelah petugas dipilih, aplikasi menggunakan Mapbox Directions API untuk menampilkan rute berjalan menuju petugas tersebut.
+Pada demo ini, saya menunjukkan alur utama aplikasi. Setelah login sebagai jemaah, aplikasi membaca lokasi jemaah melalui GPS. Ketika tombol Find Officers ditekan, sistem mengambil data petugas dari Firebase, lalu menghitung jarak awal menggunakan Haversine Formula. Hasilnya digunakan untuk mengurutkan petugas terdekat. Setelah petugas dipilih, aplikasi menggunakan Mapbox Directions API untuk menampilkan rute berjalan menuju petugas tersebut.
 
 **BACA / UCAPKAN - Saat daftar petugas muncul:**
 
-Bagian ini adalah hasil utama dari implementasi Haversine, karena sistem sudah menghitung jarak antara pengguna dan setiap petugas, kemudian menampilkan kandidat dengan jarak paling dekat.
+Bagian ini adalah hasil utama dari implementasi Haversine, karena sistem sudah menghitung jarak antara jemaah dan setiap petugas, kemudian menampilkan kandidat dengan jarak paling dekat.
 
 **BACA / UCAPKAN - Saat rute muncul:**
 
@@ -560,7 +560,7 @@ Pada bagian ini, jarak yang tampil dapat berbeda dari jarak Haversine. Hal itu k
 
 **TANYA JAWAB - Jika GPS bermasalah:**
 
-Fitur ini membutuhkan izin lokasi. Jika saat demo lokasi tidak terbaca, saya menggunakan dokumentasi tampilan pendukung, tetapi alur sistem tetap sama: lokasi pengguna menjadi input untuk perhitungan Haversine.
+Fitur ini membutuhkan izin lokasi. Jika saat demo lokasi tidak terbaca, saya menggunakan dokumentasi tampilan pendukung, tetapi alur sistem tetap sama: lokasi jemaah menjadi input untuk perhitungan Haversine.
 
 **TANYA JAWAB - Jika Firebase bermasalah:**
 
@@ -627,7 +627,7 @@ BAB V Simpulan dan Saran.
 - Aplikasi dibangun sebagai alat bantu informasi lokasi petugas haji.
 - Haversine digunakan untuk menghitung jarak awal dan mengurutkan petugas.
 - Mapbox digunakan untuk menampilkan peta dan rute setelah petugas dipilih.
-- Firebase digunakan untuk autentikasi, data pengguna, dan lokasi.
+- Firebase digunakan untuk autentikasi, data akun, dan lokasi.
 - Aplikasi dapat menjalankan fungsi utama pada platform mobile yang diuji.
 - Pengembangan lanjutan: perluasan area pengujian, peningkatan akurasi data lokasi, pengujian performa teknis, dan pengujian pada kondisi yang lebih mendekati operasional haji.
 
@@ -671,7 +671,7 @@ Bagian ini tidak perlu dibaca saat presentasi. Gunakan hanya jika dosen bertanya
 
 ### Apa kontribusi utama penelitian ini?
 
-Kontribusi utama penelitian ini adalah implementasi Haversine Formula pada aplikasi mobile untuk menentukan dan mengurutkan petugas haji terdekat berdasarkan koordinat pengguna dan petugas. Hasil perhitungan kemudian divisualisasikan melalui peta dan dapat dilanjutkan ke navigasi menggunakan Mapbox Directions API.
+Kontribusi utama penelitian ini adalah implementasi Haversine Formula pada aplikasi mobile untuk menentukan dan mengurutkan petugas haji terdekat berdasarkan koordinat jemaah dan petugas. Hasil perhitungan kemudian divisualisasikan melalui peta dan dapat dilanjutkan ke navigasi menggunakan Mapbox Directions API.
 
 ### Kenapa memilih Haversine Formula?
 
@@ -679,7 +679,7 @@ Karena Haversine sesuai untuk menghitung jarak antara dua titik koordinat geogra
 
 ### Kenapa tidak memakai Mapbox untuk semua perhitungan?
 
-Haversine digunakan untuk ranking awal karena menghitung jarak antarkoordinat. Mapbox Directions API digunakan setelah pengguna memilih petugas, karena pada tahap itu sistem membutuhkan rute berdasarkan jaringan jalan. Jadi keduanya memiliki peran berbeda.
+Haversine digunakan untuk ranking awal karena menghitung jarak antarkoordinat. Mapbox Directions API digunakan setelah jemaah memilih petugas, karena pada tahap itu sistem membutuhkan rute berdasarkan jaringan jalan. Jadi keduanya memiliki peran berbeda.
 
 ### Apakah jarak Haversine sama dengan jarak Mapbox?
 
@@ -703,11 +703,11 @@ Batasannya meliputi kebutuhan internet, izin lokasi, GPS yang aktif, validitas d
 
 ### Apa data yang disimpan di Firebase?
 
-Data utama yang digunakan adalah data pengguna, role, profil, dan koordinat lokasi. Jika ditanya fitur pendukung, data percakapan dapat dijelaskan sebagai data tambahan aplikasi, bukan data utama dalam rumusan penelitian.
+Data utama yang digunakan adalah data akun, role, profil, dan koordinat lokasi jemaah/petugas. Jika ditanya fitur pendukung, data percakapan dapat dijelaskan sebagai data tambahan aplikasi, bukan data utama dalam rumusan penelitian.
 
 ### Apakah data lokasi bersifat sensitif?
 
-Ya. Karena itu sistem menggunakan autentikasi pengguna, permission lokasi, dan kontrol akses Firebase. Aplikasi tidak dapat membaca lokasi sebelum pengguna memberikan izin lokasi.
+Ya. Karena itu sistem menggunakan autentikasi akun, permission lokasi, dan kontrol akses Firebase. Aplikasi tidak dapat membaca lokasi sebelum jemaah memberikan izin lokasi.
 
 ### Kenapa memakai Flutter?
 
@@ -715,11 +715,11 @@ Flutter digunakan karena mendukung pengembangan aplikasi mobile lintas platform 
 
 ### Kenapa memakai Firebase Realtime Database?
 
-Firebase Realtime Database digunakan karena dapat menyimpan dan memperbarui data pengguna serta lokasi secara langsung. Hal ini sesuai dengan kebutuhan aplikasi berbasis lokasi yang perlu membaca data terbaru.
+Firebase Realtime Database digunakan karena dapat menyimpan dan memperbarui data akun serta lokasi secara langsung. Hal ini sesuai dengan kebutuhan aplikasi berbasis lokasi yang perlu membaca data terbaru.
 
 ### Kenapa memakai Mapbox?
 
-Mapbox dipakai karena pada penelitian ini saya membutuhkan dua hal: peta digital di dalam aplikasi mobile dan rute navigasi setelah petugas dipilih. Mapbox mendukung integrasi dengan Flutter melalui SDK/API, dapat menampilkan marker lokasi pengguna dan petugas, serta menyediakan Mapbox Directions API untuk mengambil rute berjalan, jarak rute, durasi, dan instruksi arah. Jadi Mapbox tidak dipakai untuk menggantikan Haversine, tetapi untuk visualisasi peta dan navigasi.
+Mapbox dipakai karena pada penelitian ini saya membutuhkan dua hal: peta digital di dalam aplikasi mobile dan rute navigasi setelah petugas dipilih. Mapbox mendukung integrasi dengan Flutter melalui SDK/API, dapat menampilkan marker lokasi jemaah dan petugas, serta menyediakan Mapbox Directions API untuk mengambil rute berjalan, jarak rute, durasi, dan instruksi arah. Jadi Mapbox tidak dipakai untuk menggantikan Haversine, tetapi untuk visualisasi peta dan navigasi.
 
 Jika dibandingkan dengan Google Maps atau layanan peta lain, layanan tersebut sebenarnya juga dapat digunakan untuk aplikasi berbasis lokasi. Namun, pada penelitian ini saya mempertimbangkan batasan sebagai mahasiswa, terutama terkait biaya, akses layanan, dan kebutuhan implementasi prototipe tugas akhir. Karena kebutuhan utama sistem adalah menampilkan peta, marker, dan rute setelah petugas dipilih, Mapbox sudah mencukupi untuk mendukung fungsi tersebut.
 
@@ -733,7 +733,7 @@ Fitur utama adalah pencarian petugas terdekat, perhitungan Haversine, peta, dan 
 
 ### Bagaimana proses pencarian petugas?
 
-Pengguna login, aplikasi membaca role, mengambil lokasi GPS, membaca data petugas dari Firebase, menghitung jarak dengan Haversine, mengurutkan hasil, menampilkan maksimal 10 petugas terdekat, lalu pengguna dapat memilih petugas untuk melihat rute.
+Jemaah login, aplikasi membaca role, mengambil lokasi GPS, membaca data petugas dari Firebase, menghitung jarak dengan Haversine, mengurutkan hasil, menampilkan maksimal 10 petugas terdekat, lalu jemaah dapat memilih petugas untuk melihat rute.
 
 ### Apa hasil dari BAB V?
 
@@ -760,4 +760,4 @@ Simpulannya, aplikasi dapat menentukan petugas haji terdekat berdasarkan lokasi 
 
 ## Versi Singkat Penutup Jika Waktu Hampir Habis
 
-Secara ringkas, penelitian ini membangun aplikasi mobile untuk membantu pencarian petugas haji terdekat. Sistem mengambil koordinat pengguna melalui GPS, membaca data petugas dari Firebase, menghitung jarak awal menggunakan Haversine Formula, lalu mengurutkan petugas terdekat. Setelah petugas dipilih, Mapbox Directions API digunakan untuk menampilkan rute. Sistem ini tetap diposisikan sebagai alat bantu informasi lokasi, dengan pengembangan lanjutan pada validasi data lapangan, perluasan area pengujian, dan pengujian performa teknis yang lebih rinci.
+Secara ringkas, penelitian ini membangun aplikasi mobile untuk membantu pencarian petugas haji terdekat. Sistem mengambil koordinat jemaah melalui GPS, membaca data petugas dari Firebase, menghitung jarak awal menggunakan Haversine Formula, lalu mengurutkan petugas terdekat. Setelah petugas dipilih, Mapbox Directions API digunakan untuk menampilkan rute. Sistem ini tetap diposisikan sebagai alat bantu informasi lokasi, dengan pengembangan lanjutan pada validasi data lapangan, perluasan area pengujian, dan pengujian performa teknis yang lebih rinci.
