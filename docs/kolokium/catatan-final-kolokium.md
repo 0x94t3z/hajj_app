@@ -26,24 +26,37 @@ Dasar isi catatan:
 - BAB V: simpulan dan saran.
 - Project aplikasi: Flutter, Firebase, GPS/Geolocator, Mapbox, dan Haversine.
 
+
+## Penanda Saat Presentasi
+
+Gunakan penanda ini saat latihan:
+
+- **BACA / UCAPKAN:** bagian yang boleh kamu ucapkan saat presentasi. Tidak harus sama persis, tetapi inti kalimatnya perlu keluar.
+- **JELASKAN DENGAN KATA SENDIRI:** poin yang cukup dijadikan pegangan. Jangan dibaca satu per satu.
+- **JANGAN DIBACA:** pengingat agar tidak membuka pembahasan yang tidak perlu.
+- **TANYA JAWAB:** simpan untuk menjawab pertanyaan dosen, bukan untuk dijelaskan di awal.
+- **DEMO:** arahan aksi saat presentasi, bukan kalimat untuk dibaca.
+
+Prioritas saat presentasi: gunakan **Contoh narasi** sebagai bahan utama untuk diucapkan, pakai **Poin lisan** sebagai checklist, dan simpan bagian **TANYA JAWAB** untuk menjawab pertanyaan dosen.
+
 ## Alur Besar Presentasi
 
-Pembukaan:
+**JELASKAN DENGAN KATA SENDIRI - Pembukaan:**
 Perkenalkan identitas, judul, dan fokus penelitian.
 
-Masalah:
+**JELASKAN DENGAN KATA SENDIRI - Masalah:**
 Saat melaksanakan ibadah haji, jemaah dapat mengalami kendala seperti sakit, tersesat, terpisah dari rombongan, atau membutuhkan arahan. Dalam kondisi area yang padat dan tidak familiar, informasi petugas terdekat menjadi penting.
 
-Solusi:
+**JELASKAN DENGAN KATA SENDIRI - Solusi:**
 Aplikasi mobile membaca lokasi pengguna, mengambil data lokasi petugas, menghitung jarak awal dengan Haversine Formula, lalu menampilkan petugas terdekat pada peta.
 
-Teknis:
+**JELASKAN DENGAN KATA SENDIRI - Teknis:**
 Flutter sebagai mobile app, Firebase untuk autentikasi dan database, GPS untuk koordinat, Haversine untuk ranking jarak, Mapbox untuk peta dan rute.
 
-Demo:
+**DEMO:**
 Tunjukkan alur login, home, Find My, Find Officers, hasil petugas terdekat, dan rute Mapbox.
 
-Penutup:
+**JELASKAN DENGAN KATA SENDIRI - Penutup:**
 Sampaikan bahwa sistem berhasil menjalankan fungsi utama, tetapi tetap memiliki batasan pada validitas data, koneksi internet, GPS, Firebase, dan Mapbox.
 
 ## Kapan Harus Demo
@@ -52,14 +65,14 @@ Demo utama dilakukan saat membahas **Slide 14 - Validasi Alur Aplikasi**.
 
 Sebelum slide 14, jangan membuka aplikasi terlalu banyak. Gunakan screenshot pada slide untuk menjelaskan antarmuka. Ini membuat alur presentasi lebih rapi dan dosen tidak merasa presentasi meloncat dari konsep ke demo terlalu cepat.
 
-Mini-demo opsional:
+**DEMO - Mini-demo opsional:**
 
 - Slide 11: boleh tunjukkan tampilan login/home dari screenshot saja.
 - Slide 12: jika ditanya, boleh buka Find My sebentar.
 - Slide 13: jika ditanya, jelaskan singkat sebagai fitur pendukung, bukan fokus rumusan masalah.
 - Slide 14: demo lengkap, tetapi slide tetap ditulis sebagai validasi fungsi utama.
 
-Jika waktu presentasi hanya 8-10 menit:
+**JELASKAN DENGAN KATA SENDIRI - Jika waktu presentasi hanya 8-10 menit:**
 
 - Slide 1-5: 2 menit.
 - Slide 6-10: 3 menit.
@@ -69,13 +82,13 @@ Jika waktu presentasi hanya 8-10 menit:
 
 ## Slide 01 - Seminar Kolokium Tugas Akhir
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Membuka presentasi dan memperkenalkan identitas penelitian.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 Halaman judul dan abstrak.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Ucapkan salam.
 - Ucapkan terima kasih kepada dosen dan hadirin yang sudah menyempatkan hadir.
@@ -84,31 +97,31 @@ Poin lisan:
 - Sampaikan bahwa fokus penelitian adalah pencarian petugas haji terdekat menggunakan aplikasi mobile.
 - Sebutkan komponen inti secara singkat: Flutter, Firebase, GPS, Mapbox, dan Haversine.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Assalamu'alaikum warahmatullahi wabarakatuh. Terima kasih kepada Bapak/Ibu dosen dan hadirin yang telah menyempatkan waktu untuk hadir pada kolokium ini. Perkenalkan, saya Muhamad Taopik, NIM 1197050081, dari Program Studi Teknik Informatika UIN Sunan Gunung Djati Bandung. Pada kolokium ini saya akan mempresentasikan tugas akhir berjudul "Pencarian Lokasi Terdekat Petugas Haji pada Ibadah Haji Menggunakan Algoritma Haversine Formula Berbasis Mobile". Secara umum, penelitian ini membahas aplikasi mobile yang membantu jemaah mengetahui petugas haji terdekat berdasarkan lokasi pengguna.
 
-Jangan:
+**JANGAN DIBACA:**
 
 - Jangan langsung menjelaskan rumus.
 - Jangan langsung membuka aplikasi.
 - Jangan menyebut sistem sebagai solusi darurat resmi.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah memperkenalkan judul, saya akan masuk ke latar belakang kenapa topik ini diangkat.
 
 ## Slide 02 - Latar Belakang
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan masalah utama dan alasan penelitian ini penting.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB I bagian Latar Belakang Penelitian.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Ibadah haji melibatkan jumlah jemaah besar dalam area terbatas.
 - Situasi lapangan dapat padat, dinamis, dan tidak familiar bagi sebagian jemaah.
@@ -118,55 +131,55 @@ Poin lisan:
 - Perangkat mobile memiliki GPS yang dapat dimanfaatkan untuk membaca koordinat.
 - Koordinat tersebut dapat dipakai untuk menghitung jarak dan menentukan kandidat petugas terdekat.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Latar belakang penelitian ini berangkat dari kondisi ibadah haji yang melibatkan banyak jemaah dalam area yang relatif terbatas, khususnya di Makkah dan sekitarnya. Saat melaksanakan ibadah, jemaah dapat mengalami kendala seperti sakit, tersesat, terpisah dari rombongan, atau membutuhkan arahan petugas. Dalam kondisi area yang padat dan tidak selalu familiar, jemaah membutuhkan informasi petugas terdekat agar proses pencarian bantuan atau arahan menjadi lebih terarah. Pencarian secara manual masih mungkin dilakukan, tetapi dalam situasi ramai prosesnya bisa memakan waktu. Karena itu, perangkat mobile yang sudah memiliki GPS dapat dimanfaatkan untuk membaca posisi pengguna, lalu posisi tersebut digunakan sebagai dasar pencarian petugas terdekat.
 
-Jawaban aman:
+**TANYA JAWAB - Jawaban aman:**
 Penelitian ini tidak mengambil posisi sebagai pengganti mekanisme resmi, tetapi sebagai alat bantu informasi lokasi.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Dari latar belakang tersebut, rumusan masalah penelitian saya fokuskan pada implementasi perhitungan jarak dan penampilan lokasi petugas dalam aplikasi mobile.
 
 ## Slide 03 - Rumusan Masalah
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menunjukkan fokus penelitian agar pembahasan tidak melebar.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB I bagian Perumusan Masalah Penelitian.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Pada skripsi, rumusan masalah utama adalah implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat berdasarkan latitude dan longitude.
 - Slide memecah fokus tersebut menjadi aspek perhitungan, tampilan lokasi petugas, serta visualisasi peta/rute agar alur presentasi mudah dipahami.
 - Fitur bantuan/chat tidak dijadikan fokus rumusan masalah.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Berdasarkan latar belakang tadi, fokus penelitian saya adalah bagaimana Haversine Formula diimplementasikan untuk menghitung dan mengurutkan petugas haji terdekat berdasarkan koordinat latitude dan longitude. Pada slide, fokus tersebut saya uraikan menjadi proses perhitungan, penampilan lokasi petugas pada aplikasi mobile, serta visualisasi peta dan rute setelah petugas dipilih. Jadi pembahasan tetap diarahkan pada pencarian petugas terdekat, bukan pada fitur komunikasi.
 
-Jika dosen bertanya kenapa slide memuat beberapa poin:
+**TANYA JAWAB - Jika dosen bertanya kenapa slide memuat beberapa poin:**
 Jawab: poin pada slide adalah pemecahan alur teknis agar mudah dijelaskan. Rumusan utama pada skripsi tetap implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah rumusan masalah, saya jelaskan tujuan dan manfaat penelitian.
 
 ## Slide 04 - Tujuan dan Manfaat
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan output yang ingin dicapai dari penelitian.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB I bagian Tujuan dan Manfaat Penelitian.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Tujuan penelitian: mengimplementasikan Haversine Formula untuk menghitung dan mengurutkan petugas terdekat.
 - Tujuan aplikasi: membangun aplikasi mobile yang dapat menampilkan lokasi petugas dengan Mapbox.
@@ -174,28 +187,28 @@ Poin lisan:
 - Manfaat akademik: menjadi referensi pengembangan Location-Based Service yang menggunakan Haversine dan Mapbox.
 - Output sistem: koordinat jemaah, data lokasi petugas, ranking Haversine, tampilan peta, daftar petugas terdekat, dan rute.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Tujuan utama penelitian ini adalah mengimplementasikan Haversine Formula untuk menghitung jarak awal antara jemaah dan petugas, kemudian mengurutkan petugas berdasarkan jarak terdekat. Selain itu, aplikasi mobile dikembangkan agar hasil perhitungan tersebut dapat ditampilkan sebagai marker pada peta dan sebagai daftar petugas terdekat yang sudah diurutkan. Dari sisi manfaat, sistem ini diharapkan membantu jemaah mengetahui lokasi petugas terdekat dan menjadi referensi untuk pengembangan aplikasi berbasis lokasi.
 
-Catatan penting:
+**JANGAN DIBACA - Catatan penting:**
 Gunakan kata "membantu", bukan "menjamin", "menyelamatkan", atau "menggantikan layanan resmi".
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Supaya klaim penelitian tetap proporsional, saya jelaskan batasan masalah penelitian.
 
 ## Slide 05 - Batasan Masalah Penelitian
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjaga klaim penelitian tetap aman dan sesuai skripsi.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB I bagian Batasan Masalah Penelitian.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Aplikasi dikembangkan menggunakan Flutter untuk platform mobile.
 - Perhitungan jarak memakai Haversine Formula berdasarkan latitude dan longitude.
@@ -206,31 +219,31 @@ Poin lisan:
 - Rute navigasi memakai Mapbox Directions API setelah petugas dipilih.
 - Pengujian difokuskan pada fungsi utama, bukan performa teknis rinci seperti memori, frame rate, atau waktu render.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Pada penelitian ini, ruang lingkup saya batasi agar pembahasan tetap terarah. Aplikasi dikembangkan menggunakan Flutter, data disimpan pada Firebase Realtime Database, dan peta ditampilkan menggunakan Mapbox. Perhitungan jarak dilakukan menggunakan Haversine Formula berdasarkan latitude dan longitude. Sistem menampilkan maksimal 10 petugas terdekat. Untuk rute navigasi, aplikasi menggunakan Mapbox Directions API setelah pengguna memilih petugas.
 
-Jawaban paling aman:
+**TANYA JAWAB - Jawaban paling aman:**
 Sistem ini merupakan alat bantu informasi lokasi, bukan pengganti prosedur resmi layanan darurat.
 
-Jika dosen bertanya soal akurasi:
+**TANYA JAWAB - Jika dosen bertanya soal akurasi:**
 Haversine menghitung estimasi jarak awal berdasarkan koordinat. Jarak tersebut bukan jarak tempuh jalan. Untuk rute jalan, sistem menggunakan Mapbox Directions API.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah batasan, saya masuk ke komponen teknologi yang digunakan dalam aplikasi.
 
 ## Slide 06 - Teknologi dan Komponen Sistem
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan komponen aplikasi dan hubungan antarteknologi.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB III bagian Analisis Teknologi, BAB IV bagian Arsitektur Sistem, dan README project.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Flutter dan Dart: membangun antarmuka dan logic aplikasi mobile.
 - GPS/Geolocator: membaca koordinat pengguna.
@@ -241,31 +254,31 @@ Poin lisan:
 - Mapbox Directions API: menampilkan rute berjalan, jarak rute, durasi, dan instruksi arah.
 - Detail node Firebase seperti users, helpConversations, helpConversationSessions, dan helpNotificationRequests cukup disimpan sebagai bahan tanya jawab jika dosen menanyakan struktur data.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Komponen sistem dibagi menjadi beberapa bagian. Aplikasi mobile dikembangkan menggunakan Flutter dan Dart. Untuk autentikasi dan data pengguna, sistem memakai Firebase Authentication dan Firebase Realtime Database. Lokasi pengguna diperoleh dari GPS melalui Geolocator. Setelah koordinat pengguna dan petugas tersedia, Haversine Formula menghitung jarak awal untuk menentukan urutan petugas terdekat. Mapbox digunakan untuk peta, sedangkan Mapbox Directions API digunakan ketika pengguna membuka rute menuju petugas yang dipilih.
 
-Bagian yang perlu ditegaskan:
+**BACA / UCAPKAN - Bagian yang perlu ditegaskan:**
 Perhitungan Haversine dilakukan pada sisi aplikasi atau frontend. Firebase menyimpan data, tetapi bukan tempat utama menghitung ranking.
 
-Jika dosen bertanya soal backend Python:
+**TANYA JAWAB - Jika dosen bertanya soal backend Python:**
 Backend Python digunakan sebagai komponen administratif untuk pengolahan data secara batch, seperti pembersihan data, impor data, pembuatan akun, dan pembaruan data ke Firebase. Backend tersebut bukan REST API utama aplikasi.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah komponen teknologi, saya jelaskan tahapan metodologi penelitian.
 
 ## Slide 07 - Metodologi Penelitian
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menunjukkan proses penelitian dari perencanaan sampai implementasi.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB III Metodologi Penelitian, khususnya metode System Development Life Cycle (SDLC).
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Metode penelitian yang digunakan adalah System Development Life Cycle (SDLC).
 - Planning: menentukan masalah, kebutuhan, dan ruang lingkup.
@@ -275,28 +288,28 @@ Poin lisan:
 - Testing: menguji fungsi utama, perhitungan jarak, peta, dan navigasi.
 - Implementation: menjalankan aplikasi pada emulator, simulator, dan perangkat fisik.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Metodologi penelitian yang saya gunakan adalah System Development Life Cycle atau SDLC. Tahapannya dimulai dari planning sampai implementation. Pada tahap planning, saya menentukan masalah dan ruang lingkup penelitian. Pada tahap analysis, saya menganalisis kebutuhan pengguna, role, alur sistem, teknologi, serta aspek keamanan. Tahap design digunakan untuk merancang arsitektur dan antarmuka. Setelah itu aplikasi dikembangkan menggunakan Flutter, Firebase, Haversine, dan Mapbox. Terakhir, sistem diuji untuk memastikan fungsi utama berjalan.
 
-Catatan valid:
+**JANGAN DIBACA - Catatan valid:**
 Sebut "pengujian fungsi utama", karena skripsi memang tidak memfokuskan pengujian performa teknis rinci.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Berikutnya saya jelaskan alur sistem pencarian dari login sampai hasil petugas ditampilkan.
 
 ## Slide 08 - Alur Sistem Pencarian
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan proses inti aplikasi secara runtut.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB III bagian Analisis Alur Sistem, Arsitektur Sistem, dan BAB IV bagian Alur Data dalam Sistem.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Pengguna login.
 - Sistem membaca akun dan role pengguna.
@@ -309,28 +322,28 @@ Poin lisan:
 - Maksimal 10 petugas terdekat ditampilkan.
 - Jika petugas dipilih, Mapbox Directions API menampilkan rute.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Alur pencarian dimulai ketika pengguna login. Setelah login, sistem membaca role pengguna, kemudian aplikasi mengambil koordinat lokasi melalui GPS. Koordinat ini diperbarui ke Firebase dan digunakan sebagai titik awal pencarian. Aplikasi mengambil data petugas dari Firebase, kemudian menghitung jarak dari posisi pengguna ke setiap petugas menggunakan Haversine Formula. Hasilnya diurutkan dari jarak terkecil dan ditampilkan sebagai daftar petugas terdekat serta marker pada peta.
 
 Kalimat pembeda yang penting:
 Haversine digunakan untuk urutan awal, sedangkan Mapbox digunakan untuk visualisasi peta dan rute setelah petugas dipilih.
 
-Demo:
+**DEMO:**
 Tidak ada demo live. Ini masih penjelasan konsep.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah alur sistem, saya jelaskan algoritma Haversine yang menjadi inti perhitungan jarak.
 
 ## Slide 09 - Implementasi Haversine Formula
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan rumus dan perannya tanpa terlalu matematis.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB II Landasan Teori Haversine Formula, BAB III Flowchart, BAB IV Implementasi Algoritma Haversine.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Haversine Formula menghitung jarak antara dua titik koordinat di permukaan bumi.
 - Input: latitude dan longitude pengguna serta petugas.
@@ -342,11 +355,11 @@ Poin lisan:
 - Jarak dipakai untuk mengurutkan petugas dari yang paling dekat.
 - Dalam kode, nilai `a` di-clamp ke rentang 0 sampai 1 agar perhitungan tetap stabil sebelum akar dan sudut pusat dihitung.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Haversine Formula digunakan untuk menghitung jarak antara dua titik koordinat pada permukaan bumi. Inputnya adalah latitude dan longitude pengguna serta latitude dan longitude petugas. Koordinat dari GPS masih berbentuk derajat, sehingga sistem mengubahnya terlebih dahulu ke radian. Setelah itu sistem menghitung selisih latitude dan longitude, menghitung nilai `a`, lalu menghitung jarak menggunakan radius bumi 6371.0088 kilometer. Outputnya berupa jarak dalam kilometer, kemudian sistem mengurutkan petugas dari jarak paling kecil.
 
-Cara menjelaskan perhitungan secara detail:
+**JELASKAN DENGAN KATA SENDIRI - Cara menjelaskan perhitungan secara detail:**
 
 1. Titik pertama adalah posisi pengguna, yaitu `lat1` dan `lon1`.
 2. Titik kedua adalah posisi petugas, yaitu `lat2` dan `lon2`.
@@ -360,33 +373,33 @@ Cara menjelaskan perhitungan secara detail:
 8. Perhitungan ini dilakukan ke setiap petugas yang datanya valid.
 9. Hasil jarak dibandingkan, lalu daftar petugas diurutkan dari nilai paling kecil.
 
-Catatan validasi rumus:
+**TANYA JAWAB - Catatan validasi rumus:**
 Rumus di slide sudah sesuai dengan rumus Haversine. Di kode aplikasi, bentuk akhirnya memakai `atan2(√a, √(1-a))` setelah nilai `a` di-clamp. Bentuk tersebut ekuivalen dengan `asin(√a)` untuk nilai `a` pada rentang 0 sampai 1, sehingga aman dijelaskan sebagai Haversine Formula.
 
-Validasi sederhana yang bisa disebut jika ditanya:
+**TANYA JAWAB - Validasi sederhana jika ditanya:**
 Jika titik pengguna dan titik petugas sama, hasil jaraknya 0 km. Jika terdapat selisih koordinat, nilai jarak bertambah sesuai perbedaan posisi. Contoh pembanding umum, selisih 1 derajat longitude di ekuator menghasilkan jarak sekitar 111.195 km dengan radius bumi 6371.0088 km. Ini menunjukkan rumus dan implementasi berada pada skala yang benar.
 
-Versi sederhana jika dosen non-teknis:
+**TANYA JAWAB - Versi sederhana jika dosen non-teknis:**
 Intinya, Haversine menghitung jarak awal antarkoordinat. Dari hasil jarak itu, sistem mengetahui kandidat petugas yang paling dekat.
 
-Jika dosen bertanya kenapa tidak pakai Mapbox untuk ranking semua petugas:
+**TANYA JAWAB - Jika dosen bertanya kenapa tidak pakai Mapbox untuk ranking semua petugas:**
 Haversine lebih sesuai untuk tahap awal karena ringan untuk menghitung satu titik pengguna ke banyak titik petugas. Mapbox digunakan setelah tujuan dipilih, karena rute jalan membutuhkan data jaringan jalan dan Directions API.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah jarak awal dihitung dengan Haversine, sistem membutuhkan peta dan rute. Bagian itu menggunakan Mapbox.
 
 ## Slide 10 - Integrasi Mapbox
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan peran Mapbox dan batasannya.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB I batasan, BAB III teknologi, BAB IV implementasi Mapbox dan perbandingan Haversine dengan Mapbox Directions API.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Mapbox API digunakan untuk visualisasi peta.
 - Peta menampilkan lokasi pengguna dan petugas.
@@ -395,31 +408,31 @@ Poin lisan:
 - Jarak Haversine dan jarak Mapbox dapat berbeda.
 - Perbedaannya wajar karena Haversine menghitung jarak antarkoordinat, sedangkan Mapbox menghitung rute berdasarkan jaringan jalan.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Mapbox pada sistem ini digunakan untuk dua kebutuhan. Pertama, menampilkan peta dan posisi pengguna maupun petugas. Kedua, melalui Mapbox Directions API, sistem menampilkan rute berjalan setelah pengguna memilih petugas. Jadi Haversine dan Mapbox memiliki fungsi berbeda. Haversine menghasilkan urutan awal petugas terdekat, sedangkan Mapbox menghasilkan rute navigasi.
 
-Data valid dari skripsi:
+**TANYA JAWAB - Data valid dari skripsi:**
 Pada pengujian, contoh Souq Al-Khalil memiliki jarak Haversine 0.542 km, sedangkan jarak Mapbox Directions API 0.925 km. Selisih ini wajar karena Mapbox mengikuti rute jalan.
 
-Jika dosen bertanya kenapa jarak Mapbox lebih besar:
+**TANYA JAWAB - Jika dosen bertanya kenapa jarak Mapbox lebih besar:**
 Karena jarak rute mengikuti jalur yang tersedia, tidak selalu berupa garis langsung dari titik pengguna ke titik petugas.
 
-Demo:
+**DEMO:**
 Tidak ada demo live.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah menjelaskan bagian teknis, saya tampilkan implementasi antarmuka aplikasi.
 
 ## Slide 11 - Implementasi Antarmuka Aplikasi
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menunjukkan tampilan aplikasi secara umum sebelum demo.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB III perancangan UI dan BAB IV implementasi halaman Login, Home, dan Find Officers.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Login digunakan untuk autentikasi melalui Firebase Authentication.
 - Setelah login, aplikasi membaca data pengguna dan role dari Firebase.
@@ -428,28 +441,28 @@ Poin lisan:
 - Tombol Find Officers digunakan oleh jemaah untuk mencari petugas terdekat.
 - UI yang ditampilkan pada slide merupakan tampilan final aplikasi.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Pada bagian antarmuka, halaman login digunakan untuk autentikasi pengguna. Setelah login berhasil, aplikasi membaca profil dan role pengguna. Halaman home menjadi titik awal sebelum pengguna masuk ke fitur pencarian. Fitur Find My digunakan untuk membaca lokasi pengguna dan memulai pencarian petugas melalui tombol Find Officers.
 
-Jika dosen bertanya role:
+**TANYA JAWAB - Jika dosen bertanya role:**
 Role membedakan tampilan dan hak akses pengguna. Pada fokus penelitian ini, role digunakan agar pencarian diarahkan ke target pengguna yang sesuai.
 
-Demo:
+**DEMO:**
 Belum demo utama. Tunjukkan screenshot saja.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah tampilan dasar, saya jelaskan fitur pencarian dan navigasi.
 
 ## Slide 12 - Fitur Pencarian dan Navigasi
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan hasil utama sistem dari sisi pengguna.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB IV implementasi tampilan hasil pencarian, peta hasil pencarian, dan halaman navigasi.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Pengguna menekan Find Officers.
 - Sistem mengambil koordinat pengguna.
@@ -460,56 +473,56 @@ Poin lisan:
 - Setelah petugas dipilih, Mapbox Directions API menampilkan rute.
 - Navigasi menampilkan estimasi jarak, waktu tempuh, dan instruksi arah.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Fitur pencarian adalah bagian utama dari penelitian ini. Ketika pengguna menekan Find Officers, aplikasi mengambil koordinat pengguna dan membaca data petugas dari Firebase. Setelah itu, Haversine menghitung jarak ke masing-masing petugas dan hasilnya diurutkan dari yang paling dekat. Pengguna dapat melihat daftar petugas terdekat, marker petugas pada peta, lalu memilih petugas untuk membuka rute navigasi.
 
-Data valid dari skripsi:
+**TANYA JAWAB - Data valid dari skripsi:**
 Pada pengujian BAB IV, sistem mampu mengurutkan 10 petugas terdekat. Contoh hasil terdekat adalah Souq Al-Khalil dengan jarak Haversine 0.542 km dari titik uji.
 
-Demo:
+**DEMO:**
 Belum demo lengkap. Jika dosen meminta, boleh buka app sampai Find My, lalu kembali ke slide.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah pencarian dan navigasi, saya jelaskan singkat fitur pendukung pengguna agar tidak menggeser fokus penelitian.
 
 ## Slide 13 - Fitur Pendukung dan Peran Pengguna
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan fitur pendukung secara singkat tanpa menjadikannya fokus utama penelitian.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB III dan BAB IV bagian perancangan serta implementasi fitur pendukung aplikasi.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Role pengguna menentukan tampilan dan target pencarian.
 - Fitur pendukung seperti Help Inbox dan Chat tersedia pada aplikasi.
 - Bagian ini cukup dijelaskan sebagai pelengkap penggunaan aplikasi.
 - Fokus utama penelitian tetap pencarian petugas terdekat, perhitungan Haversine, peta, dan rute.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Pada slide ini, saya hanya menunjukkan bahwa aplikasi memiliki fitur pendukung berdasarkan role pengguna. Namun bagian ini tidak saya jadikan pembahasan utama, karena rumusan masalah penelitian berfokus pada implementasi Haversine Formula untuk menghitung dan mengurutkan petugas haji terdekat. Jadi penjelasan slide ini cukup singkat, lalu saya kembali ke alur validasi pencarian dan rute.
 
-Jawaban aman:
+**TANYA JAWAB - Jawaban aman:**
 Fitur pendukung ini bukan bagian utama evaluasi penelitian dan bukan prosedur resmi penanganan darurat.
 
-Demo:
+**DEMO:**
 Belum demo utama. Screenshot cukup.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah menjelaskan fitur, saya masuk ke validasi alur aplikasi.
 
 ## Slide 14 - Validasi Alur Aplikasi
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan validasi alur fungsi utama aplikasi, lalu menggunakannya sebagai momen demo.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB IV implementasi sistem, BAB IV pengujian fungsi utama, dan aplikasi Hajj App.
 
-Sebelum demo:
+**DEMO - Sebelum demo:**
 
 - Pastikan internet aktif.
 - Pastikan Firebase dapat diakses.
@@ -518,7 +531,7 @@ Sebelum demo:
 - Siapkan akun jemaah.
 - Jika memakai simulator, atur lokasi agar sesuai area pengujian.
 
-Urutan demo:
+**DEMO - Urutan demo:**
 
 1. Buka aplikasi.
 2. Login sebagai Jemaah Haji.
@@ -533,45 +546,45 @@ Urutan demo:
 11. Sampaikan bahwa rute berasal dari Mapbox Directions API.
 12. Tutup demo dengan batasan sistem.
 
-Narasi saat demo:
+**BACA / UCAPKAN - Narasi saat demo:**
 
 Pada demo ini, saya menunjukkan alur utama aplikasi. Setelah pengguna login sebagai jemaah, aplikasi membaca lokasi pengguna melalui GPS. Ketika tombol Find Officers ditekan, sistem mengambil data petugas dari Firebase, lalu menghitung jarak awal menggunakan Haversine Formula. Hasilnya digunakan untuk mengurutkan petugas terdekat. Setelah petugas dipilih, aplikasi menggunakan Mapbox Directions API untuk menampilkan rute berjalan menuju petugas tersebut.
 
-Saat daftar petugas muncul:
+**BACA / UCAPKAN - Saat daftar petugas muncul:**
 
 Bagian ini adalah hasil utama dari implementasi Haversine, karena sistem sudah menghitung jarak antara pengguna dan setiap petugas, kemudian menampilkan kandidat dengan jarak paling dekat.
 
-Saat rute muncul:
+**BACA / UCAPKAN - Saat rute muncul:**
 
 Pada bagian ini, jarak yang tampil dapat berbeda dari jarak Haversine. Hal itu karena Haversine menghitung jarak awal antarkoordinat, sedangkan Mapbox menghitung rute berdasarkan jalur yang tersedia.
 
-Jika GPS bermasalah:
+**TANYA JAWAB - Jika GPS bermasalah:**
 
 Fitur ini membutuhkan izin lokasi. Jika saat demo lokasi tidak terbaca, saya menggunakan dokumentasi tampilan pendukung, tetapi alur sistem tetap sama: lokasi pengguna menjadi input untuk perhitungan Haversine.
 
-Jika Firebase bermasalah:
+**TANYA JAWAB - Jika Firebase bermasalah:**
 
 Data petugas diambil dari Firebase Realtime Database. Jika koneksi atau rules Firebase bermasalah saat demo, saya jelaskan menggunakan slide alur sistem dan dokumentasi final UI.
 
-Jika Mapbox bermasalah:
+**TANYA JAWAB - Jika Mapbox bermasalah:**
 
 Mapbox digunakan untuk peta dan rute. Jika peta tidak tampil, saya tetap dapat menjelaskan bahwa Haversine sudah berperan pada ranking, sedangkan Mapbox hanya pada visualisasi dan rute.
 
-Demo:
+**DEMO:**
 Demo utama dilakukan di slide ini.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah demo, saya jelaskan rencana pengujian dan indikator keberhasilan sistem.
 
 ## Slide 15 - Rencana Pengujian dan Indikator
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menjelaskan bagaimana sistem dievaluasi.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB IV bagian Pengujian dan Evaluasi Sistem.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Pengujian dilakukan pada Android emulator, iOS simulator, dan iPhone fisik.
 - Pengujian difokuskan pada fungsi utama.
@@ -580,11 +593,11 @@ Poin lisan:
 - Hasil Haversine dibandingkan dengan Mapbox Directions API.
 - Indikator: urutan petugas sesuai jarak, marker dan rute tampil, serta dokumentasi final UI tersedia sebagai pendukung evaluasi.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Pengujian pada penelitian ini difokuskan pada fungsi utama sistem. Aplikasi diuji pada Android emulator, iOS simulator, dan iPhone fisik. Bagian yang diuji meliputi login, pembacaan lokasi, pengambilan data dari Firebase, perhitungan Haversine, tampilan peta, dan navigasi. Untuk algoritma, hasil Haversine dibandingkan dengan hasil Mapbox Directions API agar terlihat perbedaan antara jarak antarkoordinat dan jarak rute.
 
-Data valid dari skripsi:
+**TANYA JAWAB - Data valid dari skripsi:**
 
 - Titik uji jemaah ditempatkan pada koordinat Jabal Al Kaabah.
 - Sistem menghasilkan 10 petugas terdekat.
@@ -592,24 +605,24 @@ Data valid dari skripsi:
 - Jarak Mapbox untuk titik yang sama adalah 0.925 km.
 - Aplikasi dapat dijalankan pada Android dan iOS untuk mendukung fungsi utama.
 
-Jika dosen bertanya performa:
+**TANYA JAWAB - Jika dosen bertanya performa:**
 Pengukuran performa teknis rinci seperti memori, frame rate, dan waktu render belum menjadi fokus utama penelitian. Fokus penelitian adalah keberhasilan fungsi pencarian, pengurutan, peta, dan navigasi.
 
-Demo:
+**DEMO:**
 Tidak ada demo baru. Gunakan hasil demo slide 14 sebagai pembuktian.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Setelah pengujian, saya masuk ke penutup kolokium.
 
 ## Slide 16 - Penutup Kolokium
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menyampaikan simpulan sementara dan arah pengembangan.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 BAB V Simpulan dan Saran.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Aplikasi dibangun sebagai alat bantu informasi lokasi petugas haji.
 - Haversine digunakan untuk menghitung jarak awal dan mengurutkan petugas.
@@ -618,41 +631,43 @@ Poin lisan:
 - Aplikasi dapat menjalankan fungsi utama pada platform mobile yang diuji.
 - Pengembangan lanjutan: perluasan area pengujian, peningkatan akurasi data lokasi, pengujian performa teknis, dan pengujian pada kondisi yang lebih mendekati operasional haji.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Sebagai penutup, aplikasi yang dibangun berfungsi sebagai alat bantu informasi lokasi petugas haji. Haversine Formula digunakan untuk menghitung jarak awal dan mengurutkan petugas terdekat, sedangkan Mapbox digunakan untuk peta dan rute setelah petugas dipilih. Berdasarkan pengujian, aplikasi dapat menjalankan fungsi utama seperti login, pencarian petugas, tampilan peta, dan navigasi pada platform mobile yang diuji.
 
-Jawaban aman:
+**TANYA JAWAB - Jawaban aman:**
 Untuk pengembangan berikutnya, sistem masih perlu diuji lebih luas dengan data lokasi lapangan yang lebih valid dan kondisi yang lebih mendekati operasional haji.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-Transisi:
+**BACA / UCAPKAN - Transisi:**
 Terakhir, saya tampilkan kontak dan siap menerima pertanyaan.
 
 ## Slide 17 - Kontak
 
-Tujuan:
+**JANGAN DIBACA - Tujuan slide:**
 Menutup presentasi dan membuka sesi tanya jawab.
 
-Sumber skripsi:
+**JANGAN DIBACA - Sumber skripsi:**
 Identitas penulis dan informasi presentasi.
 
-Poin lisan:
+**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
 
 - Ucapkan terima kasih.
 - Sebutkan bahwa penelitian terbuka untuk masukan.
 - Undang dosen untuk memberikan pertanyaan atau arahan.
 
-Contoh narasi:
+**BACA / UCAPKAN - Contoh narasi:**
 
 Demikian presentasi kolokium tugas akhir saya. Terima kasih atas perhatian Bapak/Ibu dosen. Saya siap menerima pertanyaan, masukan, dan arahan untuk penyempurnaan penelitian ini.
 
-Demo:
+**DEMO:**
 Tidak ada demo.
 
-## Jawaban Cepat untuk Tanya Jawab
+## TANYA JAWAB - Jawaban Cepat
+
+Bagian ini tidak perlu dibaca saat presentasi. Gunakan hanya jika dosen bertanya.
 
 ### Apa kontribusi utama penelitian ini?
 
