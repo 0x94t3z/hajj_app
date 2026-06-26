@@ -58,5 +58,6 @@ app.*.map.json
 /assets/data/
 
 notes.md
+research/
 .qlpreview/
 .qltmp/
