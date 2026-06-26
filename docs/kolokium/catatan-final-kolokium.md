@@ -359,6 +359,30 @@ BAB II Landasan Teori Haversine Formula, BAB III Flowchart, BAB IV Implementasi 
 
 Haversine Formula digunakan untuk menghitung jarak antara dua titik koordinat pada permukaan bumi. Inputnya adalah latitude dan longitude jemaah serta latitude dan longitude petugas. Koordinat dari GPS masih berbentuk derajat, sehingga sistem mengubahnya terlebih dahulu ke radian. Setelah itu sistem menghitung selisih latitude dan longitude, menghitung nilai `a`, lalu menghitung jarak menggunakan radius bumi 6371.0088 kilometer. Outputnya berupa jarak dalam kilometer, kemudian sistem mengurutkan petugas dari jarak paling kecil.
 
+**BACA / UCAPKAN - Cara menyebut simbol rumus:**
+
+- `a`: dibaca "nilai a", yaitu nilai antara untuk menghitung jarak Haversine.
+- `d`: dibaca "distance" atau "jarak akhir", yaitu hasil jarak dalam kilometer.
+- `r`: dibaca "radius bumi", pada sistem ini nilainya 6371.0088 kilometer.
+- `lat1`: dibaca "latitude satu", yaitu latitude titik jemaah.
+- `lon1`: dibaca "longitude satu", yaitu longitude titik jemaah.
+- `lat2`: dibaca "latitude dua", yaitu latitude titik petugas.
+- `lon2`: dibaca "longitude dua", yaitu longitude titik petugas.
+- `Δlat`: dibaca "delta latitude", yaitu selisih latitude antara petugas dan jemaah.
+- `Δlon`: dibaca "delta longitude", yaitu selisih longitude antara petugas dan jemaah.
+- `sin`: dibaca "sinus".
+- `cos`: dibaca "kosinus".
+- `asin`: dibaca "arc sinus" atau "inverse sinus".
+- `√a`: dibaca "akar dari a".
+- `sin²`: dibaca "sinus kuadrat".
+- `×`: dibaca "dikali".
+
+**BACA / UCAPKAN - Cara membaca rumus di slide:**
+
+Untuk rumus pertama, saya baca: nilai `a` sama dengan sinus kuadrat dari delta latitude dibagi dua, ditambah kosinus latitude satu dikali kosinus latitude dua, dikali sinus kuadrat dari delta longitude dibagi dua.
+
+Untuk rumus kedua, jarak `d` sama dengan dua dikali radius bumi, dikali arc sinus dari akar nilai `a`. Hasil `d` inilah yang digunakan sebagai jarak awal untuk mengurutkan petugas.
+
 **JELASKAN DENGAN KATA SENDIRI - Cara menjelaskan perhitungan secara detail:**
 
 1. Titik pertama adalah posisi jemaah, yaitu `lat1` dan `lon1`.
