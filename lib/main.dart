@@ -94,6 +94,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   Timer? _helpNotificationPollTimer;
   bool _isPollingHelpNotifications = false;
   String? _helpNotificationListenerUid;
+  String? _currentRouteName;
   int _helpNotificationListenerEpoch = 0;
   final Set<String> _seenHelpNotificationIds = <String>{};
   final Set<String> _seenUnreadHelpConversationKeys = <String>{};
@@ -114,7 +115,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     _appLifecycleState =
         WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
     _routeObserver = _AppRouteObserver(
-      onRouteChanged: (_) {},
+      onRouteChanged: (routeName) {
+        _currentRouteName = routeName;
+      },
     );
     checkLoginStatus();
 
@@ -423,6 +426,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     required bool isUrgent,
     String? payload,
   }) async {
+    if (_isOnHelpChatRoute) return;
+
     final popupCount = count < 1 ? 1 : count;
     if (_appLifecycleState != AppLifecycleState.resumed) {
       await LocalNotificationService.showNotification(
@@ -610,6 +615,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       },
     );
   }
+
+  bool get _isOnHelpChatRoute => _currentRouteName == '/help_chat';
 
   Future<void> _stopHelpNotificationListener() async {
     _helpNotificationListenerEpoch++;
