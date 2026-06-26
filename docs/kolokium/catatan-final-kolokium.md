@@ -32,7 +32,7 @@ Pembukaan:
 Perkenalkan identitas, judul, dan fokus penelitian.
 
 Masalah:
-Jemaah haji berada di area padat dan dapat kesulitan menemukan petugas saat membutuhkan bantuan.
+Jemaah haji berada di area padat dan dapat mengalami kendala seperti sakit, tersesat, atau terpisah dari rombongan sehingga membutuhkan informasi petugas terdekat.
 
 Solusi:
 Aplikasi mobile membaca lokasi pengguna, mengambil data lokasi petugas, menghitung jarak awal dengan Haversine Formula, lalu menampilkan petugas terdekat pada peta.
@@ -112,14 +112,15 @@ Poin lisan:
 
 - Ibadah haji melibatkan jumlah jemaah besar dalam area terbatas.
 - Situasi lapangan dapat padat, dinamis, dan tidak familiar bagi sebagian jemaah.
-- Jemaah dapat kesulitan menemukan petugas ketika membutuhkan bantuan.
+- Jemaah dapat mengalami kendala saat ibadah, misalnya sakit, tersesat, atau terpisah dari rombongan.
+- Dalam kondisi tersebut, jemaah dapat kesulitan menemukan petugas terdekat.
 - Pencarian manual dapat memakan waktu, terutama dalam kondisi ramai.
 - Perangkat mobile memiliki GPS yang dapat dimanfaatkan untuk membaca koordinat.
 - Koordinat tersebut dapat dipakai untuk menghitung jarak dan menentukan kandidat petugas terdekat.
 
 Contoh narasi:
 
-Latar belakang penelitian ini berangkat dari kondisi ibadah haji yang melibatkan banyak jemaah dalam area yang relatif terbatas, khususnya di Makkah dan sekitarnya. Dalam kondisi padat, jemaah dapat mengalami kesulitan ketika harus menemukan petugas haji terdekat. Pencarian secara manual masih mungkin dilakukan, tetapi dalam situasi ramai prosesnya bisa memakan waktu. Karena itu, perangkat mobile yang sudah memiliki GPS dapat dimanfaatkan untuk membaca posisi pengguna, lalu posisi tersebut digunakan sebagai dasar pencarian petugas terdekat.
+Latar belakang penelitian ini berangkat dari kondisi ibadah haji yang melibatkan banyak jemaah dalam area yang relatif terbatas, khususnya di Makkah dan sekitarnya. Dalam kondisi padat dan tidak selalu familiar, jemaah dapat mengalami kendala seperti sakit, tersesat, atau terpisah dari rombongan. Pada situasi seperti itu, jemaah membutuhkan informasi petugas terdekat agar dapat memperoleh arahan lebih cepat. Pencarian secara manual masih mungkin dilakukan, tetapi dalam situasi ramai prosesnya bisa memakan waktu. Karena itu, perangkat mobile yang sudah memiliki GPS dapat dimanfaatkan untuk membaca posisi pengguna, lalu posisi tersebut digunakan sebagai dasar pencarian petugas terdekat.
 
 Jawaban aman:
 Penelitian ini tidak mengambil posisi sebagai pengganti mekanisme resmi, tetapi sebagai alat bantu informasi lokasi.
