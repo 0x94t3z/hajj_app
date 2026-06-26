@@ -156,6 +156,52 @@ class HelpService {
     return '${pairKey}_$timestamp';
   }
 
+  String _activeSessionConversationId(dynamic raw) {
+    if (raw == null) return '';
+    if (raw is String) return raw.trim();
+    if (raw is Map) {
+      final value = raw['conversationId'];
+      return value?.toString().trim() ?? '';
+    }
+    return raw.toString().trim();
+  }
+
+  Future<void> _setActiveSessionPointer({
+    required String pairKey,
+    required String conversationId,
+  }) async {
+    if (pairKey.trim().isEmpty || conversationId.trim().isEmpty) return;
+    try {
+      await _activeSessionsRef.child(pairKey).set(conversationId);
+    } catch (_) {
+      // Active-session pointers are only an optimization for reopening chats.
+      // Conversation data itself remains the source of truth.
+    }
+  }
+
+  Future<void> _clearActiveSessionPointer({
+    required String pairKey,
+    required String conversationId,
+  }) async {
+    if (pairKey.trim().isEmpty) return;
+    try {
+      final sessionRef = _activeSessionsRef.child(pairKey);
+      final snapshot = await sessionRef.get();
+      final activeConversationId = _activeSessionConversationId(snapshot.value);
+
+      // Remove the current pointer, whether it is stored as the current string
+      // shape or an older object shape. Keep a newer session pointer untouched.
+      if (!snapshot.exists ||
+          activeConversationId.isEmpty ||
+          activeConversationId == conversationId) {
+        await sessionRef.remove();
+      }
+    } catch (_) {
+      // Do not fail End Session only because the pointer cleanup is denied or
+      // because older Firebase data used a different primitive shape.
+    }
+  }
+
   Future<HelpConversationHandle> ensureConversationWithPeer({
     required String peerId,
     required String peerName,
@@ -209,7 +255,7 @@ class HelpService {
     try {
       final activeSnapshot = await _activeSessionsRef.child(pairKey).get();
       if (activeSnapshot.exists && activeSnapshot.value != null) {
-        final activeId = activeSnapshot.value.toString();
+        final activeId = _activeSessionConversationId(activeSnapshot.value);
         if (activeId.isNotEmpty) {
           // Reuse active session pointer directly to avoid extra read checks
           // that can be denied by strict rules when target node is missing.
@@ -262,11 +308,10 @@ class HelpService {
       // Persist active session pointer only after the conversation exists.
       // This allows Firebase Rules to validate participants from the conversation node.
       if (pairKey.isNotEmpty) {
-        try {
-          await _activeSessionsRef.child(pairKey).set(conversationId);
-        } catch (_) {
-          // Keep going even if we cannot write session pointer.
-        }
+        await _setActiveSessionPointer(
+          pairKey: pairKey,
+          conversationId: conversationId,
+        );
       }
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
@@ -417,7 +462,10 @@ class HelpService {
       if (!hasMessages) {
         await _conversationsRef.child(conversationId).remove();
         if (pairKey.isNotEmpty) {
-          await _activeSessionsRef.child(pairKey).remove();
+          await _clearActiveSessionPointer(
+            pairKey: pairKey,
+            conversationId: conversationId,
+          );
         }
         return;
       }
@@ -427,7 +475,10 @@ class HelpService {
       if (!hasOfficerReply) {
         await _conversationsRef.child(conversationId).remove();
         if (pairKey.isNotEmpty) {
-          await _activeSessionsRef.child(pairKey).remove();
+          await _clearActiveSessionPointer(
+            pairKey: pairKey,
+            conversationId: conversationId,
+          );
         }
         return;
       }
@@ -441,7 +492,10 @@ class HelpService {
       });
 
       if (pairKey.isNotEmpty) {
-        await _activeSessionsRef.child(pairKey).remove();
+        await _clearActiveSessionPointer(
+          pairKey: pairKey,
+          conversationId: conversationId,
+        );
       }
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {

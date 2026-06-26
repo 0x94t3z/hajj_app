@@ -47,6 +47,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   bool _isSending = false;
   bool _isClosingSession = false;
   bool _isArchived = false;
+  bool _messageAccessClosed = false;
   bool _currentIsPetugas = false;
   String _resolvedPeerRole = '';
   String _lastMarkedReadMessageId = '';
@@ -129,6 +130,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
             : handle.peerRole;
         _isLoading = false;
         _isArchived = widget.readOnly;
+        _messageAccessClosed = false;
       });
       unawaited(_helpService.markConversationAsRead(handle.conversationId));
     } catch (e) {
@@ -174,6 +176,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         _currentIsPetugas = currentIsPetugas;
         _resolvedPeerRole = peerRole.isNotEmpty ? peerRole : widget.peerRole;
         _isArchived = widget.readOnly || archived;
+        _messageAccessClosed = false;
         _isLoading = false;
       });
       unawaited(_helpService.markConversationAsRead(conversationId));
@@ -753,17 +756,29 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                               stream: _messagesStream,
                               builder: (context, snapshot) {
                                 if (snapshot.hasError) {
+                                  if (!_messageAccessClosed) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (!mounted || _messageAccessClosed) {
+                                        return;
+                                      }
+                                      setState(() {
+                                        _messageAccessClosed = true;
+                                        _isArchived = true;
+                                      });
+                                    });
+                                  }
                                   return Center(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 20),
                                       child: Text(
-                                        'Akses pesan bantuan ditolak. '
-                                        'Periksa Firebase Rules untuk helpConversations.',
+                                        'Session ini sudah ditutup dan '
+                                        'percakapan telah diarsipkan.',
                                         textAlign: TextAlign.center,
                                         style: textStyle(
                                           fontSize: 13,
-                                          color: ColorSys.darkBlue,
+                                          color: ColorSys.error,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -915,7 +930,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                               },
                             ),
                     ),
-                    if (!_isArchived)
+                    if (!_isArchived && !_messageAccessClosed)
                       SafeArea(
                         top: false,
                         child: Container(

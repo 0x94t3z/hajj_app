@@ -21,6 +21,7 @@ import 'package:hajj_app/screens/auth/forgot.dart';
 import 'package:hajj_app/screens/features/menu/home_screen.dart';
 import 'package:hajj_app/screens/features/menu/find_my_screen.dart';
 import 'package:hajj_app/screens/features/menu/settings_screen.dart';
+import 'package:hajj_app/services/help_service.dart';
 import 'package:hajj_app/services/local_notification_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart'
@@ -50,14 +51,12 @@ Future<void> _configureFirebaseAppCheck() async {
   try {
     if (kIsWeb) return;
     await FirebaseAppCheck.instance.activate(
-      providerAndroid:
-          kReleaseMode
-              ? const AndroidPlayIntegrityProvider()
-              : const AndroidDebugProvider(),
-      providerApple:
-          kReleaseMode
-              ? const AppleDeviceCheckProvider()
-              : const AppleDebugProvider(),
+      providerAndroid: kReleaseMode
+          ? const AndroidPlayIntegrityProvider()
+          : const AndroidDebugProvider(),
+      providerApple: kReleaseMode
+          ? const AppleDeviceCheckProvider()
+          : const AppleDebugProvider(),
     );
   } catch (e) {
     debugPrint('Firebase App Check activation failed: $e');
@@ -82,6 +81,7 @@ class HajjApp extends StatefulWidget {
 }
 
 class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
+  final HelpService _helpService = HelpService();
   final UserService _userService = UserService();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final _AppRouteObserver _routeObserver;
@@ -96,9 +96,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   String? _helpNotificationListenerUid;
   int _helpNotificationListenerEpoch = 0;
   final Set<String> _seenHelpNotificationIds = <String>{};
+  final Set<String> _seenUnreadHelpConversationKeys = <String>{};
   int _lastHelpPopupEpochMs = 0;
   bool? _cachedIsPetugas;
-  String _currentRouteName = '';
   bool _hasLoggedLocationPermissionIssue = false;
   bool _realtimeDbOnline = true;
 
@@ -114,10 +114,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     _appLifecycleState =
         WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
     _routeObserver = _AppRouteObserver(
-      onRouteChanged: (routeName) {
-        if (routeName == null || routeName.trim().isEmpty) return;
-        _currentRouteName = routeName;
-      },
+      onRouteChanged: (_) {},
     );
     checkLoginStatus();
 
@@ -170,11 +167,22 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     if (user == null) return;
     if (_helpNotificationListenerUid == user.uid &&
         _helpNotificationPollTimer != null) {
+      unawaited(
+        _pollHelpNotifications(
+          listenerEpoch: _helpNotificationListenerEpoch,
+          receiverUid: user.uid,
+        ),
+      );
       return;
     }
 
     _helpNotificationPollTimer?.cancel();
     _helpNotificationPollTimer = null;
+    if (_helpNotificationListenerUid != user.uid) {
+      _cachedIsPetugas = null;
+      _seenHelpNotificationIds.clear();
+      _seenUnreadHelpConversationKeys.clear();
+    }
     _helpNotificationListenerUid = user.uid;
     _isPollingHelpNotifications = false;
     final listenerEpoch = ++_helpNotificationListenerEpoch;
@@ -216,10 +224,21 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           .get();
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
       final raw = snapshot.value;
-      if (raw is! Map) return;
+      final items = <({
+        String body,
+        String conversationId,
+        int createdAt,
+        String id,
+        String key,
+        String senderName,
+        String senderUid,
+        String status,
+        String title
+      })>[];
 
-      final items = raw.entries
-          .map((entry) {
+      if (raw is Map) {
+        items.addAll(
+          raw.entries.map((entry) {
             if (entry.value is! Map) return null;
             final map = Map<String, dynamic>.from(entry.value as Map);
             final id = map['id']?.toString().isNotEmpty == true
@@ -239,8 +258,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
               senderName: map['senderName']?.toString() ?? '',
               createdAt: createdAt,
             );
-          })
-          .whereType<
+          }).whereType<
               ({
                 String body,
                 String conversationId,
@@ -251,9 +269,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                 String senderUid,
                 String status,
                 String title
-              })>()
-          .toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+              })>(),
+        );
+      }
+      items.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
       final newItems = <({
         String body,
@@ -311,7 +330,13 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         }
       }
 
-      if (newItems.isEmpty) return;
+      if (newItems.isEmpty) {
+        await _pollUnreadHelpInbox(
+          listenerEpoch: listenerEpoch,
+          receiverUid: receiverUid,
+        );
+        return;
+      }
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
 
       final isPetugas = await _resolveIsPetugas();
@@ -323,27 +348,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           uniqueSenderUids.isEmpty ? newItems.length : uniqueSenderUids.length;
       final popupCount = isPetugas ? senderCount : newItems.length;
 
-      if (_appLifecycleState != AppLifecycleState.resumed) {
-        await LocalNotificationService.showNotification(
-          title: isPetugas ? 'Urgent Help Request' : 'New Message',
-          body: _newMessageCountText(popupCount),
-          payload: newItems.first.conversationId,
-        );
-      } else {
-        final navigator = _navigatorKey.currentState;
-        final isInHelpChat = _currentRouteName == '/help_chat';
-        if (navigator != null && !isInHelpChat) {
-          final now = DateTime.now().millisecondsSinceEpoch;
-          if (now - _lastHelpPopupEpochMs > 1000) {
-            _lastHelpPopupEpochMs = now;
-            await _showHelpRequestCountPopup(
-              navigator,
-              count: popupCount,
-              isUrgent: isPetugas,
-            );
-          }
-        }
-      }
+      await _presentHelpNotification(
+        count: popupCount,
+        isUrgent: isPetugas,
+        payload: newItems.first.conversationId,
+      );
 
       for (final item in newItems) {
         if (listenerEpoch != _helpNotificationListenerEpoch) return;
@@ -363,6 +372,83 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _pollUnreadHelpInbox({
+    required int listenerEpoch,
+    required String receiverUid,
+  }) async {
+    if (listenerEpoch != _helpNotificationListenerEpoch) return;
+
+    try {
+      final isPetugas = await _resolveIsPetugas();
+      final items = await _helpService.fetchAllInboxOnce(
+        currentUid: receiverUid,
+        currentIsPetugas: isPetugas,
+      );
+      if (listenerEpoch != _helpNotificationListenerEpoch) return;
+
+      final unreadItems = items.where((item) {
+        if (item.status == 'closed' || item.archived) return false;
+        if (item.lastSenderId.isEmpty || item.lastSenderId == receiverUid) {
+          return false;
+        }
+        if (item.unreadMessageCount <= 0) return false;
+
+        final seenKey =
+            '${item.conversationId}:${item.lastMessageAt}:${item.lastSenderId}';
+        if (_seenUnreadHelpConversationKeys.contains(seenKey)) return false;
+        _seenUnreadHelpConversationKeys.add(seenKey);
+        return true;
+      }).toList();
+
+      if (unreadItems.isEmpty) return;
+      final senderCount = unreadItems
+          .map((item) => item.peerId.trim())
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .length;
+
+      await _presentHelpNotification(
+        count: isPetugas && senderCount > 0 ? senderCount : unreadItems.length,
+        isUrgent: isPetugas,
+        payload: unreadItems.first.conversationId,
+      );
+    } catch (_) {
+      // The notification queue already handles the main path. Inbox polling is
+      // a fallback, so never block the app when Firebase rules are restrictive.
+    }
+  }
+
+  Future<void> _presentHelpNotification({
+    required int count,
+    required bool isUrgent,
+    String? payload,
+  }) async {
+    final popupCount = count < 1 ? 1 : count;
+    if (_appLifecycleState != AppLifecycleState.resumed) {
+      await LocalNotificationService.showNotification(
+        title: isUrgent ? 'Urgent Help Request' : 'New Message',
+        body: _helpNotificationText(
+          popupCount,
+          isUrgent: isUrgent,
+        ),
+        payload: payload,
+      );
+      return;
+    }
+
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastHelpPopupEpochMs <= 1000) return;
+    _lastHelpPopupEpochMs = now;
+    await _showHelpRequestCountPopup(
+      navigator,
+      count: popupCount,
+      isUrgent: isUrgent,
+    );
+  }
+
   Future<bool> _isConversationActive(String conversationId) async {
     // Avoid extra per-notification reads at startup. In strict rules setups,
     // probing unknown/non-participant conversation ids can trigger
@@ -378,13 +464,19 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       _cachedIsPetugas = _userService.isPetugasHajiRole(cachedRole);
       return _cachedIsPetugas!;
     }
-    final role = await _userService.fetchCurrentUserRole();
+    final role = await _userService.fetchCurrentUserRole(forceRefresh: true);
     _cachedIsPetugas = _userService.isPetugasHajiRole(role);
     return _cachedIsPetugas!;
   }
 
-  String _newMessageCountText(int count) {
+  String _helpNotificationText(
+    int count, {
+    required bool isUrgent,
+  }) {
     final total = count < 1 ? 1 : count;
+    if (isUrgent) {
+      return 'Ada $total permintaan bantuan baru dari jemaah.';
+    }
     return 'You have $total new message.';
   }
 
@@ -395,6 +487,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   }) async {
     final accent = isUrgent ? ColorSys.error : ColorSys.darkBlue;
     final title = isUrgent ? 'Urgent Help Request' : 'New Message';
+    final backgroundColor = isUrgent ? const Color(0xFFFFFBFB) : Colors.white;
     await showDialog<void>(
       context: navigator.context,
       barrierDismissible: true,
@@ -405,11 +498,18 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           child: Container(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: backgroundColor,
               borderRadius: BorderRadius.circular(20),
+              border: isUrgent
+                  ? Border.all(
+                      color: ColorSys.error.withValues(alpha: 0.22),
+                      width: 1.2,
+                    )
+                  : null,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: (isUrgent ? ColorSys.error : Colors.black)
+                      .withValues(alpha: isUrgent ? 0.18 : 0.15),
                   blurRadius: 22,
                   offset: const Offset(0, 10),
                 ),
@@ -443,7 +543,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _newMessageCountText(count),
+                  _helpNotificationText(
+                    count,
+                    isUrgent: isUrgent,
+                  ),
                   textAlign: TextAlign.center,
                   style: textStyle(
                     fontSize: 13,
@@ -515,6 +618,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     _isPollingHelpNotifications = false;
     _helpNotificationListenerUid = null;
     _seenHelpNotificationIds.clear();
+    _seenUnreadHelpConversationKeys.clear();
   }
 
   Future<bool> _ensureLocationPermission() async {
@@ -636,6 +740,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       if (isLoggedIn) {
         unawaited(_startLocationTracking());
+        unawaited(_startHelpNotificationListener());
       }
       return;
     }
