@@ -350,7 +350,7 @@ BAB II Landasan Teori Haversine Formula, BAB III Flowchart, BAB IV Implementasi 
 - Radius bumi yang digunakan dalam kode adalah 6371.0088 km.
 - Output berupa jarak dalam kilometer.
 - Jarak dipakai untuk mengurutkan petugas dari yang paling dekat.
-- Dalam kode, nilai `a` di-clamp ke rentang 0 sampai 1 agar perhitungan tetap stabil sebelum akar dan sudut pusat dihitung.
+- Dalam kode, nilai `a` dibatasi untuk stabilitas perhitungan sebelum akar dan sudut pusat dihitung.
 
 **BACA / UCAPKAN - Contoh narasi:**
 
@@ -388,14 +388,14 @@ Untuk rumus kedua, jarak `d` sama dengan dua dikali radius bumi, dikali arc sinu
 4. Sistem menghitung `Δlat = lat2 - lat1` dan `Δlon = lon2 - lon1`.
 5. Sistem menghitung nilai inti Haversine:
    `a = sin²(Δlat/2) + cos(lat1) × cos(lat2) × sin²(Δlon/2)`.
-6. Nilai `a` kemudian dijaga pada rentang 0 sampai 1. Tujuannya untuk menghindari error akibat pembulatan angka desimal komputer.
+6. Nilai `a` dibatasi untuk stabilitas perhitungan. Secara teknis, nilai ini dijaga pada rentang valid 0 sampai 1 agar tidak terjadi error akibat pembulatan angka desimal komputer.
 7. Jarak dihitung dengan:
    `d = 2r × asin(√a)`, dengan `r = 6371.0088 km`.
 8. Perhitungan ini dilakukan ke setiap petugas yang datanya valid.
 9. Hasil jarak dibandingkan, lalu daftar petugas diurutkan dari nilai paling kecil.
 
 **TANYA JAWAB - Catatan validasi rumus:**
-Rumus yang ditampilkan sudah sesuai dengan rumus Haversine. Di kode aplikasi, bentuk akhirnya memakai `atan2(√a, √(1-a))` setelah nilai `a` di-clamp. Bentuk tersebut ekuivalen dengan `asin(√a)` untuk nilai `a` pada rentang 0 sampai 1, sehingga aman dijelaskan sebagai Haversine Formula.
+Rumus yang ditampilkan sudah sesuai dengan rumus Haversine. Di kode aplikasi, bentuk akhirnya memakai `atan2(√a, √(1-a))` setelah nilai `a` dibatasi pada rentang valid 0 sampai 1. Bentuk tersebut ekuivalen dengan `asin(√a)` untuk nilai `a` pada rentang tersebut, sehingga aman dijelaskan sebagai Haversine Formula.
 
 **TANYA JAWAB - Validasi sederhana jika ditanya:**
 Jika titik jemaah dan titik petugas sama, hasil jaraknya 0 km. Jika terdapat selisih koordinat, nilai jarak bertambah sesuai perbedaan posisi. Contoh pembanding umum, selisih 1 derajat longitude di ekuator menghasilkan jarak sekitar 111.195 km dengan radius bumi 6371.0088 km. Ini menunjukkan rumus dan implementasi berada pada skala yang benar.
