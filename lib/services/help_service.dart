@@ -16,6 +16,19 @@ class HelpService {
   final FirebaseDatabase _database;
   final UserService _userService;
 
+  static int _activeHelpChatScreenCount = 0;
+
+  static bool get isHelpChatScreenActive => _activeHelpChatScreenCount > 0;
+
+  static void registerHelpChatScreen() {
+    _activeHelpChatScreenCount++;
+  }
+
+  static void unregisterHelpChatScreen() {
+    if (_activeHelpChatScreenCount <= 0) return;
+    _activeHelpChatScreenCount--;
+  }
+
   static const List<String> defaultHelpTemplates = [
     'Saya tersesat',
     'Saya butuh pertolongan medis',
@@ -567,7 +580,7 @@ class HelpService {
           return a.id.compareTo(b.id);
         });
       return entries;
-    });
+    }).asBroadcastStream();
   }
 
   Stream<List<HelpConversationSummary>> watchAllInbox({

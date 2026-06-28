@@ -166,6 +166,9 @@ class TiltEffect extends Effect<Offset> {
 final darkTheme = ThemeData(
   brightness: Brightness.dark,
   primaryColor: ColorSys.darkBlue,
+  progressIndicatorTheme: const ProgressIndicatorThemeData(
+    color: ColorSys.darkBlue,
+  ),
   colorScheme: const ColorScheme.dark(
     primary: ColorSys.darkBlue,
     secondary: Colors
@@ -178,6 +181,9 @@ final lightTheme = ThemeData(
   brightness: Brightness.light,
   primaryColor: ColorSys.darkBlue,
   scaffoldBackgroundColor: ColorSys.surface,
+  progressIndicatorTheme: const ProgressIndicatorThemeData(
+    color: ColorSys.darkBlue,
+  ),
   colorScheme: const ColorScheme.light(
     primary: ColorSys.darkBlue,
     secondary: ColorSys.lightBlue,

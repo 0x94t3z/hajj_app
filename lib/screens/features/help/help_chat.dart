@@ -59,6 +59,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   @override
   void initState() {
     super.initState();
+    HelpService.registerHelpChatScreen();
     _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
       (user) {
         if (!mounted) return;
@@ -83,6 +84,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
 
   @override
   void dispose() {
+    HelpService.unregisterHelpChatScreen();
     _authStateSubscription?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();

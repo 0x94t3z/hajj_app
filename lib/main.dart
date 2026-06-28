@@ -426,7 +426,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     required bool isUrgent,
     String? payload,
   }) async {
-    if (_isOnHelpChatRoute) return;
+    if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
 
     final popupCount = count < 1 ? 1 : count;
     if (_appLifecycleState != AppLifecycleState.resumed) {
@@ -772,6 +772,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: lightTheme,
+      darkTheme: darkTheme,
       navigatorKey: _navigatorKey,
       navigatorObservers: <NavigatorObserver>[_routeObserver],
       initialRoute: isLoggedIn ? '/home' : '/introduction',
