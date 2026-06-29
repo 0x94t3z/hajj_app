@@ -61,7 +61,7 @@ Sampaikan bahwa sistem berhasil menjalankan fungsi utama, tetapi tetap memiliki 
 
 ## Kapan Harus Demo
 
-Demo utama dilakukan saat membahas **Bagian 14 - Validasi Alur Aplikasi**.
+Demo utama dilakukan saat membahas **Bagian 14 - Demo Aplikasi**.
 
 Sebelum bagian 14, jangan membuka aplikasi terlalu banyak. Gunakan screenshot pada bagian untuk menjelaskan antarmuka. Ini membuat alur presentasi lebih rapi dan dosen tidak merasa presentasi meloncat dari konsep ke demo terlalu cepat.
 
@@ -70,7 +70,7 @@ Sebelum bagian 14, jangan membuka aplikasi terlalu banyak. Gunakan screenshot pa
 - Bagian 11: boleh tunjukkan tampilan login/home dari screenshot saja.
 - Bagian 12: jika ditanya, boleh buka Find My sebentar.
 - Bagian 13: jika ditanya, jelaskan singkat sebagai fitur pendukung, bukan fokus rumusan masalah.
-- Bagian 14: demo lengkap, tetapi materi tetap ditulis sebagai validasi fungsi utama.
+- Bagian 14: demo lengkap sebagai pembuktian fungsi utama.
 
 **JELASKAN DENGAN KATA SENDIRI - Jika waktu presentasi hanya 8-10 menit:**
 
@@ -78,7 +78,7 @@ Sebelum bagian 14, jangan membuka aplikasi terlalu banyak. Gunakan screenshot pa
 - Bagian 6-10: 3 menit.
 - Bagian 11-13: 2 menit.
 - Bagian 14: 3 menit.
-- Bagian 15-17: 1-2 menit.
+- Bagian 15-16: 1-2 menit.
 
 ## Bagian 01 - Seminar Kolokium Tugas Akhir
 
@@ -507,7 +507,7 @@ Belum demo lengkap. Jika dosen meminta, boleh buka app sampai Find My, lalu kemb
 **BACA / UCAPKAN - Transisi:**
 Setelah pencarian dan navigasi, saya jelaskan singkat fitur pendukung jemaah agar tidak menggeser fokus penelitian.
 
-## Bagian 13 - Fitur Pendukung dan Peran Akun
+## Bagian 13 - Fitur Pendukung Aplikasi
 
 **JANGAN DIBACA - Tujuan bagian:**
 Menjelaskan fitur pendukung secara singkat tanpa menjadikannya fokus utama penelitian.
@@ -533,12 +533,12 @@ Fitur pendukung ini bukan bagian utama evaluasi penelitian dan bukan prosedur re
 Belum demo utama. Screenshot cukup.
 
 **BACA / UCAPKAN - Transisi:**
-Setelah menjelaskan fitur, saya masuk ke validasi alur aplikasi.
+Setelah menjelaskan fitur, saya masuk ke demo aplikasi.
 
-## Bagian 14 - Validasi Alur Aplikasi
+## Bagian 14 - Demo Aplikasi
 
 **JANGAN DIBACA - Tujuan bagian:**
-Menjelaskan validasi alur fungsi utama aplikasi, lalu menggunakannya sebagai momen demo.
+Menunjukkan pembuktian fungsi utama berdasarkan implementasi sistem.
 
 **JANGAN DIBACA - Sumber skripsi:**
 BAB IV implementasi sistem, BAB IV pengujian fungsi utama, dan aplikasi Hajj App.
@@ -595,47 +595,9 @@ Mapbox digunakan untuk peta dan rute. Jika peta tidak tampil, saya tetap dapat m
 Demo utama dilakukan pada bagian ini.
 
 **BACA / UCAPKAN - Transisi:**
-Setelah demo, saya jelaskan rencana pengujian dan indikator keberhasilan sistem.
+Setelah demo, saya masuk ke penutup kolokium.
 
-## Bagian 15 - Rencana Pengujian dan Indikator
-
-**JANGAN DIBACA - Tujuan bagian:**
-Menjelaskan bagaimana sistem dievaluasi.
-
-**JANGAN DIBACA - Sumber skripsi:**
-BAB IV bagian Pengujian dan Evaluasi Sistem.
-
-**JELASKAN DENGAN KATA SENDIRI - Poin lisan:**
-
-- Pengujian dilakukan pada Android emulator, iOS simulator, dan iPhone fisik.
-- Pengujian difokuskan pada fungsi utama.
-- Fungsi yang diuji: login, lokasi, Firebase, peta, dan navigasi.
-- Algoritma diuji dengan data koordinat jemaah dan petugas.
-- Hasil Haversine dibandingkan dengan Mapbox Directions API.
-- Indikator: urutan petugas sesuai jarak, marker dan rute tampil, serta dokumentasi final UI tersedia sebagai pendukung evaluasi.
-
-**BACA / UCAPKAN - Contoh narasi:**
-
-Pengujian pada penelitian ini difokuskan pada fungsi utama sistem. Aplikasi diuji pada Android emulator, iOS simulator, dan iPhone fisik. Bagian yang diuji meliputi login, pembacaan lokasi, pengambilan data dari Firebase, perhitungan Haversine, tampilan peta, dan navigasi. Untuk algoritma, hasil Haversine dibandingkan dengan hasil Mapbox Directions API agar terlihat perbedaan antara jarak antarkoordinat dan jarak rute.
-
-**TANYA JAWAB - Data valid dari skripsi:**
-
-- Titik uji jemaah ditempatkan pada koordinat Jabal Al Kaabah.
-- Sistem menghasilkan 10 petugas terdekat.
-- Souq Al-Khalil menjadi contoh petugas terdekat dengan jarak Haversine 0.542 km.
-- Jarak Mapbox untuk titik yang sama adalah 0.925 km.
-- Aplikasi dapat dijalankan pada Android dan iOS untuk mendukung fungsi utama.
-
-**TANYA JAWAB - Jika dosen bertanya performa:**
-Pengukuran performa teknis rinci seperti memori, frame rate, dan waktu render belum menjadi fokus utama penelitian. Fokus penelitian adalah keberhasilan fungsi pencarian, pengurutan, peta, dan navigasi.
-
-**DEMO:**
-Tidak ada demo baru. Gunakan hasil demo bagian 14 sebagai pembuktian.
-
-**BACA / UCAPKAN - Transisi:**
-Setelah pengujian, saya masuk ke penutup kolokium.
-
-## Bagian 16 - Penutup Kolokium
+## Bagian 15 - Penutup
 
 **JANGAN DIBACA - Tujuan bagian:**
 Menyampaikan simpulan sementara dan arah pengembangan.
@@ -665,7 +627,7 @@ Tidak ada demo.
 **BACA / UCAPKAN - Transisi:**
 Terakhir, saya tampilkan kontak dan siap menerima pertanyaan.
 
-## Bagian 17 - Kontak
+## Bagian 16 - Kontak
 
 **JANGAN DIBACA - Tujuan bagian:**
 Menutup presentasi dan membuka sesi tanya jawab.
