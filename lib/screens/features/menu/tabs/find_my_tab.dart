@@ -32,7 +32,7 @@ class _FindMyTabState extends State<FindMyTab> {
   MapboxMap? mapboxMap;
   geo.Position? currentPosition;
   String locationName = 'Meca, Saudi Arabia';
-  String buttonLabel = 'Find Officers';
+  String buttonLabel = 'Cari Petugas';
   bool _locationPermissionDeniedLogged = false;
   bool _mapReady = false;
   bool _enableMap = false;
@@ -246,7 +246,7 @@ class _FindMyTabState extends State<FindMyTab> {
 
         if (!mounted) return;
         setState(() {
-          buttonLabel = isPetugas ? 'Find Pilgrims' : 'Find Officers';
+          buttonLabel = isPetugas ? 'Cari Jemaah' : 'Cari Petugas';
         });
       }
     } on FirebaseException catch (e) {
@@ -360,7 +360,7 @@ class _FindMyTabState extends State<FindMyTab> {
                               ),
                               const SizedBox(height: 14.0),
                               Text(
-                                'Your location',
+                                'Lokasi Anda',
                                 style: textStyle(
                                     fontSize: 14, color: ColorSys.darkBlue),
                               ),

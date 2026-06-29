@@ -203,8 +203,8 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.warning,
-        title: 'Session Archived',
-        message: 'This session is archived. You can only view messages.',
+        title: 'Sesi Diarsipkan',
+        message: 'Sesi ini sudah diarsipkan. Anda hanya dapat melihat pesan.',
       );
       return;
     }
@@ -1071,7 +1071,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'End Session',
+                      'Akhiri Sesi',
                       textAlign: TextAlign.center,
                       style: textStyle(
                         fontSize: 18,
@@ -1081,7 +1081,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Jika masih butuh bantuan, jangan tekan End. '
+                      'Jika masih membutuhkan bantuan, jangan tekan Akhiri. '
                       'Percakapan ini akan diarsipkan.',
                       textAlign: TextAlign.center,
                       style: textStyle(
@@ -1104,7 +1104,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: Text(
-                              'Cancel',
+                              'Batal',
                               style: textStyle(
                                 fontSize: 14,
                                 color: ColorSys.error,
@@ -1127,7 +1127,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             child: Text(
-                              'End',
+                              'Akhiri',
                               style: textStyle(
                                 fontSize: 14,
                                 color: Colors.white,
@@ -1220,8 +1220,8 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.success,
-        title: 'Session Ended',
-        message: 'This help request has been archived.',
+        title: 'Sesi Diakhiri',
+        message: 'Permintaan bantuan ini telah diarsipkan.',
       );
       if (mounted) {
         Navigator.pop(context);
@@ -1231,8 +1231,8 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.error,
-        title: 'Action Failed',
-        message: 'Unable to end the session: $e',
+        title: 'Aksi Gagal',
+        message: 'Tidak dapat mengakhiri sesi: $e',
       );
     } finally {
       if (mounted) {

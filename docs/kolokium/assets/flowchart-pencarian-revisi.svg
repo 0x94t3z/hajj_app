@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1140" viewBox="0 0 960 1140">
+  <rect width="960" height="1140" fill="#f7faf9"/>
+  <text x="48" y="58" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#17313b">Flowchart Sistem Pencarian</text>
+  <text x="48" y="92" font-family="Arial, sans-serif" font-size="18" fill="#5d6b73">Simbol proses, input/output, dan decision dibuat konsisten</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#17313b"/>
+    </marker>
+    <style>
+      .start{fill:#fff;stroke:#17313b;stroke-width:3}
+      .process{fill:#fff;stroke:#17313b;stroke-width:3}
+      .io{fill:#ecf6f6;stroke:#2d8c98;stroke-width:3}
+      .decision{fill:#fff8e8;stroke:#c99528;stroke-width:3}
+      .text{font-family:Arial,sans-serif;font-size:18px;fill:#17313b;font-weight:700}
+      .small{font-family:Arial,sans-serif;font-size:15px;fill:#5d6b73}
+      .line{stroke:#17313b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+
+  <ellipse cx="480" cy="140" rx="92" ry="34" class="start"/>
+  <text x="459" y="147" class="text">Start</text>
+
+  <rect x="345" y="205" width="270" height="56" rx="8" class="process"/>
+  <text x="395" y="240" class="text">Login Jemaah</text>
+
+  <rect x="345" y="310" width="270" height="56" rx="8" class="process"/>
+  <text x="382" y="345" class="text">Ambil Lokasi GPS</text>
+
+  <polygon points="480,410 620,470 480,530 340,470" class="decision"/>
+  <text x="406" y="465" class="text">Lokasi GPS</text>
+  <text x="435" y="488" class="text">valid?</text>
+
+  <rect x="105" y="435" width="170" height="70" rx="8" class="process"/>
+  <text x="144" y="463" class="text">Minta izin</text>
+  <text x="158" y="487" class="text">lokasi</text>
+
+  <polygon points="350,580 650,580 610,640 310,640" class="io"/>
+  <text x="380" y="616" class="text">Input koordinat jemaah</text>
+
+  <rect x="345" y="690" width="270" height="64" rx="8" class="process"/>
+  <text x="383" y="717" class="text">Baca data petugas</text>
+  <text x="405" y="741" class="small">Firebase Realtime Database</text>
+
+  <polygon points="480,800 620,860 480,920 340,860" class="decision"/>
+  <text x="394" y="855" class="text">Data petugas</text>
+  <text x="421" y="878" class="text">tersedia?</text>
+
+  <rect x="665" y="827" width="210" height="66" rx="8" class="process"/>
+  <text x="690" y="854" class="text">Tampilkan pesan</text>
+  <text x="696" y="878" class="small">data tidak tersedia</text>
+
+  <rect x="345" y="970" width="270" height="64" rx="8" class="process"/>
+  <text x="370" y="997" class="text">Hitung Haversine</text>
+  <text x="377" y="1021" class="small">urutkan jarak terkecil</text>
+
+  <polygon points="350,1060 650,1060 610,1120 310,1120" class="io" transform="translate(0,-5)"/>
+  <text x="354" y="1091" class="text">Output petugas terdekat</text>
+
+  <path d="M480 174 L480 205" class="line"/>
+  <path d="M480 261 L480 310" class="line"/>
+  <path d="M480 366 L480 410" class="line"/>
+  <path d="M480 530 L480 580" class="line"/>
+  <path d="M480 640 L480 690" class="line"/>
+  <path d="M480 754 L480 800" class="line"/>
+  <path d="M480 920 L480 970" class="line"/>
+  <path d="M480 1034 L480 1055" class="line"/>
+
+  <path d="M340 470 L275 470" class="line"/>
+  <path d="M190 435 L190 338 L345 338" class="line"/>
+  <text x="295" y="455" class="small">Tidak</text>
+  <text x="505" y="562" class="small">Ya</text>
+
+  <path d="M620 860 L665 860" class="line"/>
+  <text x="626" y="845" class="small">Tidak</text>
+  <text x="503" y="950" class="small">Ya</text>
+</svg>

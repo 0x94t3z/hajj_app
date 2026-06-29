@@ -373,7 +373,7 @@ class _SettingsTabState extends State<SettingsTab> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Help Requests',
+                              'Permintaan Bantuan',
                               style: textStyle(
                                 fontSize: 14,
                                 color: ColorSys.darkBlue,

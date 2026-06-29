@@ -431,7 +431,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     final popupCount = count < 1 ? 1 : count;
     if (_appLifecycleState != AppLifecycleState.resumed) {
       await LocalNotificationService.showNotification(
-        title: isUrgent ? 'Urgent Help Request' : 'New Message',
+        title: isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru',
         body: _helpNotificationText(
           popupCount,
           isUrgent: isUrgent,
@@ -482,7 +482,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     if (isUrgent) {
       return 'Ada $total permintaan bantuan baru dari jemaah.';
     }
-    return 'You have $total new message.';
+    return 'Ada $total pesan baru.';
   }
 
   Future<void> _showHelpRequestCountPopup(
@@ -491,7 +491,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     required bool isUrgent,
   }) async {
     final accent = isUrgent ? ColorSys.error : ColorSys.darkBlue;
-    final title = isUrgent ? 'Urgent Help Request' : 'New Message';
+    final title = isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru';
     final backgroundColor = isUrgent ? const Color(0xFFFFFBFB) : Colors.white;
     await showDialog<void>(
       context: navigator.context,
@@ -572,7 +572,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: Text(
-                          'No',
+                          'Tidak',
                           style: textStyle(
                             fontSize: 14,
                             color: accent,
@@ -597,7 +597,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         child: Text(
-                          'View',
+                          'Lihat',
                           style: textStyle(
                             fontSize: 14,
                             color: Colors.white,

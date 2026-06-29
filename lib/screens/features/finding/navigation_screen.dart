@@ -307,11 +307,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
     return showAppConfirmPopup(
       context,
       type: AppPopupType.info,
-      title: 'Need Help?',
+      title: 'Butuh Bantuan?',
       message: 'Kamu akan meminta bantuan kepada $officerName. '
           'Lokasi kamu akan dibagikan.',
-      confirmText: 'Continue',
-      cancelText: 'Cancel',
+      confirmText: 'Lanjut',
+      cancelText: 'Batal',
     );
   }
 
@@ -552,7 +552,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           },
         ),
         title: Text(
-          'Nearest Hajj Officers',
+          'Petugas Haji Terdekat',
           style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
@@ -1077,7 +1077,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Nearest Hajj Officers',
+                    'Petugas Haji Terdekat',
                     style: textStyle(color: ColorSys.primary),
                   ),
                   const SizedBox(height: 10),

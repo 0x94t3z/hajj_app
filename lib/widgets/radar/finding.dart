@@ -222,7 +222,7 @@ class _FindingWidgetState extends State<FindingWidget>
   };
 
   late AnimationController _controller;
-  String buttonLabel = 'Find Officers';
+  String buttonLabel = 'Cari Petugas';
 
   @override
   void initState() {
@@ -269,10 +269,10 @@ class _FindingWidgetState extends State<FindingWidget>
       final isPetugas = _isPetugasRole(role);
       if (!mounted) return;
       setState(() {
-        buttonLabel = isPetugas ? 'Find Pilgrims' : 'Find Officers';
+        buttonLabel = isPetugas ? 'Cari Jemaah' : 'Cari Petugas';
       });
     } catch (e) {
-      print('Error fetching user role: $e');
+      debugPrint('Error fetching user role: $e');
     }
   }
 

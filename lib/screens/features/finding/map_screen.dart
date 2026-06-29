@@ -1406,11 +1406,11 @@ class _MapScreenState extends State<MapScreen> {
     return showAppConfirmPopup(
       context,
       type: AppPopupType.info,
-      title: 'Need Help?',
+      title: 'Butuh Bantuan?',
       message: 'Kamu akan meminta bantuan kepada $officerName. '
           'Lokasi kamu akan dibagikan.',
-      confirmText: 'Continue',
-      cancelText: 'Cancel',
+      confirmText: 'Lanjut',
+      cancelText: 'Batal',
     );
   }
 

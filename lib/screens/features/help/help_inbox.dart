@@ -257,7 +257,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                   if (archived) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Archived',
+                      'Diarsipkan',
                       style: textStyle(
                         fontSize: 10,
                         color: ColorSys.textSecondary,
@@ -287,7 +287,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Help Requests',
+          'Permintaan Bantuan',
           style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
@@ -411,7 +411,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Archived',
+                                            'Diarsipkan',
                                             style: textStyle(
                                               fontSize: 14,
                                               color: ColorSys.darkBlue,
@@ -487,7 +487,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                                     Row(
                                       children: [
                                         Text(
-                                          'Active Requests',
+                                          'Permintaan Aktif',
                                           style: textStyle(
                                             fontSize: 14,
                                             color: ColorSys.darkBlue,
