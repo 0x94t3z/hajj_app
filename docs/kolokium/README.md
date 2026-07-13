@@ -4,6 +4,7 @@ Folder ini hanya berisi dokumen dan aset final yang aman untuk disimpan di GitHu
 
 - `catatan-final-kolokium.md`: catatan lengkap untuk latihan presentasi.
 - `revisi-final-validasi-terakhir.md`: teks revisi final, status validasi terakhir, dan daftar bagian yang masih perlu dirapikan sebelum submit.
+- `panduan-penulisan-anti-ai.md`: panduan gaya penulisan agar revisi laporan tetap natural, formal, dan tidak terasa seperti template AI.
 - `rancangan-database-bab-iii.md`: narasi rancangan database untuk BAB III.
 - `assets/`: aset final laporan, termasuk flowchart, ilustrasi Haversine, dan ERD.
 

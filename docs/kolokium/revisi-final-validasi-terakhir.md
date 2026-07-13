@@ -2,6 +2,8 @@
 
 Dokumen ini berisi rangkuman revisi kolokium, teks siap tempel, dan status validasi terakhir terhadap laporan tugas akhir `Tugas Akhir - Muhamad Taopik (1197050081).docx`.
 
+Gaya penulisan mengacu pada `docs/kolokium/panduan-penulisan-anti-ai.md`: kalimat dibuat formal, langsung, dan tidak memakai klaim besar yang tidak diuji.
+
 ## Urutan Pengerjaan
 
 1. BAB I - perjelas batasan fitur bantuan.
