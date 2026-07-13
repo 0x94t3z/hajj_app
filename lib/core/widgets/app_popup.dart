@@ -49,7 +49,7 @@ Future<void> showAppPopup(
   required String message,
   AppPopupType type = AppPopupType.info,
   String? title,
-  String buttonText = 'OK',
+  String buttonText = 'Oke',
   bool barrierDismissible = true,
   Color? accentOverride,
 }) async {
@@ -272,7 +272,7 @@ Future<void> showAppPopupFromNavigator(
   required String message,
   AppPopupType type = AppPopupType.info,
   String? title,
-  String buttonText = 'OK',
+  String buttonText = 'Oke',
   bool barrierDismissible = true,
   Color? accentOverride,
 }) {

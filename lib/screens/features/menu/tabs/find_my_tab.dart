@@ -31,7 +31,7 @@ class _FindMyTabState extends State<FindMyTab> {
   final UserService _userService = UserService();
   MapboxMap? mapboxMap;
   geo.Position? currentPosition;
-  String locationName = 'Meca, Saudi Arabia';
+  String locationName = 'Makkah, Arab Saudi';
   String buttonLabel = 'Cari Petugas';
   bool _locationPermissionDeniedLogged = false;
   bool _mapReady = false;
@@ -183,7 +183,7 @@ class _FindMyTabState extends State<FindMyTab> {
     if (parts.isEmpty) {
       return placemark.name?.trim().isNotEmpty == true
           ? placemark.name!.trim()
-          : 'Unknown Location';
+          : 'Lokasi Tidak Dikenal';
     }
     return parts.join(', ');
   }
@@ -255,7 +255,7 @@ class _FindMyTabState extends State<FindMyTab> {
         context,
         type: AppPopupType.error,
         title: 'Gagal Memuat Peran',
-        message: e.message ?? 'Failed to read user role.',
+        message: e.message ?? 'Gagal membaca peran akun.',
       );
     } catch (e) {
       debugPrint('Error fetching user role: $e');
@@ -326,7 +326,7 @@ class _FindMyTabState extends State<FindMyTab> {
                                                     ),
                                                     const SizedBox(height: 8),
                                                     Text(
-                                                      'Map will load when this tab is opened',
+                                                      'Peta akan dimuat saat menu ini dibuka',
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: textStyle(

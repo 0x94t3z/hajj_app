@@ -11,7 +11,6 @@ import 'package:iconsax/iconsax.dart';
 import 'package:hajj_app/core/utils/name_formatter.dart';
 import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/core/constants/onboarding_strings.dart';
-import 'package:hajj_app/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -30,19 +29,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController kloterController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
   Future<void> registerWithEmailAndPassword() async {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
+    final kloter = kloterController.text.trim();
     final password = passwordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if (name.isEmpty || email.isEmpty || kloter.isEmpty || password.isEmpty) {
       await showAppPopup(
         context,
         type: AppPopupType.warning,
-        title: 'Missing Information',
-        message: 'Please fill in name, email, and password.',
+        title: 'Data Belum Lengkap',
+        message: 'Silakan isi nama, email, kloter, dan password.',
       );
       return;
     }
@@ -51,8 +52,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.warning,
-        title: 'Password Too Short',
-        message: 'Password must be at least 6 characters.',
+        title: 'Password Terlalu Pendek',
+        message: 'Kata sandi minimal 6 karakter.',
       );
       return;
     }
@@ -67,18 +68,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      String message = 'Error occurred during registration.';
+      String message = 'Terjadi kesalahan saat pendaftaran.';
       if (e.code == 'email-already-in-use') {
-        message = 'Email is already in use.';
+        message = 'Email sudah digunakan.';
       } else if (e.code == 'invalid-email') {
-        message = 'Invalid email address.';
+        message = 'Alamat email tidak valid.';
       } else if (e.code == 'weak-password') {
-        message = 'Password is too weak.';
+        message = 'Kata sandi terlalu lemah.';
       }
       await showAppPopup(
         context,
         type: AppPopupType.error,
-        title: 'Registration Failed',
+        title: 'Pendaftaran Gagal',
         message: message,
       );
       return;
@@ -86,8 +87,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.error,
-        title: 'Registration Failed',
-        message: 'Unable to create your account. Please try again.',
+        title: 'Pendaftaran Gagal',
+        message: 'Akun tidak dapat dibuat. Silakan coba lagi.',
       );
       return;
     }
@@ -97,8 +98,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.error,
-        title: 'Registration Failed',
-        message: 'Account was created, but user data is unavailable.',
+        title: 'Pendaftaran Gagal',
+        message: 'Akun berhasil dibuat, tetapi data akun belum tersedia.',
       );
       return;
     }
@@ -118,8 +119,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       position = null;
     }
 
-    const imageUrl = UserService.defaultProfileImageUrl;
-
     try {
       final usersRef = FirebaseDatabase.instance.ref().child('users');
       await usersRef.child(user.uid).set({
@@ -127,19 +126,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'displayName': normalizedName,
         'email': email,
         'roles': 'Jemaah Haji',
+        'kloter': kloter,
         'latitude': position?.latitude ?? '',
         'longitude': position?.longitude ?? '',
-        'imageUrl': imageUrl,
+        'imageUrl': '',
       });
     } catch (_) {
-      // Non-fatal: account exists even if profile write fails.
+      try {
+        await user.delete();
+      } catch (_) {
+        // If deletion fails, keep the account but still report profile failure.
+      }
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Pendaftaran Gagal',
+        message:
+            'Akun tidak dapat menyimpan data profil. Silakan coba daftar kembali.',
+      );
+      return;
     }
 
     await showAppPopup(
       context,
       type: AppPopupType.success,
-      title: 'Registration Successful',
-      message: 'Your account has been created. Please log in.',
+      title: 'Pendaftaran Berhasil',
+      message: 'Akun berhasil dibuat. Silakan masuk.',
     );
 
     try {
@@ -171,6 +183,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _timer.cancel(); // Cancel the timer when the widget is disposed
+    nameController.dispose();
+    emailController.dispose();
+    kloterController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -290,8 +306,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.all(0.0),
-                      labelText: 'Name',
-                      hintText: 'Full name',
+                      labelText: 'Nama',
+                      hintText: 'Nama lengkap',
                       labelStyle: textStyle(
                         color: ColorSys.darkBlue,
                         fontSize: 14.0,
@@ -338,7 +354,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.all(0.0),
                       labelText: 'Email',
-                      hintText: 'Your e-mail',
+                      hintText: 'Alamat email',
                       labelStyle: textStyle(
                         color: ColorSys.darkBlue,
                         fontSize: 14.0,
@@ -376,6 +392,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 400),
                   child: TextField(
+                    controller: kloterController,
+                    cursorColor: ColorSys.darkBlue,
+                    keyboardType: TextInputType.text,
+                    style: textStyle(
+                      color: ColorSys.textPrimary,
+                      fontSize: 14.0,
+                    ),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.all(0.0),
+                      labelText: 'Kloter',
+                      hintText: 'Nomor kloter',
+                      labelStyle: textStyle(
+                        color: ColorSys.darkBlue,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      hintStyle: textStyle(
+                        color: ColorSys.textSecondary,
+                        fontSize: 14.0,
+                      ),
+                      prefixIcon: const Icon(
+                        Iconsax.people,
+                        color: ColorSys.darkBlue,
+                        size: 18,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            const BorderSide(color: ColorSys.border, width: 2),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                      floatingLabelStyle: textStyle(
+                        color: ColorSys.darkBlue,
+                        fontSize: 18.0,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: ColorSys.darkBlue, width: 1.5),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 400),
+                  child: TextField(
                     controller: passwordController,
                     cursorColor: ColorSys.darkBlue,
                     obscureText: _obscurePassword,
@@ -386,7 +450,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.all(0.0),
                       labelText: 'Password',
-                      hintText: 'Password',
+                      hintText: 'Kata sandi',
                       hintStyle: textStyle(
                         color: ColorSys.textSecondary,
                         fontSize: 14.0,
@@ -467,7 +531,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           )
                         : Text(
-                            "Register",
+                            "Daftar",
                             style: textStyle(
                                 color: Colors.white,
                                 fontSize: 16.0,
@@ -484,7 +548,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account?',
+                        'Sudah punya akun?',
                         style: textStyle(
                           color: ColorSys.textSecondary,
                           fontSize: 14.0,
@@ -496,7 +560,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Navigator.pop(context);
                         },
                         child: Text(
-                          'Login',
+                          'Masuk',
                           style: textStyle(
                             color: ColorSys.darkBlue,
                             fontSize: 14.0,

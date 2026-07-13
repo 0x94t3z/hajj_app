@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="950" viewBox="0 0 1500 950">
+  <rect width="1500" height="950" fill="#ffffff"/>
+  <defs>
+    <style>
+      text { font-family: "Times New Roman", Times, serif; }
+      .label { font-size: 30px; fill: #1b1b1b; }
+      .labelBold { font-size: 34px; font-weight: 700; fill: #111111; }
+      .small { font-size: 27px; fill: #222222; }
+      .symbol { font-size: 34px; font-weight: 700; fill: #111111; }
+    </style>
+  </defs>
+
+  <circle cx="455" cy="445" r="280" fill="#ffffff" stroke="#111111" stroke-width="3"/>
+  <path d="M185 360 Q455 105 720 360" fill="none" stroke="#111111" stroke-width="3"/>
+  <path d="M235 360 Q455 230 645 360" fill="none" stroke="#1f77b4" stroke-width="6"/>
+  <line x1="455" y1="165" x2="455" y2="725" stroke="#777777" stroke-width="2"/>
+  <line x1="175" y1="445" x2="735" y2="445" stroke="#777777" stroke-width="2"/>
+  <line x1="275" y1="360" x2="650" y2="360" stroke="#888888" stroke-width="2" stroke-dasharray="16 16"/>
+  <line x1="455" y1="445" x2="650" y2="360" stroke="#333333" stroke-width="1.4"/>
+
+  <circle cx="275" cy="360" r="7" fill="#111111"/>
+  <circle cx="650" cy="360" r="7" fill="#111111"/>
+  <rect x="55" y="315" width="175" height="68" fill="#ffffff" opacity="0.94"/>
+  <text x="65" y="348" class="labelBold">Jemaah</text>
+  <text x="65" y="378" class="small">(lat1, lon1)</text>
+  <rect x="660" y="315" width="180" height="68" fill="#ffffff" opacity="0.94"/>
+  <text x="670" y="348" class="labelBold">Petugas</text>
+  <text x="670" y="378" class="small">(lat2, lon2)</text>
+
+  <text x="425" y="145" font-size="30" font-style="italic" fill="#333333">latitude</text>
+  <text x="700" y="452" font-size="30" font-style="italic" fill="#333333">longitude</text>
+  <text x="555" y="535" font-size="30" fill="#111111">r</text>
+  <text x="335" y="625" font-size="30" fill="#1f77b4">d = jarak Haversine</text>
+
+  <rect x="845" y="200" width="470" height="480" fill="#ffffff" stroke="#111111" stroke-width="3"/>
+  <line x1="875" y1="285" x2="1285" y2="285" stroke="#111111" stroke-width="2"/>
+  <text x="875" y="260" font-size="34" font-weight="700" fill="#111111">Keterangan simbol</text>
+  <text x="880" y="345" class="symbol">lat1, lon1</text><text x="1040" y="345" class="label">= koordinat jemaah</text>
+  <text x="880" y="398" class="symbol">lat2, lon2</text><text x="1040" y="398" class="label">= koordinat petugas</text>
+  <text x="880" y="451" class="symbol">dlat</text><text x="1040" y="451" class="label">= lat2 - lat1</text>
+  <text x="880" y="504" class="symbol">dlon</text><text x="1040" y="504" class="label">= lon2 - lon1</text>
+  <text x="880" y="557" class="symbol">r</text><text x="1040" y="557" class="label">= radius bumi</text>
+  <text x="880" y="610" class="symbol">d</text><text x="1040" y="610" class="label">= jarak Haversine</text>
+
+  <rect x="115" y="790" width="1265" height="80" fill="#fafafa" stroke="#777777" stroke-width="1.5"/>
+  <text x="750" y="842" font-size="30" fill="#111111" text-anchor="middle">a = sin²(dlat/2) + cos(lat1) x cos(lat2) x sin²(dlon/2)     d = 2r x asin(√a)</text>
+</svg>

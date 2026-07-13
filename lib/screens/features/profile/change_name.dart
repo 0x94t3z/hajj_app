@@ -39,8 +39,8 @@ class _EditNameScreenState extends State<EditNameScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.warning,
-        title: 'Missing Name',
-        message: 'Please enter your name.',
+        title: 'Nama Belum Diisi',
+        message: 'Silakan masukkan nama Anda.',
       );
       return;
     }
@@ -58,8 +58,8 @@ class _EditNameScreenState extends State<EditNameScreen> {
       await showAppPopup(
         context,
         type: AppPopupType.error,
-        title: 'Update Failed',
-        message: 'Unable to update your name. Please try again.',
+        title: 'Pembaruan Gagal',
+        message: 'Nama tidak dapat diperbarui. Silakan coba lagi.',
       );
       return;
     }
@@ -67,8 +67,8 @@ class _EditNameScreenState extends State<EditNameScreen> {
     await showAppPopup(
       context,
       type: AppPopupType.success,
-      title: 'Name Updated',
-      message: 'Your name has been updated.',
+      title: 'Nama Diperbarui',
+      message: 'Nama berhasil diperbarui.',
     );
 
     // ignore: use_build_context_synchronously
@@ -105,7 +105,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
           },
         ),
         title: Text(
-          'Change Name',
+          'Ubah Nama',
           style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
@@ -118,13 +118,31 @@ class _EditNameScreenState extends State<EditNameScreen> {
             const SizedBox(height: 30),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'New Name',
-                  labelStyle: textStyle(fontSize: 14),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: ColorSys.lightPrimary),
+              child: TextSelectionTheme(
+                data: TextSelectionThemeData(
+                  cursorColor: ColorSys.darkBlue,
+                  selectionColor: ColorSys.darkBlue.withValues(alpha: 0.24),
+                  selectionHandleColor: ColorSys.darkBlue,
+                ),
+                child: TextFormField(
+                  controller: _nameController,
+                  cursorColor: ColorSys.darkBlue,
+                  style: textStyle(
+                    fontSize: 18,
+                    color: ColorSys.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Nama Baru',
+                    labelStyle: textStyle(
+                      fontSize: 14,
+                      color: ColorSys.textSecondary,
+                    ),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: ColorSys.textSecondary),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: ColorSys.darkBlue),
+                    ),
                   ),
                 ),
               ),
@@ -180,7 +198,7 @@ class _EditNameScreenState extends State<EditNameScreen> {
                         ),
                       )
                     : Text(
-                        'Save Changes',
+                        'Simpan Perubahan',
                         style: textStyle(
                           fontSize: 16,
                           color: Colors.white,

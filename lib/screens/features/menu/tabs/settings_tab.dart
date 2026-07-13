@@ -21,6 +21,9 @@ class SettingsTab extends StatefulWidget {
 }
 
 class _SettingsTabState extends State<SettingsTab> {
+  static const String _defaultProfileAsset =
+      'assets/images/default_profile.png';
+
   final UserService _userService = UserService();
   final HelpService _helpService = HelpService();
   late String _name = '';
@@ -157,6 +160,21 @@ class _SettingsTabState extends State<SettingsTab> {
     });
   }
 
+  Widget _buildProfileImage(String imageUrl) {
+    final normalizedUrl = UserService.normalizeProfileImageUrl(imageUrl);
+    if (normalizedUrl.isEmpty ||
+        normalizedUrl == UserService.defaultProfileImageUrl) {
+      return Image.asset(_defaultProfileAsset, fit: BoxFit.cover);
+    }
+    return Image.network(
+      normalizedUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(_defaultProfileAsset, fit: BoxFit.cover);
+      },
+    );
+  }
+
   void getData() async {
     try {
       final cachedProfile = _userService.getCachedCurrentUserProfile();
@@ -171,7 +189,9 @@ class _SettingsTabState extends State<SettingsTab> {
           _name =
               toTitleCaseName(cachedProfile['displayName'] as String? ?? '');
           _email = cachedProfile['email'] as String? ?? '';
-          _imageUrl = cachedProfile['imageUrl'] as String? ?? '';
+          _imageUrl = UserService.normalizeProfileImageUrl(
+            cachedProfile['imageUrl'] as String?,
+          );
           _roles = cachedRoleStatus;
         });
       }
@@ -187,7 +207,9 @@ class _SettingsTabState extends State<SettingsTab> {
         setState(() {
           _name = toTitleCaseName(userData['displayName'] as String? ?? '');
           _email = userData['email'] as String? ?? '';
-          _imageUrl = userData['imageUrl'] as String? ?? '';
+          _imageUrl = UserService.normalizeProfileImageUrl(
+            userData['imageUrl'] as String?,
+          );
           _roles = roleStatus;
         });
       } else {
@@ -227,12 +249,14 @@ class _SettingsTabState extends State<SettingsTab> {
                       if (updatedData != null) {
                         setState(() {
                           _name = toTitleCaseName(updatedData['name'] ?? '');
-                          _imageUrl = updatedData['imageUrl'];
+                          _imageUrl = UserService.normalizeProfileImageUrl(
+                            updatedData['imageUrl']?.toString(),
+                          );
                         });
                       }
                     },
                     child: Text(
-                      'Edit',
+                      'Ubah',
                       style: textStyle(fontSize: 16),
                     ),
                   ),
@@ -253,27 +277,7 @@ class _SettingsTabState extends State<SettingsTab> {
                         color: Colors.grey,
                       ),
                       child: ClipOval(
-                        child: _imageUrl.trim().isNotEmpty
-                            ? Image.network(
-                                _imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Center(
-                                    child: Icon(
-                                      Iconsax.profile_circle,
-                                      color: ColorSys.darkBlue,
-                                      size: 48,
-                                    ),
-                                  );
-                                },
-                              )
-                            : const Center(
-                                child: Icon(
-                                  Iconsax.profile_circle,
-                                  color: ColorSys.darkBlue,
-                                  size: 48,
-                                ),
-                              ),
+                        child: _buildProfileImage(_imageUrl),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -298,7 +302,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'General',
+                          'Umum',
                           style: textStyle(
                             fontSize: 14,
                           ),
@@ -446,7 +450,7 @@ class _SettingsTabState extends State<SettingsTab> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Change Password',
+                              'Ubah Password',
                               style: textStyle(
                                 fontSize: 14,
                                 color: ColorSys.darkBlue,
@@ -468,7 +472,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'About',
+                          'Tentang',
                           style: textStyle(
                             fontSize: 14,
                           ),
@@ -492,7 +496,7 @@ class _SettingsTabState extends State<SettingsTab> {
                                   color: ColorSys.darkBlue,
                                 ),
                                 const SizedBox(width: 8),
-                                Text('Terms and Policies',
+                                Text('Ketentuan dan Kebijakan',
                                     style: textStyle(
                                         fontSize: 14,
                                         color: ColorSys.darkBlue,
@@ -522,7 +526,7 @@ class _SettingsTabState extends State<SettingsTab> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'App Version',
+                                  'Versi Aplikasi',
                                   style: textStyle(
                                       fontSize: 14,
                                       color: ColorSys.darkBlue,
@@ -531,7 +535,7 @@ class _SettingsTabState extends State<SettingsTab> {
                                 const Spacer(),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Latest',
+                                  'Terbaru',
                                   style: textStyle(fontSize: 14),
                                 ),
                                 const Icon(
@@ -584,7 +588,7 @@ class _SettingsTabState extends State<SettingsTab> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Logout',
+                              'Keluar',
                               style: textStyle(
                                   fontSize: 14,
                                   color: ColorSys.darkBlue,
@@ -600,7 +604,7 @@ class _SettingsTabState extends State<SettingsTab> {
                       child: Align(
                         alignment: Alignment.center,
                         child: Text(
-                          '  Version ${packageInfo?.version ?? 'N/A'}',
+                          '  Versi ${packageInfo?.version ?? 'Tidak tersedia'}',
                           style: textStyle(fontSize: 12),
                         ),
                       ),
@@ -612,7 +616,9 @@ class _SettingsTabState extends State<SettingsTab> {
           );
         } else {
           // Show a loading indicator while fetching package info
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(color: ColorSys.darkBlue),
+          );
         }
       },
     );

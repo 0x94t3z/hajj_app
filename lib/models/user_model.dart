@@ -31,7 +31,7 @@ class UserModel {
       userId: data['userId'] ?? '',
       name: toTitleCaseName(data['displayName']?.toString() ?? ''),
       distance: '0 Km',
-      duration: '10 Mins',
+      duration: '',
       roles: data['roles'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
       latitude: (data['latitude'] is String && data['latitude'].isNotEmpty)
@@ -74,7 +74,7 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase({
 }) async {
   final currentUser = FirebaseAuth.instance.currentUser;
   if (currentUser == null) {
-    throw UserDataAccessException('Please sign in to access user data.');
+    throw UserDataAccessException('Silakan masuk untuk mengakses data akun.');
   }
 
   final usersRef = FirebaseDatabase.instance.ref('users');
@@ -84,7 +84,7 @@ Future<Map<String, List<UserModel>>> fetchModelsFromFirebase({
   } on FirebaseException catch (e) {
     if (e.code == 'permission-denied') {
       throw UserDataAccessException(
-        'Permission denied by Firebase rules when reading /users.',
+        'Akses data akun ditolak oleh Firebase Rules.',
       );
     }
     rethrow;

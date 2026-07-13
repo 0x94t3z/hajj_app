@@ -1,7 +1,10 @@
-# Catatan Kolokium
+# Dokumen Final Kolokium
 
-Folder ini berisi catatan final presentasi kolokium yang aman untuk disimpan di GitHub.
+Folder ini hanya berisi dokumen dan aset final yang aman untuk disimpan di GitHub.
 
-- `catatan-final-kolokium.md`: catatan lengkap dan menyeluruh untuk pegangan utama.
+- `catatan-final-kolokium.md`: catatan lengkap untuk latihan presentasi.
+- `revisi-final-siap-tempel-hari-ini.md`: teks revisi final yang siap dipindahkan ke laporan.
+- `rancangan-database-bab-iii.md`: narasi rancangan database untuk BAB III.
+- `assets/`: aset final laporan, termasuk flowchart, ilustrasi Haversine, dan ERD.
 
-File presentasi, backup, catatan latihan, panduan demo terpisah, dan hasil export tetap disimpan di folder `research/` lokal dan tidak ikut dipush.
+Draft, versi percobaan, dan aset lama dipindahkan ke `research/kolokium/non-final/`.

@@ -46,7 +46,7 @@ class LocalNotificationService {
 
     const androidDetails = AndroidNotificationDetails(
       'help_messages_channel',
-      'Help Messages',
+      'Pesan Bantuan',
       channelDescription: 'Notifikasi bantuan antara jemaah dan petugas.',
       importance: Importance.max,
       priority: Priority.high,

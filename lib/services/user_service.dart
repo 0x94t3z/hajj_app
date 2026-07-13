@@ -31,6 +31,14 @@ class UserService {
 
   String? get currentUserId => _auth.currentUser?.uid;
 
+  static String normalizeProfileImageUrl(String? imageUrl) {
+    final trimmed = imageUrl?.trim() ?? '';
+    if (trimmed.isEmpty || trimmed.toLowerCase() == 'null') {
+      return '';
+    }
+    return trimmed;
+  }
+
   bool _isCacheValidForCurrentUser() {
     final uid = currentUserId;
     return uid != null && uid == _cachedUid;
@@ -48,8 +56,9 @@ class UserService {
       'userId': user.uid,
       'displayName': toTitleCaseName(user.displayName ?? ''),
       'email': user.email ?? '',
-      'imageUrl': user.photoURL ?? '',
+      'imageUrl': normalizeProfileImageUrl(user.photoURL),
       'roles': 'Jemaah Haji',
+      'kloter': '',
       'latitude': 0.0,
       'longitude': 0.0,
     };
@@ -148,6 +157,7 @@ class UserService {
         data.containsKey('displayName') ||
         data.containsKey('email') ||
         data.containsKey('roles') ||
+        data.containsKey('kloter') ||
         data.containsKey('imageUrl');
   }
 
@@ -382,6 +392,10 @@ class UserService {
       userData,
       const ['roles', 'role', 'status'],
     );
+    final kloter = _firstNonEmptyString(
+      userData,
+      const ['kloter', 'KLOTER', 'kelompokTerbang'],
+    );
 
     final cachedProfile = _cachedProfileData ?? _profileFromAuth(firebaseUser);
     final profile = {
@@ -392,8 +406,11 @@ class UserService {
         displayName ?? cachedProfile['displayName']?.toString() ?? '',
       ),
       'email': email ?? cachedProfile['email'] ?? '',
-      'imageUrl': imageUrl ?? cachedProfile['imageUrl'] ?? '',
+      'imageUrl': normalizeProfileImageUrl(
+        imageUrl ?? cachedProfile['imageUrl']?.toString(),
+      ),
       'roles': roles ?? cachedProfile['roles'] ?? 'Jemaah Haji',
+      'kloter': kloter ?? cachedProfile['kloter'] ?? '',
       'latitude': _toDouble(userData['latitude']),
       'longitude': _toDouble(userData['longitude']),
     };
@@ -486,8 +503,6 @@ Future<void> importDataFromCSVToFirebase() async {
         // Get userId
         String? userId = userCredential.user?.uid;
 
-        final String imageUrl = UserService.defaultProfileImageUrl;
-
         if (userId != null) {
           final DatabaseReference userRef =
               database.ref().child('users/$userId');
@@ -498,7 +513,7 @@ Future<void> importDataFromCSVToFirebase() async {
             'kloter': kloter,
             'latitude': '',
             'longitude': '',
-            'imageUrl': imageUrl,
+            'imageUrl': '',
             // Add other fields as needed
           });
 

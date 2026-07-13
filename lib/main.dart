@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hajj_app/core/theme/app_style.dart';
@@ -32,6 +33,15 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -227,17 +237,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
           .get();
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
       final raw = snapshot.value;
-      final items = <({
-        String body,
-        String conversationId,
-        int createdAt,
-        String id,
-        String key,
-        String senderName,
-        String senderUid,
-        String status,
-        String title
-      })>[];
+      final items = <_HelpNotificationItem>[];
 
       if (raw is Map) {
         items.addAll(
@@ -250,7 +250,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
             final createdAt = map['createdAt'] is int
                 ? map['createdAt'] as int
                 : int.tryParse(map['createdAt']?.toString() ?? '0') ?? 0;
-            return (
+            return _HelpNotificationItem(
               id: id,
               key: entry.key.toString(),
               title: map['title']?.toString() ?? 'Pesan bantuan baru',
@@ -259,46 +259,20 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
               status: map['status']?.toString() ?? '',
               senderUid: map['senderUid']?.toString() ?? '',
               senderName: map['senderName']?.toString() ?? '',
+              senderRole: map['senderRole']?.toString() ?? '',
+              senderKloter: map['senderKloter']?.toString() ?? '',
+              messageText: map['messageText']?.toString() ??
+                  map['body']?.toString() ??
+                  '',
               createdAt: createdAt,
             );
-          }).whereType<
-              ({
-                String body,
-                String conversationId,
-                int createdAt,
-                String id,
-                String key,
-                String senderName,
-                String senderUid,
-                String status,
-                String title
-              })>(),
+          }).whereType<_HelpNotificationItem>(),
         );
       }
       items.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-      final newItems = <({
-        String body,
-        String conversationId,
-        int createdAt,
-        String id,
-        String key,
-        String senderName,
-        String senderUid,
-        String status,
-        String title
-      })>[];
-      final staleItems = <({
-        String body,
-        String conversationId,
-        int createdAt,
-        String id,
-        String key,
-        String senderName,
-        String senderUid,
-        String status,
-        String title
-      })>[];
+      final newItems = <_HelpNotificationItem>[];
+      final staleItems = <_HelpNotificationItem>[];
 
       for (final item in items) {
         if (listenerEpoch != _helpNotificationListenerEpoch) return;
@@ -350,11 +324,18 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       final senderCount =
           uniqueSenderUids.isEmpty ? newItems.length : uniqueSenderUids.length;
       final popupCount = isPetugas ? senderCount : newItems.length;
+      final firstItem = newItems.first;
+      final senderKloter = await _resolveHelpSenderKloter(firstItem);
+      if (listenerEpoch != _helpNotificationListenerEpoch) return;
 
       await _presentHelpNotification(
         count: popupCount,
         isUrgent: isPetugas,
-        payload: newItems.first.conversationId,
+        payload: firstItem.conversationId,
+        senderName: firstItem.senderName,
+        senderRole: firstItem.senderRole,
+        senderKloter: senderKloter,
+        messageText: firstItem.messageText,
       );
 
       for (final item in newItems) {
@@ -401,7 +382,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         if (_seenUnreadHelpConversationKeys.contains(seenKey)) return false;
         _seenUnreadHelpConversationKeys.add(seenKey);
         return true;
-      }).toList();
+      }).toList()
+        ..sort((a, b) => a.lastMessageAt.compareTo(b.lastMessageAt));
 
       if (unreadItems.isEmpty) return;
       final senderCount = unreadItems
@@ -414,6 +396,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         count: isPetugas && senderCount > 0 ? senderCount : unreadItems.length,
         isUrgent: isPetugas,
         payload: unreadItems.first.conversationId,
+        senderName: unreadItems.first.peerName,
+        senderRole: unreadItems.first.peerRole,
+        senderKloter: unreadItems.first.peerKloter,
+        messageText: unreadItems.first.lastMessage,
       );
     } catch (_) {
       // The notification queue already handles the main path. Inbox polling is
@@ -425,6 +411,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     required int count,
     required bool isUrgent,
     String? payload,
+    String senderName = '',
+    String senderRole = '',
+    String senderKloter = '',
+    String messageText = '',
   }) async {
     if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
 
@@ -435,6 +425,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         body: _helpNotificationText(
           popupCount,
           isUrgent: isUrgent,
+          senderName: senderName,
+          senderKloter: senderKloter,
+          messageText: messageText,
         ),
         payload: payload,
       );
@@ -451,6 +444,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       navigator,
       count: popupCount,
       isUrgent: isUrgent,
+      senderName: senderName,
+      senderRole: senderRole,
+      senderKloter: senderKloter,
+      messageText: messageText,
+      payload: payload,
     );
   }
 
@@ -474,21 +472,179 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     return _cachedIsPetugas!;
   }
 
+  Future<String> _fetchUserKloter(String uid) async {
+    if (uid.trim().isEmpty) return '';
+    try {
+      final data = await _userService.fetchAnyUserDataById(uid);
+      return data?['kloter']?.toString().trim() ??
+          data?['KLOTER']?.toString().trim() ??
+          data?['kelompokTerbang']?.toString().trim() ??
+          '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Future<String> _fetchConversationSenderKloter(
+    String conversationId,
+    String senderUid,
+  ) async {
+    final cleanConversationId = conversationId.trim();
+    final cleanSenderUid = senderUid.trim();
+    if (cleanConversationId.isEmpty || cleanSenderUid.isEmpty) return '';
+
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref('helpConversations/$cleanConversationId')
+          .get();
+      if (!snapshot.exists || snapshot.value is! Map) return '';
+
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      final pilgrimId = data['pilgrimId']?.toString().trim() ?? '';
+      final officerId = data['officerId']?.toString().trim() ?? '';
+      if (cleanSenderUid == pilgrimId) {
+        return data['pilgrimKloter']?.toString().trim() ?? '';
+      }
+      if (cleanSenderUid == officerId) {
+        return data['officerKloter']?.toString().trim() ?? '';
+      }
+    } catch (_) {
+      return '';
+    }
+    return '';
+  }
+
+  Future<String> _resolveHelpSenderKloter(_HelpNotificationItem item) async {
+    final requestKloter = item.senderKloter.trim();
+    if (requestKloter.isNotEmpty) return requestKloter;
+
+    final conversationKloter = await _fetchConversationSenderKloter(
+      item.conversationId,
+      item.senderUid,
+    );
+    if (conversationKloter.isNotEmpty) return conversationKloter;
+
+    return _fetchUserKloter(item.senderUid);
+  }
+
   String _helpNotificationText(
     int count, {
     required bool isUrgent,
+    String senderName = '',
+    String senderKloter = '',
+    String messageText = '',
   }) {
     final total = count < 1 ? 1 : count;
+    final cleanName = senderName.trim();
+    final cleanKloter = senderKloter.trim();
+    final cleanMessage = messageText.trim();
     if (isUrgent) {
+      if (cleanName.isNotEmpty) {
+        final kloterText = cleanKloter.isNotEmpty
+            ? 'Kloter $cleanKloter'
+            : 'kloter belum tersedia';
+        return total > 1
+            ? 'Ada $total permintaan bantuan baru. Salah satunya dari $cleanName, $kloterText.'
+            : 'Permintaan bantuan baru dari $cleanName, $kloterText.';
+      }
       return 'Ada $total permintaan bantuan baru dari jemaah.';
     }
+    if (cleanName.isNotEmpty && cleanMessage.isNotEmpty) {
+      return '$cleanName: $cleanMessage';
+    }
     return 'Ada $total pesan baru.';
+  }
+
+  Widget _buildUrgentHelpPopupContent({
+    required int count,
+    required String senderName,
+    required String senderKloter,
+  }) {
+    final total = count < 1 ? 1 : count;
+    final cleanName =
+        senderName.trim().isEmpty ? 'Jemaah Haji' : senderName.trim();
+    final cleanKloter =
+        senderKloter.trim().isEmpty ? 'Belum tersedia' : senderKloter.trim();
+    final summaryText = total > 1
+        ? 'Ada $total permintaan bantuan baru. Berikut salah satu jemaah yang perlu ditindaklanjuti.'
+        : 'Permintaan bantuan baru diterima dari jemaah berikut.';
+
+    Widget infoRow(String label, String value) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 62,
+              child: Text(
+                label,
+                style: textStyle(
+                  fontSize: 12,
+                  color: ColorSys.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: textStyle(
+                  fontSize: 12.5,
+                  color: ColorSys.darkBlue,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Text(
+          summaryText,
+          textAlign: TextAlign.center,
+          style: textStyle(
+            fontSize: 12.5,
+            color: ColorSys.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: ColorSys.error.withValues(alpha: 0.14),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              infoRow('Jemaah', cleanName),
+              infoRow('Kloter', cleanKloter),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _showHelpRequestCountPopup(
     NavigatorState navigator, {
     required int count,
     required bool isUrgent,
+    String senderName = '',
+    String senderRole = '',
+    String senderKloter = '',
+    String messageText = '',
+    String? payload,
   }) async {
     final accent = isUrgent ? ColorSys.error : ColorSys.darkBlue;
     final title = isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru';
@@ -547,17 +703,26 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  _helpNotificationText(
-                    count,
-                    isUrgent: isUrgent,
-                  ),
-                  textAlign: TextAlign.center,
-                  style: textStyle(
-                    fontSize: 13,
-                    color: ColorSys.textSecondary,
-                  ),
-                ),
+                isUrgent
+                    ? _buildUrgentHelpPopupContent(
+                        count: count,
+                        senderName: senderName,
+                        senderKloter: senderKloter,
+                      )
+                    : Text(
+                        _helpNotificationText(
+                          count,
+                          isUrgent: isUrgent,
+                          senderName: senderName,
+                          senderKloter: senderKloter,
+                          messageText: messageText,
+                        ),
+                        textAlign: TextAlign.center,
+                        style: textStyle(
+                          fontSize: 13,
+                          color: ColorSys.textSecondary,
+                        ),
+                      ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -586,7 +751,13 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
-                          navigator.pushNamed('/help_inbox');
+                          _openHelpNotificationTarget(
+                            navigator,
+                            conversationId: payload,
+                            peerName: senderName,
+                            peerRole: senderRole,
+                            peerIsPetugas: !isUrgent,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
@@ -612,6 +783,35 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
             ),
           ),
         );
+      },
+    );
+  }
+
+  void _openHelpNotificationTarget(
+    NavigatorState navigator, {
+    required String? conversationId,
+    required String peerName,
+    required String peerRole,
+    required bool peerIsPetugas,
+  }) {
+    final targetConversationId = conversationId?.trim() ?? '';
+    if (targetConversationId.isEmpty) {
+      navigator.pushNamed('/help_inbox');
+      return;
+    }
+
+    final fallbackName = peerIsPetugas ? 'Petugas Haji' : 'Jemaah Haji';
+    final fallbackRole = peerIsPetugas ? 'Petugas Haji' : 'Jemaah Haji';
+    navigator.pushNamed(
+      '/help_chat',
+      arguments: {
+        'conversationId': targetConversationId,
+        'readOnly': false,
+        'peerId': '',
+        'peerName': peerName.trim().isEmpty ? fallbackName : peerName.trim(),
+        'peerImageUrl': '',
+        'peerIsPetugas': peerIsPetugas,
+        'peerRole': peerRole.trim().isEmpty ? fallbackRole : peerRole.trim(),
       },
     );
   }
@@ -855,4 +1055,34 @@ class _AppRouteObserver extends NavigatorObserver {
     super.didRemove(route, previousRoute);
     _notify(previousRoute);
   }
+}
+
+class _HelpNotificationItem {
+  const _HelpNotificationItem({
+    required this.id,
+    required this.key,
+    required this.title,
+    required this.body,
+    required this.conversationId,
+    required this.status,
+    required this.senderUid,
+    required this.senderName,
+    required this.senderRole,
+    required this.senderKloter,
+    required this.messageText,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String key;
+  final String title;
+  final String body;
+  final String conversationId;
+  final String status;
+  final String senderUid;
+  final String senderName;
+  final String senderRole;
+  final String senderKloter;
+  final String messageText;
+  final int createdAt;
 }

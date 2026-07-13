@@ -20,16 +20,38 @@ class EditScreen extends StatefulWidget {
 }
 
 class _EditScreenState extends State<EditScreen> {
+  static const String _defaultProfileAsset =
+      'assets/images/default_profile.png';
+
   final UserService _userService = UserService();
+  final TextEditingController _imageUrlController = TextEditingController();
   late String _name = '';
   late String _email = '';
   late String _imageUrl = '';
+  bool _isLoggingOut = false;
+
+  static const Set<String> _allowedImageUrlHosts = {
+    'ibb.co',
+    'i.ibb.co',
+    'ibb.co.com',
+    'i.ibb.co.com',
+    'imgur.com',
+    'i.imgur.com',
+    'firebasestorage.googleapis.com',
+    'storage.googleapis.com',
+  };
 
   @override
   void initState() {
     super.initState();
     getData();
     getLostData();
+  }
+
+  @override
+  void dispose() {
+    _imageUrlController.dispose();
+    super.dispose();
   }
 
   void getData() async {
@@ -40,7 +62,9 @@ class _EditScreenState extends State<EditScreen> {
           _name =
               toTitleCaseName(cachedProfile['displayName'] as String? ?? '');
           _email = cachedProfile['email'] as String? ?? '';
-          _imageUrl = cachedProfile['imageUrl'] as String? ?? '';
+          _imageUrl = UserService.normalizeProfileImageUrl(
+            cachedProfile['imageUrl'] as String?,
+          );
         });
       }
 
@@ -51,7 +75,9 @@ class _EditScreenState extends State<EditScreen> {
         setState(() {
           _name = toTitleCaseName(userData['displayName'] as String? ?? '');
           _email = userData['email'] as String? ?? '';
-          _imageUrl = userData['imageUrl'] as String? ?? '';
+          _imageUrl = UserService.normalizeProfileImageUrl(
+            userData['imageUrl'] as String?,
+          );
         });
       } else {
         print("No data available or data not in the expected format");
@@ -85,6 +111,21 @@ class _EditScreenState extends State<EditScreen> {
     }
   }
 
+  Widget _buildProfileImage(String imageUrl) {
+    final normalizedUrl = UserService.normalizeProfileImageUrl(imageUrl);
+    if (normalizedUrl.isEmpty ||
+        normalizedUrl == UserService.defaultProfileImageUrl) {
+      return Image.asset(_defaultProfileAsset, fit: BoxFit.cover);
+    }
+    return Image.network(
+      normalizedUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(_defaultProfileAsset, fit: BoxFit.cover);
+      },
+    );
+  }
+
   void _handleLostFiles(List<XFile> files) {
     // Handle lost files here
     // For instance, update the state with recovered image data
@@ -107,8 +148,8 @@ class _EditScreenState extends State<EditScreen> {
         await showAppPopup(
           context,
           type: AppPopupType.warning,
-          title: 'No Image Selected',
-          message: 'Please choose an image to update your profile photo.',
+          title: 'Foto Belum Dipilih',
+          message: 'Silakan pilih foto untuk memperbarui profil.',
         );
       }
       return;
@@ -151,19 +192,250 @@ class _EditScreenState extends State<EditScreen> {
         await showAppPopup(
           context,
           type: AppPopupType.success,
-          title: 'Photo Updated',
-          message: 'Your profile photo has been updated.',
+          title: 'Foto Diperbarui',
+          message: 'Foto profil berhasil diperbarui.',
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      var message = 'Foto profil tidak dapat diperbarui. Silakan coba lagi.';
+      if (e is FirebaseException) {
+        if (e.code == 'quota-exceeded' ||
+            e.code == 'unauthorized' ||
+            e.message?.contains('402') == true) {
+          message =
+              'Upload foto ditolak oleh Firebase Storage. Periksa billing, kuota, atau aturan Storage.';
+        }
+      }
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Pembaruan Gagal',
+        message: message,
+      );
+      print('Image update error: $e');
+    }
+  }
+
+  bool _isAllowedImageUrl(String value) {
+    final uri = Uri.tryParse(value.trim());
+    if (uri == null || !uri.hasScheme || !uri.hasAuthority) return false;
+    if (uri.scheme != 'https') return false;
+
+    final host = uri.host.toLowerCase();
+    return _allowedImageUrlHosts.contains(host) ||
+        host.endsWith('.ibb.co') ||
+        host.endsWith('.ibb.co.com') ||
+        host.endsWith('.imgur.com') ||
+        host.endsWith('.googleusercontent.com');
+  }
+
+  Future<void> _updateImageFromUrl() async {
+    _imageUrlController.text = _imageUrl;
+    final imageUrl = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Text(
+            'Gunakan URL Foto',
+            style: textStyle(
+              fontSize: 18,
+              color: ColorSys.darkBlue,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: TextField(
+            controller: _imageUrlController,
+            keyboardType: TextInputType.url,
+            cursorColor: ColorSys.darkBlue,
+            style: textStyle(fontSize: 13),
+            decoration: InputDecoration(
+              labelText: 'URL gambar',
+              hintText: 'https://i.ibb.co.com/...',
+              labelStyle: textStyle(
+                fontSize: 13,
+                color: ColorSys.textSecondary,
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: ColorSys.darkBlue),
+              ),
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Batal',
+                style: textStyle(
+                  fontSize: 13,
+                  color: ColorSys.textSecondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext)
+                    .pop(_imageUrlController.text.trim());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorSys.darkBlue,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Simpan',
+                style: textStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (imageUrl == null) return;
+    final normalizedUrl = UserService.normalizeProfileImageUrl(imageUrl);
+    if (normalizedUrl.isEmpty || !_isAllowedImageUrl(normalizedUrl)) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.warning,
+        title: 'URL Tidak Valid',
+        message:
+            'Gunakan URL gambar HTTPS dari domain yang didukung, misalnya i.ibb.co.com.',
+      );
+      return;
+    }
+
+    try {
+      await _userService.updateCurrentUserData({'imageUrl': normalizedUrl});
+      if (!mounted) return;
+      setState(() {
+        _imageUrl = normalizedUrl;
+      });
+      await showAppPopup(
+        context,
+        type: AppPopupType.success,
+        title: 'Foto Diperbarui',
+        message: 'Foto profil berhasil diperbarui dari URL.',
+      );
     } catch (e) {
       if (!mounted) return;
       await showAppPopup(
         context,
         type: AppPopupType.error,
-        title: 'Update Failed',
-        message: 'Unable to update profile photo. Please try again.',
+        title: 'Pembaruan Gagal',
+        message: 'URL foto belum dapat disimpan. Silakan coba lagi.',
       );
-      print('Image update error: $e');
+    }
+  }
+
+  Future<void> _showPhotoUpdateOptions() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                ListTile(
+                  leading:
+                      const Icon(Iconsax.gallery, color: ColorSys.darkBlue),
+                  title: Text(
+                    'Pilih dari Galeri',
+                    style: textStyle(
+                      fontSize: 14,
+                      color: ColorSys.darkBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Menggunakan Firebase Storage.',
+                    style: textStyle(fontSize: 12),
+                  ),
+                  onTap: () => Navigator.pop(context, 'gallery'),
+                ),
+                ListTile(
+                  leading: const Icon(Iconsax.link, color: ColorSys.darkBlue),
+                  title: Text(
+                    'Gunakan URL Gambar',
+                    style: textStyle(
+                      fontSize: 14,
+                      color: ColorSys.darkBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Contoh: i.ibb.co.com, imgur.com.',
+                    style: textStyle(fontSize: 12),
+                  ),
+                  onTap: () => Navigator.pop(context, 'url'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected == 'gallery') {
+      await _pickImage();
+    } else if (selected == 'url') {
+      await _updateImageFromUrl();
+    }
+  }
+
+  Future<void> _logout() async {
+    if (_isLoggingOut) return;
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      _userService.clearCurrentUserCache();
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+    } catch (e) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Keluar Gagal',
+        message: 'Akun belum dapat keluar. Silakan coba lagi.',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingOut = false;
+        });
+      }
     }
   }
 
@@ -188,7 +460,7 @@ class _EditScreenState extends State<EditScreen> {
           },
         ),
         title: Text(
-          'My Profile',
+          'Profil Saya',
           style: textStyle(color: ColorSys.primary),
         ),
         centerTitle: true,
@@ -207,32 +479,12 @@ class _EditScreenState extends State<EditScreen> {
                 color: Colors.grey,
               ),
               child: ClipOval(
-                child: _imageUrl.trim().isNotEmpty
-                    ? Image.network(
-                        _imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Iconsax.profile_circle,
-                              color: ColorSys.darkBlue,
-                              size: 48,
-                            ),
-                          );
-                        },
-                      )
-                    : const Center(
-                        child: Icon(
-                          Iconsax.profile_circle,
-                          color: ColorSys.darkBlue,
-                          size: 48,
-                        ),
-                      ),
+                child: _buildProfileImage(_imageUrl),
               ),
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: _pickImage,
+              onPressed: _showPhotoUpdateOptions,
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: ColorSys.darkBlue,
@@ -244,7 +496,7 @@ class _EditScreenState extends State<EditScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'Change Image',
+                  'Ubah Foto',
                   style: textStyle(
                     fontSize: 14,
                     color: Colors.white,
@@ -281,7 +533,7 @@ class _EditScreenState extends State<EditScreen> {
                     child: Row(
                       children: [
                         Text(
-                          'Name',
+                          'Nama',
                           style: textStyle(
                               fontSize: 14,
                               color: ColorSys.darkBlue,
@@ -333,6 +585,44 @@ class _EditScreenState extends State<EditScreen> {
                 ),
               ],
             ),
+            const Spacer(),
+            InkWell(
+              onTap: _isLoggingOut ? null : _logout,
+              borderRadius: BorderRadius.circular(18),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _isLoggingOut
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: ColorSys.darkBlue,
+                            ),
+                          )
+                        : const Icon(
+                            Iconsax.logout,
+                            color: ColorSys.darkBlue,
+                          ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Keluar',
+                      style: textStyle(
+                        fontSize: 14,
+                        color: ColorSys.darkBlue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
           ],
         ),
       ),

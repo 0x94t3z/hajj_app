@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hajj_app/core/theme/app_style.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:hajj_app/services/user_service.dart';
@@ -58,77 +59,81 @@ class _TopNavBarState extends State<TopNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.menu,
-            color: ColorSys.darkBlue,
-          ),
-          onPressed: widget.onSettingTap,
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      leading: IconButton(
+        icon: const Icon(
+          Icons.menu,
+          color: ColorSys.darkBlue,
         ),
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: InkResponse(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EditScreen()),
-                );
-              },
-              child: Container(
-                width: 35,
-                height: 35,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: imageUrl.trim().isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                color: ColorSys.darkBlue,
-                                size: 20,
-                              )
-                            : Image.network(
-                                imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.person,
-                                    color: ColorSys.darkBlue,
-                                    size: 20,
-                                  );
-                                },
-                              ),
+        onPressed: widget.onSettingTap,
+      ),
+      actions: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: InkResponse(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EditScreen()),
+              );
+            },
+            child: Container(
+              width: 35,
+              height: 35,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: imageUrl.trim().isEmpty
+                          ? const Icon(
+                              Icons.person,
+                              color: ColorSys.darkBlue,
+                              size: 20,
+                            )
+                          : Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.person,
+                                  color: ColorSys.darkBlue,
+                                  size: 20,
+                                );
+                              },
+                            ),
+                    ),
+                  ),
+                  Transform.translate(
+                    offset: const Offset(15, -15),
+                    child: Container(
+                      margin: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 3, color: Colors.white),
+                        shape: BoxShape.circle,
+                        color: Colors.green,
                       ),
                     ),
-                    Transform.translate(
-                      offset: const Offset(15, -15),
-                      child: Container(
-                        margin: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border.all(width: 3, color: Colors.white),
-                          shape: BoxShape.circle,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          )
-        ],
-      ),
+          ),
+        )
+      ],
     );
   }
 }

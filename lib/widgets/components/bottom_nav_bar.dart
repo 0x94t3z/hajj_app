@@ -25,17 +25,17 @@ class BottomNavBar extends StatelessWidget {
       items: [
         SalomonBottomBarItem(
           icon: const Icon(Iconsax.home),
-          title: const Text("Home"),
+          title: const Text("Beranda"),
           selectedColor: ColorSys.darkBlue,
         ),
         SalomonBottomBarItem(
           icon: const Icon(Iconsax.radar_1),
-          title: const Text("Find My"),
+          title: const Text("Cari"),
           selectedColor: ColorSys.darkBlue,
         ),
         SalomonBottomBarItem(
           icon: const Icon(Iconsax.setting_2),
-          title: const Text("Settings"),
+          title: const Text("Akun"),
           selectedColor: ColorSys.darkBlue,
         ),
       ],

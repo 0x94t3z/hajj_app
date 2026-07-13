@@ -36,6 +36,9 @@ class HelpChatScreen extends StatefulWidget {
 }
 
 class _HelpChatScreenState extends State<HelpChatScreen> {
+  static const String _defaultProfileAsset =
+      'assets/images/default_profile.png';
+
   final HelpService _helpService = HelpService();
   final UserService _userService = UserService();
   final TextEditingController _messageController = TextEditingController();
@@ -49,6 +52,10 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   bool _isArchived = false;
   bool _messageAccessClosed = false;
   bool _currentIsPetugas = false;
+  String _peerId = '';
+  String _peerName = '';
+  String _peerImageUrl = '';
+  bool _peerIsPetugas = false;
   String _resolvedPeerRole = '';
   String _lastMarkedReadMessageId = '';
   String? _errorMessage;
@@ -60,6 +67,11 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   void initState() {
     super.initState();
     HelpService.registerHelpChatScreen();
+    _peerId = widget.peerId.trim();
+    _peerName = widget.peerName.trim();
+    _peerImageUrl = UserService.normalizeProfileImageUrl(widget.peerImageUrl);
+    _peerIsPetugas = widget.peerIsPetugas;
+    _resolvedPeerRole = widget.peerRole.trim();
     _authStateSubscription = FirebaseAuth.instance.authStateChanges().listen(
       (user) {
         if (!mounted) return;
@@ -95,6 +107,21 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     _messagesStream = _helpService.watchMessages(conversationId);
   }
 
+  Widget _buildPeerImage(String imageUrl) {
+    final normalizedUrl = UserService.normalizeProfileImageUrl(imageUrl);
+    if (normalizedUrl.isEmpty ||
+        normalizedUrl == UserService.defaultProfileImageUrl) {
+      return Image.asset(_defaultProfileAsset, fit: BoxFit.cover);
+    }
+    return Image.network(
+      normalizedUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(_defaultProfileAsset, fit: BoxFit.cover);
+      },
+    );
+  }
+
   Future<void> _prepareConversation() async {
     final currentEpoch = ++_conversationEpoch;
     if (mounted) {
@@ -106,20 +133,28 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     try {
       var peerRoleForConversation = widget.peerRole.trim();
       try {
-        final peerData = await _userService.fetchAnyUserDataById(widget.peerId);
+        final peerData = await _userService.fetchAnyUserDataById(_peerId);
         final fetchedRole = peerData?['roles']?.toString().trim() ?? '';
         if (fetchedRole.isNotEmpty) {
           peerRoleForConversation = fetchedRole;
+        }
+        final fetchedName = peerData?['displayName']?.toString().trim() ?? '';
+        final fetchedImageUrl = peerData?['imageUrl']?.toString().trim() ?? '';
+        if (fetchedName.isNotEmpty) {
+          _peerName = fetchedName;
+        }
+        if (fetchedImageUrl.isNotEmpty) {
+          _peerImageUrl = UserService.normalizeProfileImageUrl(fetchedImageUrl);
         }
       } catch (_) {
         // Keep existing role fallback when user lookup is not available.
       }
 
       final handle = await _helpService.ensureConversationWithPeer(
-        peerId: widget.peerId,
-        peerName: widget.peerName,
-        peerImageUrl: widget.peerImageUrl,
-        peerIsPetugas: widget.peerIsPetugas,
+        peerId: _peerId,
+        peerName: _peerName,
+        peerImageUrl: UserService.normalizeProfileImageUrl(_peerImageUrl),
+        peerIsPetugas: _peerIsPetugas,
         peerRole: peerRoleForConversation,
       );
       if (!mounted || currentEpoch != _conversationEpoch) return;
@@ -164,10 +199,41 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       }
 
       final officerId = data['officerId']?.toString() ?? '';
+      final pilgrimId = data['pilgrimId']?.toString() ?? '';
       final currentIsPetugas = user.uid == officerId;
-      final peerRole = currentIsPetugas
+      var peerId = currentIsPetugas ? pilgrimId : officerId;
+      var peerName = currentIsPetugas
+          ? (data['pilgrimName']?.toString().trim() ?? '')
+          : (data['officerName']?.toString().trim() ?? '');
+      var peerImageUrl = currentIsPetugas
+          ? (data['pilgrimImageUrl']?.toString().trim() ?? '')
+          : (data['officerImageUrl']?.toString().trim() ?? '');
+      var peerRole = currentIsPetugas
           ? (data['pilgrimRole']?.toString().trim() ?? '')
           : (data['officerRole']?.toString().trim() ?? '');
+      final peerIsPetugas = !currentIsPetugas;
+
+      if (peerId.isNotEmpty) {
+        try {
+          final peerData = await _userService.fetchAnyUserDataById(peerId);
+          final fetchedName = peerData?['displayName']?.toString().trim() ?? '';
+          final fetchedImageUrl =
+              peerData?['imageUrl']?.toString().trim() ?? '';
+          final fetchedRole = peerData?['roles']?.toString().trim() ?? '';
+          if (fetchedName.isNotEmpty) peerName = fetchedName;
+          if (fetchedImageUrl.isNotEmpty) peerImageUrl = fetchedImageUrl;
+          if (fetchedRole.isNotEmpty) peerRole = fetchedRole;
+        } catch (_) {
+          // Conversation data is enough to keep the chat usable.
+        }
+      }
+
+      if (peerId.isEmpty) peerId = widget.peerId.trim();
+      if (peerName.isEmpty) peerName = widget.peerName.trim();
+      if (peerImageUrl.isEmpty) peerImageUrl = widget.peerImageUrl.trim();
+      if (peerRole.isEmpty) peerRole = widget.peerRole.trim();
+      peerImageUrl = UserService.normalizeProfileImageUrl(peerImageUrl);
+
       final status = data['status']?.toString() ?? 'open';
       final archived = data['archived'] == true || status == 'closed';
 
@@ -176,7 +242,11 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         _conversationId = conversationId;
         _bindMessagesStream(conversationId);
         _currentIsPetugas = currentIsPetugas;
-        _resolvedPeerRole = peerRole.isNotEmpty ? peerRole : widget.peerRole;
+        _peerId = peerId;
+        _peerName = peerName;
+        _peerImageUrl = peerImageUrl;
+        _peerIsPetugas = peerIsPetugas;
+        _resolvedPeerRole = peerRole;
         _isArchived = widget.readOnly || archived;
         _messageAccessClosed = false;
         _isLoading = false;
@@ -242,10 +312,10 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   }
 
   Future<void> _openGoToRequester() async {
-    if (!_currentIsPetugas || widget.peerIsPetugas) return;
+    if (!_currentIsPetugas || _peerIsPetugas) return;
 
     try {
-      final rawData = await _userService.fetchAnyUserDataById(widget.peerId);
+      final rawData = await _userService.fetchAnyUserDataById(_peerId);
       if (!mounted) return;
 
       final normalizedData = <String, dynamic>{
@@ -254,11 +324,11 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       normalizedData['userId'] =
           normalizedData['userId']?.toString().isNotEmpty == true
               ? normalizedData['userId'].toString()
-              : widget.peerId;
+              : _peerId;
       normalizedData['displayName'] =
           normalizedData['displayName']?.toString().isNotEmpty == true
               ? normalizedData['displayName'].toString()
-              : widget.peerName;
+              : _peerName;
       normalizedData['roles'] =
           normalizedData['roles']?.toString().isNotEmpty == true
               ? normalizedData['roles'].toString()
@@ -266,7 +336,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       normalizedData['imageUrl'] =
           normalizedData['imageUrl']?.toString().isNotEmpty == true
               ? normalizedData['imageUrl'].toString()
-              : widget.peerImageUrl;
+              : _peerImageUrl.trim();
 
       var targetUser = UserModel.fromMap(normalizedData);
       if (targetUser.latitude == 0.0 || targetUser.longitude == 0.0) {
@@ -290,7 +360,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
           final messageLocation =
               await _helpService.fetchLatestPeerMessageLocation(
             conversationId: conversationId,
-            peerId: widget.peerId,
+            peerId: _peerId,
           );
           if (messageLocation != null) {
             normalizedData['latitude'] = messageLocation['latitude'];
@@ -494,7 +564,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                         color: Colors.white,
                       ),
                       label: Text(
-                        'Find Pilgrim',
+                        'Cari Jemaah',
                         style: textStyle(
                           fontSize: 10.5,
                           color: Colors.white,
@@ -563,8 +633,8 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   ) {
     if (_isArchived) return const <String>[];
 
-    final pilgrimId = _currentIsPetugas ? widget.peerId : currentUid;
-    final petugasId = _currentIsPetugas ? currentUid : widget.peerId;
+    final pilgrimId = _currentIsPetugas ? _peerId : currentUid;
+    final petugasId = _currentIsPetugas ? currentUid : _peerId;
     const requestTemplates = HelpService.defaultHelpTemplates;
     const followUpTemplates = HelpService.defaultPilgrimFollowUpReplies;
 
@@ -643,7 +713,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
     final roleText = _resolvedPeerRole.trim().isNotEmpty
         ? _resolvedPeerRole.trim()
-        : (widget.peerIsPetugas ? 'Petugas Haji' : 'Jemaah Haji');
+        : (_peerIsPetugas ? 'Petugas Haji' : 'Jemaah Haji');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -664,15 +734,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
               backgroundColor: Colors.grey.shade200,
               child: ClipOval(
                 child: SizedBox.expand(
-                  child: widget.peerImageUrl.trim().isEmpty
-                      ? const Icon(Iconsax.profile_circle, size: 20)
-                      : Image.network(
-                          widget.peerImageUrl.trim(),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Iconsax.profile_circle, size: 20);
-                          },
-                        ),
+                  child: _buildPeerImage(_peerImageUrl),
                 ),
               ),
             ),
@@ -682,7 +744,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    toTitleCaseName(widget.peerName),
+                    toTitleCaseName(_peerName),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textStyle(
@@ -705,7 +767,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: ColorSys.darkBlue),
+            )
           : _errorMessage != null
               ? Center(
                   child: Padding(
@@ -740,7 +804,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'Session archived. You can only view messages.',
+                                'Sesi diarsipkan. Anda hanya dapat melihat pesan.',
                                 style: textStyle(
                                   fontSize: 12,
                                   color: ColorSys.error,
@@ -753,7 +817,11 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                       ),
                     Expanded(
                       child: (_messagesStream == null)
-                          ? const Center(child: CircularProgressIndicator())
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: ColorSys.darkBlue,
+                              ),
+                            )
                           : StreamBuilder<List<HelpMessage>>(
                               stream: _messagesStream,
                               builder: (context, snapshot) {
@@ -775,7 +843,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 20),
                                       child: Text(
-                                        'Session ini sudah ditutup dan '
+                                        'Sesi ini sudah ditutup dan '
                                         'percakapan telah diarsipkan.',
                                         textAlign: TextAlign.center,
                                         style: textStyle(
@@ -792,7 +860,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                         ConnectionState.waiting &&
                                     !snapshot.hasData) {
                                   return const Center(
-                                    child: CircularProgressIndicator(),
+                                    child: CircularProgressIndicator(
+                                      color: ColorSys.darkBlue,
+                                    ),
                                   );
                                 }
 
@@ -807,7 +877,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                           vertical: 16,
                                         ),
                                         child: Text(
-                                          'Session ini sudah diarsipkan.',
+                                          'Sesi ini sudah diarsipkan.',
                                           textAlign: TextAlign.center,
                                           style: textStyle(
                                             fontSize: 13,
@@ -874,13 +944,12 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                     messages, currentUid);
                                 final showQuickReplies = templates.isNotEmpty;
                                 var latestPilgrimMessageId = '';
-                                if (_currentIsPetugas &&
-                                    !widget.peerIsPetugas) {
+                                if (_currentIsPetugas && !_peerIsPetugas) {
                                   for (var i = messages.length - 1;
                                       i >= 0;
                                       i--) {
                                     final candidate = messages[i];
-                                    if (candidate.senderId == widget.peerId) {
+                                    if (candidate.senderId == _peerId) {
                                       latestPilgrimMessageId = candidate.id;
                                       break;
                                     }
@@ -911,11 +980,10 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                           final showFindPilgrimButton =
                                               !_isArchived &&
                                                   _currentIsPetugas &&
-                                                  !widget.peerIsPetugas &&
+                                                  !_peerIsPetugas &&
                                                   latestPilgrimMessageId
                                                       .isNotEmpty &&
-                                                  message.senderId ==
-                                                      widget.peerId &&
+                                                  message.senderId == _peerId &&
                                                   message.id ==
                                                       latestPilgrimMessageId;
                                           return _buildMessageBubble(

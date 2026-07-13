@@ -29,6 +29,9 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  static const String _defaultProfileAsset =
+      'assets/images/default_profile.png';
+
   final UserService _userService = UserService();
   final HelpService _helpService = HelpService();
   MapboxMap? mapboxMap;
@@ -106,7 +109,7 @@ class _MapScreenState extends State<MapScreen> {
     if (!mounted) return;
     final text = error is UserDataAccessException
         ? error.message
-        : 'Unable to load users from Firebase.';
+        : 'Tidak dapat memuat data akun dari Firebase.';
     unawaited(
       showAppPopup(
         context,
@@ -134,6 +137,41 @@ class _MapScreenState extends State<MapScreen> {
   bool _isIgnoredIosLocationError(Object error) {
     final text = error.toString();
     return text.contains('kCLErrorDomain') && text.contains('error 1');
+  }
+
+  Widget _buildOfficerPhoto(
+    String imageUrl, {
+    required double width,
+    required double height,
+    double borderRadius = 999.0,
+  }) {
+    final safeUrl = UserService.normalizeProfileImageUrl(imageUrl);
+
+    Widget fallback() {
+      return Image.asset(
+        _defaultProfileAsset,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: safeUrl.isEmpty
+            ? fallback()
+            : Image.network(
+                safeUrl,
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => fallback(),
+              ),
+      ),
+    );
   }
 
   Future<bool> _ensureLocationPermission() async {
@@ -378,12 +416,6 @@ class _MapScreenState extends State<MapScreen> {
     return _userService.isPetugasHajiRole(role);
   }
 
-  String _estimateWalkDuration(double distanceKm) {
-    const walkingSpeedKmPerHour = 4.8;
-    final minutes = ((distanceKm / walkingSpeedKmPerHour) * 60).ceil();
-    return '$minutes Min';
-  }
-
   Future<List<UserModel>> _buildNearestPetugasList({
     required geo.Position currentPosition,
     required List<UserModel> petugasHaji,
@@ -443,7 +475,9 @@ class _MapScreenState extends State<MapScreen> {
       final user = rankedUser.key;
       final distanceKm = rankedUser.value;
       user.distance = '${distanceKm.toStringAsFixed(2)} Km';
-      user.duration = _estimateWalkDuration(distanceKm);
+      // Duration is intentionally left empty here. Haversine is only used for
+      // initial ranking; travel duration comes from Mapbox Directions API.
+      user.duration = '';
       nearestUsers.add(user);
     }
 
@@ -491,7 +525,7 @@ class _MapScreenState extends State<MapScreen> {
       if (e.code == 'permission-denied') {
         _showDataAccessError(
           UserDataAccessException(
-            'Permission denied by Firebase rules when reading users.',
+            'Akses data akun ditolak oleh Firebase Rules.',
           ),
         );
         return;
@@ -548,7 +582,7 @@ class _MapScreenState extends State<MapScreen> {
       if (e.code == 'permission-denied') {
         _showDataAccessError(
           UserDataAccessException(
-            'Permission denied by Firebase rules when reading users.',
+            'Akses data akun ditolak oleh Firebase Rules.',
           ),
         );
         return;
@@ -724,30 +758,29 @@ class _MapScreenState extends State<MapScreen> {
     return Icons.navigation;
   }
 
-  String _formatDistanceMiles(double meters) {
-    final miles = meters / 1609.344;
-    return '${miles.toStringAsFixed(1)} mi';
+  String _formatDistanceMetric(double meters) {
+    final km = meters / 1000;
+    return '${km.toStringAsFixed(2)} Km';
   }
 
   String _formatDurationCompact(double seconds) {
     final totalMinutes = (seconds / 60).ceil();
     if (totalMinutes < 60) {
-      return '$totalMinutes min';
+      return '$totalMinutes Menit';
     }
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
     if (minutes == 0) {
-      return '$hours h';
+      return '$hours Jam';
     }
-    return '$hours h $minutes min';
+    return '$hours Jam $minutes Menit';
   }
 
   String _formatEta(DateTime? dateTime) {
     if (dateTime == null) return '--:--';
-    final hour = dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12;
+    final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
-    final suffix = dateTime.hour >= 12 ? 'pm' : 'am';
-    return '$hour:$minute $suffix';
+    return '$hour:$minute';
   }
 
   double _distanceMeters(double lat1, double lon1, double lat2, double lon2) {
@@ -842,7 +875,7 @@ class _MapScreenState extends State<MapScreen> {
         (route['distance'] as num?)?.toDouble() ?? directMeters;
 
     var finalDistanceMeters = routeDistanceMeters;
-    var finalDurationSeconds = (route['duration'] as num?)?.toDouble() ?? 0.0;
+    final finalDurationSeconds = (route['duration'] as num?)?.toDouble() ?? 0.0;
     if (coordinates.isNotEmpty) {
       final routeEnd = coordinates.last;
       final offroadConnectorMeters = _distanceMeters(
@@ -862,7 +895,6 @@ class _MapScreenState extends State<MapScreen> {
           ),
         );
         finalDistanceMeters += offroadConnectorMeters;
-        finalDurationSeconds += (offroadConnectorMeters / 1.39);
       }
     }
 
@@ -1016,9 +1048,9 @@ class _MapScreenState extends State<MapScreen> {
     if (mapboxMap == null) {
       if (!mounted) return;
       await _showPopupMessage(
-        'Map belum siap. Coba lagi.',
+        'Peta belum siap. Coba lagi.',
         type: AppPopupType.warning,
-        title: 'Map Belum Siap',
+        title: 'Peta Belum Siap',
       );
       return;
     }
@@ -1218,15 +1250,13 @@ class _MapScreenState extends State<MapScreen> {
       color: ColorSys.darkBlue,
     );
     final distanceText = _formatDistanceSmart(user.distance);
-    final durationText = user.duration;
     final distDurPainter = TextPainter(
-      text: TextSpan(
-          text: '$distanceText  $durationText', style: distanceDurationStyle),
+      text: TextSpan(text: distanceText, style: distanceDurationStyle),
       maxLines: 1,
       textDirection: Directionality.of(context),
     )..layout();
-    // icons (12+4 + 12+4) + gap (8) = 40
-    final distDurRowWidth = distDurPainter.width + 40.0;
+    // icon (12) + gap (4)
+    final distDurRowWidth = distDurPainter.width + 16.0;
 
     final contentWidth = math.max(textPainter.width, distDurRowWidth);
     final cardWidth =
@@ -1271,37 +1301,10 @@ class _MapScreenState extends State<MapScreen> {
             ),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999.0),
-                  child: SizedBox(
-                    width: 54.0,
-                    height: 54.0,
-                    child: user.imageUrl.trim().isEmpty
-                        ? Container(
-                            color: Colors.grey.shade200,
-                            alignment: Alignment.center,
-                            child: const Icon(
-                              Iconsax.profile_circle,
-                              color: ColorSys.darkBlue,
-                              size: 30,
-                            ),
-                          )
-                        : Image.network(
-                            user.imageUrl.trim(),
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) {
-                              return Container(
-                                color: Colors.grey.shade200,
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  Iconsax.profile_circle,
-                                  color: ColorSys.darkBlue,
-                                  size: 30,
-                                ),
-                              );
-                            },
-                          ),
-                  ),
+                _buildOfficerPhoto(
+                  user.imageUrl,
+                  width: 54.0,
+                  height: 54.0,
                 ),
                 const SizedBox(width: 10.0),
                 Expanded(
@@ -1329,20 +1332,6 @@ class _MapScreenState extends State<MapScreen> {
                             const SizedBox(width: 4.0),
                             Text(
                               _formatDistanceSmart(user.distance),
-                              style: textStyle(
-                                fontSize: 11,
-                                color: ColorSys.darkBlue,
-                              ),
-                            ),
-                            const SizedBox(width: 8.0),
-                            const Icon(
-                              Iconsax.clock,
-                              size: 12.0,
-                              color: ColorSys.darkBlue,
-                            ),
-                            const SizedBox(width: 4.0),
-                            Text(
-                              user.duration,
                               style: textStyle(
                                 fontSize: 11,
                                 color: ColorSys.darkBlue,
@@ -1407,8 +1396,8 @@ class _MapScreenState extends State<MapScreen> {
       context,
       type: AppPopupType.info,
       title: 'Butuh Bantuan?',
-      message: 'Kamu akan meminta bantuan kepada $officerName. '
-          'Lokasi kamu akan dibagikan.',
+      message: 'Anda akan meminta bantuan kepada $officerName. '
+          'Lokasi Anda akan dibagikan.',
       confirmText: 'Lanjut',
       cancelText: 'Batal',
     );
@@ -1502,37 +1491,11 @@ class _MapScreenState extends State<MapScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(25.0),
-                      child: SizedBox(
-                        height: 122.0,
-                        width: 120.0,
-                        child: user.imageUrl.trim().isEmpty
-                            ? Container(
-                                color: Colors.grey.shade200,
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  Iconsax.profile_circle,
-                                  color: ColorSys.darkBlue,
-                                  size: 42,
-                                ),
-                              )
-                            : Image.network(
-                                user.imageUrl.trim(),
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: Colors.grey.shade200,
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Iconsax.profile_circle,
-                                      color: ColorSys.darkBlue,
-                                      size: 42,
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
+                    _buildOfficerPhoto(
+                      user.imageUrl,
+                      width: 120.0,
+                      height: 122.0,
+                      borderRadius: 25.0,
                     ),
                   ],
                 ),
@@ -1577,71 +1540,31 @@ class _MapScreenState extends State<MapScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10.0),
-                        const Icon(
-                          Iconsax.clock,
-                          size: 14.0,
-                          color: ColorSys.darkBlue,
-                        ),
-                        const SizedBox(width: 4.0),
-                        Flexible(
-                          child: Text(
-                            user.duration,
-                            style: textStyle(
-                              fontSize: 14,
-                              color: ColorSys.darkBlue,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 20.0),
                     Row(
                       children: [
-                        ElevatedButton.icon(
+                        _buildOfficerActionButton(
                           onPressed: () => _openDirectionNavigation(user),
                           icon: const Icon(
                             Iconsax.direct_up,
                             color: Colors.white,
+                            size: 20,
                           ),
-                          label: const Text(
-                            'Go',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorSys.darkBlue,
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fixedSize: const Size(90, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                            ),
-                          ),
+                          label: 'Rute',
+                          backgroundColor: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 10.0),
-                        ElevatedButton.icon(
+                        _buildOfficerActionButton(
                           onPressed: () => _openHelpChat(user),
                           icon: const Icon(
                             Iconsax.danger,
                             color: Colors.white,
+                            size: 20,
                           ),
-                          label: const Text(
-                            'Help',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fixedSize: const Size(100, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                            ),
-                          ),
+                          label: 'Bantuan',
+                          backgroundColor: Colors.red,
                         ),
                       ],
                     ),
@@ -1651,6 +1574,50 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildOfficerActionButton({
+    required VoidCallback onPressed,
+    required Widget icon,
+    required String label,
+    required Color backgroundColor,
+  }) {
+    return Expanded(
+      child: SizedBox(
+        height: 56,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: textStyle(
+                  fontSize: 11,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1739,7 +1706,7 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _formatDistanceMiles(_navigationRemainingMeters),
+                        _formatDistanceMetric(_navigationRemainingMeters),
                         style: textStyle(
                           fontSize: 26,
                           color: Colors.white,
@@ -1846,7 +1813,7 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
                 Text(
-                  '${_formatDurationCompact(_navigationRemainingSeconds)} • ${_formatDistanceMiles(_navigationRemainingMeters)}',
+                  '${_formatDurationCompact(_navigationRemainingSeconds)} • ${_formatDistanceMetric(_navigationRemainingMeters)}',
                   style: textStyle(
                     fontSize: 14,
                     color: Colors.white.withValues(alpha: 0.85),

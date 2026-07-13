@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2800" height="1480" viewBox="0 0 2800 1480">
+<rect width="2800" height="1480" fill="#ffffff"/>
+<defs><style>text{font-family:"Times New Roman",Times,serif}</style></defs>
+<rect x="118" y="148" width="660" height="390" fill="#d8dddc" opacity="0.65"/>
+<rect x="110" y="140" width="660" height="390" fill="#ffffff" stroke="#2d3f45" stroke-width="3"/>
+<rect x="110" y="140" width="660" height="58" fill="#e9f3f3" stroke="#2d3f45" stroke-width="3"/>
+<text x="134" y="180" font-family="Times New Roman, Times, serif" font-size="34" font-weight="700" fill="#213942" text-anchor="start"  style="">users</text>
+<text x="134" y="230" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">PK</text>
+<text x="202" y="230" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">userId</text>
+<text x="202" y="266" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">displayName</text>
+<text x="202" y="302" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">email</text>
+<text x="202" y="338" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">roles</text>
+<text x="202" y="374" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">kloter</text>
+<text x="202" y="410" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">imageUrl</text>
+<text x="202" y="446" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">latitude</text>
+<text x="202" y="482" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">longitude</text>
+<rect x="1058" y="98" width="750" height="500" fill="#d8dddc" opacity="0.65"/>
+<rect x="1050" y="90" width="750" height="500" fill="#ffffff" stroke="#2d3f45" stroke-width="3"/>
+<rect x="1050" y="90" width="750" height="58" fill="#e9f3f3" stroke="#2d3f45" stroke-width="3"/>
+<text x="1074" y="130" font-family="Times New Roman, Times, serif" font-size="34" font-weight="700" fill="#213942" text-anchor="start"  style="">helpConversations</text>
+<text x="1074" y="180" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">PK</text>
+<text x="1142" y="180" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">conversationId</text>
+<text x="1074" y="216" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="1142" y="216" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">pilgrimId</text>
+<text x="1074" y="252" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="1142" y="252" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">officerId</text>
+<text x="1142" y="288" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">pairKey</text>
+<text x="1142" y="324" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">status</text>
+<text x="1142" y="360" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">archived</text>
+<text x="1142" y="396" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">openedAt</text>
+<text x="1142" y="432" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">updatedAt</text>
+<text x="1142" y="468" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">lastMessage</text>
+<text x="1142" y="504" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">lastMessageAt</text>
+<rect x="2068" y="258" width="600" height="140" fill="#d8dddc" opacity="0.65"/>
+<rect x="2060" y="250" width="600" height="140" fill="#ffffff" stroke="#2d3f45" stroke-width="3"/>
+<rect x="2060" y="250" width="600" height="58" fill="#e9f3f3" stroke="#2d3f45" stroke-width="3"/>
+<text x="2084" y="290" font-family="Times New Roman, Times, serif" font-size="34" font-weight="700" fill="#213942" text-anchor="start"  style="">helpConversationSessions</text>
+<text x="2084" y="340" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">PK</text>
+<text x="2152" y="340" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">pairKey</text>
+<text x="2084" y="376" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="2152" y="376" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">conversationId</text>
+<rect x="1058" y="938" width="750" height="460" fill="#d8dddc" opacity="0.65"/>
+<rect x="1050" y="930" width="750" height="460" fill="#ffffff" stroke="#2d3f45" stroke-width="3"/>
+<rect x="1050" y="930" width="750" height="58" fill="#e9f3f3" stroke="#2d3f45" stroke-width="3"/>
+<text x="1074" y="970" font-family="Times New Roman, Times, serif" font-size="34" font-weight="700" fill="#213942" text-anchor="start"  style="">helpMessages</text>
+<text x="1074" y="1020" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">PK</text>
+<text x="1142" y="1020" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">messageId</text>
+<text x="1074" y="1056" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="1142" y="1056" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">conversationId</text>
+<text x="1074" y="1092" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="1142" y="1092" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">senderId</text>
+<text x="1142" y="1128" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">senderName</text>
+<text x="1142" y="1164" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">senderRoleType</text>
+<text x="1142" y="1200" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">text</text>
+<text x="1142" y="1236" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">type</text>
+<text x="1142" y="1272" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">senderLat</text>
+<text x="1142" y="1308" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">senderLng</text>
+<text x="1142" y="1344" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">createdAt</text>
+<rect x="118" y="938" width="660" height="380" fill="#d8dddc" opacity="0.65"/>
+<rect x="110" y="930" width="660" height="380" fill="#ffffff" stroke="#2d3f45" stroke-width="3"/>
+<rect x="110" y="930" width="660" height="58" fill="#e9f3f3" stroke="#2d3f45" stroke-width="3"/>
+<text x="134" y="970" font-family="Times New Roman, Times, serif" font-size="34" font-weight="700" fill="#213942" text-anchor="start"  style="">helpNotificationRequests</text>
+<text x="134" y="1020" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">PK</text>
+<text x="202" y="1020" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">requestId</text>
+<text x="134" y="1056" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="202" y="1056" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">conversationId</text>
+<text x="134" y="1092" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="202" y="1092" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">senderUid</text>
+<text x="134" y="1128" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">FK</text>
+<text x="202" y="1128" font-family="Times New Roman, Times, serif" font-size="26" font-weight="700" fill="#213942" text-anchor="start"  style="">receiverUid</text>
+<text x="202" y="1164" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">title</text>
+<text x="202" y="1200" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">body</text>
+<text x="202" y="1236" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">status</text>
+<text x="202" y="1272" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">createdAt</text>
+<line x1="770" y1="265" x2="1050" y2="265" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="770" cy="265" r="6" fill="#2d3f45"/><circle cx="1050" cy="265" r="6" fill="#2d3f45"/>
+<text x="785" y="255" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">1</text>
+<text x="1025" y="255" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">N</text>
+<rect x="828.0" y="228" width="164" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="910" y="250" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">sebagai jemaah</text>
+<line x1="770" y1="395" x2="1050" y2="395" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="770" cy="395" r="6" fill="#2d3f45"/><circle cx="1050" cy="395" r="6" fill="#2d3f45"/>
+<text x="785" y="385" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">1</text>
+<text x="1025" y="385" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">N</text>
+<rect x="823.0" y="403" width="174" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="910" y="425" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">sebagai petugas</text>
+<polyline points="1800,250 2060,250" fill="none" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="1800" cy="250" r="6" fill="#2d3f45"/><circle cx="2060" cy="250" r="6" fill="#2d3f45"/>
+<text x="1820" y="238" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">1</text>
+<text x="2010" y="238" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">0..1</text>
+<rect x="1868.0" y="218" width="124" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="1930" y="240" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">sesi aktif</text>
+<line x1="1425" y1="590" x2="1425" y2="930" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="1425" cy="590" r="6" fill="#2d3f45"/><circle cx="1425" cy="930" r="6" fill="#2d3f45"/>
+<text x="1445" y="610" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">1</text>
+<text x="1445" y="905" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">N</text>
+<rect x="1458.0" y="748" width="164" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="1540" y="770" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">memiliki pesan</text>
+<polyline points="440,530 440,930" fill="none" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="440" cy="530" r="6" fill="#2d3f45"/><circle cx="440" cy="930" r="6" fill="#2d3f45"/>
+<text x="455" y="550" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">1</text>
+<text x="400" y="910" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">N</text>
+<rect x="393.0" y="718" width="214" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="500" y="740" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">pengirim / penerima</text>
+<polyline points="770,490 890,490 890,1030 1050,1030" fill="none" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="770" cy="490" r="6" fill="#2d3f45"/><circle cx="1050" cy="1030" r="6" fill="#2d3f45"/>
+<text x="785" y="475" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">1</text>
+<text x="1015" y="1020" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">N</text>
+<rect x="823.0" y="988" width="164" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="905" y="1010" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">mengirim pesan</text>
+<polyline points="770,520 880,520 880,1060 770,1060" fill="none" stroke="#2d3f45" stroke-width="3"/>
+<circle cx="770" cy="1060" r="6" fill="#2d3f45"/>
+<text x="735" y="1050" font-family="Times New Roman, Times, serif" font-size="26" font-weight="400" fill="#213942" text-anchor="start"  style="">N</text>
+<rect x="663.0" y="788" width="194" height="30" rx="7" fill="#ffffff" stroke="#d8e3e4"/>
+<text x="760" y="810" font-family="Times New Roman, Times, serif" font-size="22" font-weight="400" fill="#66757d" text-anchor="middle"  style="font-style:italic;">memicu notifikasi</text>
+</svg>

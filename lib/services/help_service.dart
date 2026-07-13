@@ -121,7 +121,8 @@ class HelpService {
 
     final cachedLat = _toDoubleValue(profile['latitude']);
     final cachedLng = _toDoubleValue(profile['longitude']);
-    if (cachedLat == 0.0 || cachedLng == 0.0) {
+    final cachedKloter = profile['kloter']?.toString().trim() ?? '';
+    if (cachedLat == 0.0 || cachedLng == 0.0 || cachedKloter.isEmpty) {
       final refreshed = await _userService.fetchCurrentUserProfile(
         forceRefresh: true,
       );
@@ -130,12 +131,13 @@ class HelpService {
       }
     }
     final role = profile['roles']?.toString() ?? 'Jemaah Haji';
+    final kloter = profile['kloter']?.toString().trim() ?? '';
     final name = toTitleCaseName(
       profile['displayName']?.toString().trim().isNotEmpty == true
           ? profile['displayName'].toString().trim()
           : (user.displayName?.trim().isNotEmpty == true
               ? user.displayName!.trim()
-              : user.email?.trim() ?? 'User'),
+              : user.email?.trim() ?? 'Akun'),
     );
     final imageUrl = profile['imageUrl']?.toString().trim() ?? '';
     final isPetugas = _userService.isPetugasHajiRole(role);
@@ -152,6 +154,7 @@ class HelpService {
       imageUrl: imageUrl,
       isPetugas: isPetugas,
       role: roleLabel,
+      kloter: kloter,
       latitude: latitude,
       longitude: longitude,
     );
@@ -228,31 +231,37 @@ class HelpService {
     late final String pilgrimName;
     late final String pilgrimImageUrl;
     late final String pilgrimRole;
+    late final String pilgrimKloter;
     late final String officerId;
     late final String officerName;
     late final String officerImageUrl;
     late final String officerRole;
+    late final String officerKloter;
 
     if (current.isPetugas) {
       officerId = current.uid;
       officerName = current.name;
       officerImageUrl = current.imageUrl;
       officerRole = current.role;
+      officerKloter = current.kloter;
       pilgrimId = peerId;
       pilgrimName = toTitleCaseName(peerName);
       pilgrimImageUrl = peerImageUrl;
       pilgrimRole =
           peerRole.trim().isNotEmpty ? peerRole.trim() : 'Jemaah Haji';
+      pilgrimKloter = '';
     } else {
       pilgrimId = current.uid;
       pilgrimName = current.name;
       pilgrimImageUrl = current.imageUrl;
       pilgrimRole = current.role;
+      pilgrimKloter = current.kloter;
       officerId = peerId;
       officerName = toTitleCaseName(peerName);
       officerImageUrl = peerImageUrl;
       officerRole =
           peerRole.trim().isNotEmpty ? peerRole.trim() : 'Petugas Haji';
+      officerKloter = '';
     }
 
     if (pilgrimId.isEmpty || officerId.isEmpty) {
@@ -292,10 +301,12 @@ class HelpService {
       'pilgrimName': pilgrimName,
       'pilgrimImageUrl': pilgrimImageUrl,
       'pilgrimRole': pilgrimRole,
+      'pilgrimKloter': pilgrimKloter,
       'officerId': officerId,
       'officerName': officerName,
       'officerImageUrl': officerImageUrl,
       'officerRole': officerRole,
+      'officerKloter': officerKloter,
       'status': 'open',
       'archived': false,
       'openedAt': ServerValue.timestamp,
@@ -370,6 +381,7 @@ class HelpService {
         'senderName': current.name,
         'senderImageUrl': current.imageUrl,
         'senderRole': current.role,
+        'senderKloter': current.kloter,
         'senderRoleType': current.isPetugas ? 'petugas' : 'jemaah',
         'senderLat': messageLatitude,
         'senderLng': messageLongitude,
@@ -383,8 +395,14 @@ class HelpService {
         'lastMessage': trimmed,
         'lastSenderId': current.uid,
         'lastSenderName': current.name,
+        'lastSenderKloter': current.kloter,
         'lastMessageAt': ServerValue.timestamp,
         'lastMessageType': type,
+        if (current.kloter.trim().isNotEmpty)
+          if (current.isPetugas)
+            'officerKloter': current.kloter
+          else
+            'pilgrimKloter': current.kloter,
         if (messageLatitude != 0.0 || messageLongitude != 0.0)
           if (current.isPetugas) ...{
             'officerLat': messageLatitude,
@@ -544,9 +562,13 @@ class HelpService {
         'senderUid': sender.uid,
         'senderName': sender.name,
         'senderRole': sender.role,
+        'senderKloter': sender.kloter,
         'conversationId': conversationId,
         'title': 'Pesan bantuan baru',
-        'body': '${sender.name}: $messageText',
+        'body': sender.kloter.trim().isEmpty
+            ? '${sender.name}: $messageText'
+            : '${sender.name} (${sender.kloter}): $messageText',
+        'messageText': messageText,
         'createdAt': ServerValue.timestamp,
         'status': 'pending',
       });
@@ -811,6 +833,7 @@ class HelpConversationSummary {
     required this.peerImageUrl,
     required this.peerIsPetugas,
     required this.peerRole,
+    required this.peerKloter,
     required this.lastMessage,
     required this.lastMessageAt,
     required this.lastSenderId,
@@ -827,6 +850,7 @@ class HelpConversationSummary {
   final String peerImageUrl;
   final bool peerIsPetugas;
   final String peerRole;
+  final String peerKloter;
   final String lastMessage;
   final int lastMessageAt;
   final String lastSenderId;
@@ -861,6 +885,9 @@ class HelpConversationSummary {
     final peerRole = currentIsPetugas
         ? data['pilgrimRole']?.toString().trim()
         : data['officerRole']?.toString().trim();
+    final peerKloter = currentIsPetugas
+        ? data['pilgrimKloter']?.toString().trim() ?? ''
+        : data['officerKloter']?.toString().trim() ?? '';
     final lastMessageAt = toMillis(data['lastMessageAt']);
     final lastSenderId = data['lastSenderId']?.toString() ?? '';
     final pilgrimLat = _toDoubleValue(data['pilgrimLat']);
@@ -906,6 +933,7 @@ class HelpConversationSummary {
       peerRole: (peerRole?.isNotEmpty == true)
           ? peerRole!
           : (!currentIsPetugas ? 'Petugas Haji' : 'Jemaah Haji'),
+      peerKloter: peerKloter,
       lastMessage: data['lastMessage']?.toString() ?? '',
       lastMessageAt: lastMessageAt,
       lastSenderId: lastSenderId,
@@ -964,6 +992,7 @@ class _CurrentUserContext {
     required this.imageUrl,
     required this.isPetugas,
     required this.role,
+    required this.kloter,
     required this.latitude,
     required this.longitude,
   });
@@ -973,6 +1002,7 @@ class _CurrentUserContext {
   final String imageUrl;
   final bool isPetugas;
   final String role;
+  final String kloter;
   final double latitude;
   final double longitude;
 }

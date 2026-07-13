@@ -45,7 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: GestureDetector(
               onTap: navigateToLogin,
               child: Text(
-                'Skip',
+                'Lewati',
                 style: textStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,

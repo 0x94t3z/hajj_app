@@ -1,77 +1,127 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1140" viewBox="0 0 960 1140">
-  <rect width="960" height="1140" fill="#f7faf9"/>
-  <text x="48" y="58" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#17313b">Flowchart Sistem Pencarian</text>
-  <text x="48" y="92" font-family="Arial, sans-serif" font-size="18" fill="#5d6b73">Simbol proses, input/output, dan decision dibuat konsisten</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1540" viewBox="0 0 1240 1540">
+  <rect width="1240" height="1540" fill="#ffffff"/>
 
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#17313b"/>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,8 L10,4 z" fill="#111111"/>
     </marker>
     <style>
-      .start{fill:#fff;stroke:#17313b;stroke-width:3}
-      .process{fill:#fff;stroke:#17313b;stroke-width:3}
-      .io{fill:#ecf6f6;stroke:#2d8c98;stroke-width:3}
-      .decision{fill:#fff8e8;stroke:#c99528;stroke-width:3}
-      .text{font-family:Arial,sans-serif;font-size:18px;fill:#17313b;font-weight:700}
-      .small{font-family:Arial,sans-serif;font-size:15px;fill:#5d6b73}
-      .line{stroke:#17313b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      text{font-family:"Times New Roman", Times, serif}
+      .shapeText{font-size:18px;font-weight:700;fill:#111111;text-anchor:middle;dominant-baseline:middle}
+      .smallText{font-size:16px;fill:#111111;text-anchor:middle;dominant-baseline:middle}
+      .label{font-size:16px;font-style:italic;fill:#111111;text-anchor:middle}
+      .startEnd{fill:#ffffff;stroke:#111111;stroke-width:2.6}
+      .process{fill:#ffffff;stroke:#111111;stroke-width:2.6}
+      .io{fill:#ffffff;stroke:#111111;stroke-width:2.6}
+      .decision{fill:#ffffff;stroke:#111111;stroke-width:2.6}
+      .line{stroke:#111111;stroke-width:2.6;fill:none;marker-end:url(#arrow)}
+      .thin{stroke:#111111;stroke-width:2;fill:none}
     </style>
   </defs>
 
-  <ellipse cx="480" cy="140" rx="92" ry="34" class="start"/>
-  <text x="459" y="147" class="text">Start</text>
+  <g transform="translate(0,-80)">
+  <ellipse cx="620" cy="145" rx="82" ry="30" class="startEnd"/>
+  <text x="620" y="146" class="shapeText">Mulai</text>
 
-  <rect x="345" y="205" width="270" height="56" rx="8" class="process"/>
-  <text x="395" y="240" class="text">Login Jemaah</text>
+  <rect x="500" y="205" width="240" height="50" rx="7" class="process"/>
+  <text x="620" y="231" class="shapeText">Login aplikasi</text>
 
-  <rect x="345" y="310" width="270" height="56" rx="8" class="process"/>
-  <text x="382" y="345" class="text">Ambil Lokasi GPS</text>
+  <polygon points="620,300 735,355 620,410 505,355" class="decision"/>
+  <text x="620" y="348" class="shapeText">Role</text>
+  <text x="620" y="371" class="shapeText">jemaah?</text>
 
-  <polygon points="480,410 620,470 480,530 340,470" class="decision"/>
-  <text x="406" y="465" class="text">Lokasi GPS</text>
-  <text x="435" y="488" class="text">valid?</text>
+  <polygon points="145,328 420,328 390,383 115,383" class="io"/>
+  <text x="268" y="350" class="shapeText">Tampilkan menu petugas</text>
+  <text x="268" y="372" class="shapeText">dan Help Inbox</text>
+  <ellipse cx="263" cy="455" rx="82" ry="30" class="startEnd"/>
+  <text x="263" y="456" class="shapeText">Selesai</text>
 
-  <rect x="105" y="435" width="170" height="70" rx="8" class="process"/>
-  <text x="144" y="463" class="text">Minta izin</text>
-  <text x="158" y="487" class="text">lokasi</text>
+  <polygon points="465,455 805,455 765,515 425,515" class="io"/>
+  <text x="615" y="478" class="shapeText">Input izin lokasi dan</text>
+  <text x="615" y="500" class="shapeText">koordinat GPS jemaah</text>
 
-  <polygon points="350,580 650,580 610,640 310,640" class="io"/>
-  <text x="380" y="616" class="text">Input koordinat jemaah</text>
+  <polygon points="620,560 730,615 620,670 510,615" class="decision"/>
+  <text x="620" y="607" class="shapeText">Lokasi</text>
+  <text x="620" y="630" class="shapeText">valid?</text>
 
-  <rect x="345" y="690" width="270" height="64" rx="8" class="process"/>
-  <text x="383" y="717" class="text">Baca data petugas</text>
-  <text x="405" y="741" class="small">Firebase Realtime Database</text>
+  <polygon points="80,585 390,585 355,645 45,645" class="io"/>
+  <text x="218" y="608" class="shapeText">Pesan lokasi</text>
+  <text x="218" y="630" class="shapeText">belum tersedia</text>
+  <ellipse cx="218" cy="710" rx="82" ry="30" class="startEnd"/>
+  <text x="218" y="711" class="shapeText">Selesai</text>
 
-  <polygon points="480,800 620,860 480,920 340,860" class="decision"/>
-  <text x="394" y="855" class="text">Data petugas</text>
-  <text x="421" y="878" class="text">tersedia?</text>
+  <rect x="500" y="720" width="240" height="58" rx="7" class="process"/>
+  <text x="620" y="742" class="shapeText">Ambil data petugas</text>
+  <text x="620" y="764" class="shapeText">dari Firebase</text>
 
-  <rect x="665" y="827" width="210" height="66" rx="8" class="process"/>
-  <text x="690" y="854" class="text">Tampilkan pesan</text>
-  <text x="696" y="878" class="small">data tidak tersedia</text>
+  <polygon points="620,825 740,880 620,935 500,880" class="decision"/>
+  <text x="620" y="873" class="shapeText">Data petugas</text>
+  <text x="620" y="896" class="shapeText">valid?</text>
 
-  <rect x="345" y="970" width="270" height="64" rx="8" class="process"/>
-  <text x="370" y="997" class="text">Hitung Haversine</text>
-  <text x="377" y="1021" class="small">urutkan jarak terkecil</text>
+  <polygon points="840,850 1170,850 1135,910 805,910" class="io"/>
+  <text x="988" y="873" class="shapeText">Pesan petugas</text>
+  <text x="988" y="895" class="shapeText">belum tersedia</text>
+  <ellipse cx="988" cy="975" rx="82" ry="30" class="startEnd"/>
+  <text x="988" y="976" class="shapeText">Selesai</text>
 
-  <polygon points="350,1060 650,1060 610,1120 310,1120" class="io" transform="translate(0,-5)"/>
-  <text x="354" y="1091" class="text">Output petugas terdekat</text>
+  <rect x="500" y="985" width="240" height="58" rx="7" class="process"/>
+  <text x="620" y="1007" class="shapeText">Proses</text>
+  <text x="620" y="1029" class="shapeText">Haversine</text>
 
-  <path d="M480 174 L480 205" class="line"/>
-  <path d="M480 261 L480 310" class="line"/>
-  <path d="M480 366 L480 410" class="line"/>
-  <path d="M480 530 L480 580" class="line"/>
-  <path d="M480 640 L480 690" class="line"/>
-  <path d="M480 754 L480 800" class="line"/>
-  <path d="M480 920 L480 970" class="line"/>
-  <path d="M480 1034 L480 1055" class="line"/>
+  <polygon points="445,1098 815,1098 775,1160 405,1160" class="io"/>
+  <text x="610" y="1121" class="shapeText">Output daftar dan marker</text>
+  <text x="610" y="1143" class="shapeText">petugas terdekat</text>
 
-  <path d="M340 470 L275 470" class="line"/>
-  <path d="M190 435 L190 338 L345 338" class="line"/>
-  <text x="295" y="455" class="small">Tidak</text>
-  <text x="505" y="562" class="small">Ya</text>
+  <polygon points="620,1208 735,1263 620,1318 505,1263" class="decision"/>
+  <text x="620" y="1255" class="shapeText">Petugas</text>
+  <text x="620" y="1278" class="shapeText">dipilih?</text>
 
-  <path d="M620 860 L665 860" class="line"/>
-  <text x="626" y="845" class="small">Tidak</text>
-  <text x="503" y="950" class="small">Ya</text>
+  <polygon points="620,1368 735,1423 620,1478 505,1423" class="decision"/>
+  <text x="620" y="1416" class="shapeText">Pilih</text>
+  <text x="620" y="1439" class="shapeText">aksi?</text>
+
+  <polygon points="120,1395 400,1395 370,1453 90,1453" class="io"/>
+  <text x="245" y="1418" class="shapeText">Tampilkan rute</text>
+  <text x="245" y="1440" class="shapeText">Mapbox</text>
+  <ellipse cx="240" cy="1530" rx="82" ry="30" class="startEnd"/>
+  <text x="240" y="1531" class="shapeText">Selesai</text>
+
+  <rect x="870" y="1395" width="260" height="58" rx="7" class="process"/>
+  <text x="1000" y="1418" class="shapeText">Buka chat dan</text>
+  <text x="1000" y="1440" class="shapeText">notifikasi bantuan</text>
+  <ellipse cx="1000" cy="1530" rx="82" ry="30" class="startEnd"/>
+  <text x="1000" y="1531" class="shapeText">Selesai</text>
+
+  <path d="M620 175 L620 205" class="line"/>
+  <path d="M620 255 L620 300" class="line"/>
+  <path d="M505 355 L390 355" class="line"/>
+  <text x="445" y="338" class="label">Tidak</text>
+  <path d="M263 383 L263 425" class="line"/>
+  <path d="M620 410 L620 455" class="line"/>
+  <text x="645" y="435" class="label">Ya</text>
+  <path d="M620 515 L620 560" class="line"/>
+  <path d="M510 615 L390 615" class="line"/>
+  <text x="450" y="598" class="label">Tidak</text>
+  <path d="M218 645 L218 680" class="line"/>
+  <path d="M620 670 L620 720" class="line"/>
+  <text x="645" y="698" class="label">Ya</text>
+  <path d="M620 778 L620 825" class="line"/>
+  <path d="M740 880 L805 880" class="line"/>
+  <text x="770" y="863" class="label">Tidak</text>
+  <path d="M988 910 L988 945" class="line"/>
+  <path d="M620 935 L620 985" class="line"/>
+  <text x="645" y="964" class="label">Ya</text>
+  <path d="M620 1043 L620 1098" class="line"/>
+  <path d="M620 1160 L620 1208" class="line"/>
+  <path d="M620 1318 L620 1368" class="line"/>
+  <text x="645" y="1348" class="label">Ya</text>
+  <path d="M505 1263 L405 1263 L405 1188 L480 1188 L480 1160" class="line"/>
+  <text x="455" y="1247" class="label">Tidak</text>
+  <path d="M505 1423 L370 1423" class="line"/>
+  <text x="438" y="1406" class="label">Go</text>
+  <path d="M240 1453 L240 1500" class="line"/>
+  <path d="M735 1423 L870 1423" class="line"/>
+  <text x="803" y="1406" class="label">Help</text>
+  <path d="M1000 1453 L1000 1500" class="line"/>
+  </g>
 </svg>

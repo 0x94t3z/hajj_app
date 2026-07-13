@@ -52,27 +52,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         newPassword.isEmpty ||
         confirmPassword.isEmpty) {
       await _showMessage(
-        'Please complete all password fields.',
+        'Silakan lengkapi semua kolom password.',
         type: AppPopupType.warning,
-        title: 'Missing Information',
+        title: 'Data Belum Lengkap',
       );
       return;
     }
 
     if (newPassword != confirmPassword) {
       await _showMessage(
-        'New password and confirmation do not match.',
+        'Kata sandi baru dan konfirmasi tidak sama.',
         type: AppPopupType.warning,
-        title: 'Passwords Do Not Match',
+        title: 'Password Tidak Sama',
       );
       return;
     }
 
     if (newPassword.length < 6) {
       await _showMessage(
-        'New password must be at least 6 characters.',
+        'Kata sandi baru minimal 6 karakter.',
         type: AppPopupType.warning,
-        title: 'Password Too Short',
+        title: 'Password Terlalu Pendek',
       );
       return;
     }
@@ -81,9 +81,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final email = user?.email;
     if (user == null || email == null || email.isEmpty) {
       await _showMessage(
-        'Account not found. Please log in again.',
+        'Akun tidak ditemukan. Silakan masuk kembali.',
         type: AppPopupType.error,
-        title: 'Action Failed',
+        title: 'Aksi Gagal',
       );
       return;
     }
@@ -103,34 +103,34 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
       if (!mounted) return;
       await _showMessage(
-        'Password updated successfully.',
+        'Kata sandi berhasil diperbarui.',
         type: AppPopupType.success,
-        title: 'Success',
+        title: 'Berhasil',
       );
       if (mounted) {
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
-      String message = 'Failed to update password.';
+      String message = 'Gagal memperbarui password.';
       if (e.code == 'wrong-password') {
-        message = 'Current password is incorrect.';
+        message = 'Kata sandi saat ini salah.';
       } else if (e.code == 'weak-password') {
-        message = 'New password is too weak.';
+        message = 'Kata sandi baru terlalu lemah.';
       } else if (e.code == 'requires-recent-login') {
-        message = 'Please log in again to update your password.';
+        message = 'Silakan masuk kembali untuk memperbarui password.';
       } else if (e.code == 'too-many-requests') {
-        message = 'Too many attempts. Please try again later.';
+        message = 'Terlalu banyak percobaan. Silakan coba lagi nanti.';
       }
       await _showMessage(
         message,
         type: AppPopupType.error,
-        title: 'Action Failed',
+        title: 'Aksi Gagal',
       );
     } catch (_) {
       await _showMessage(
-        'Something went wrong while updating your password.',
+        'Terjadi kesalahan saat memperbarui password.',
         type: AppPopupType.error,
-        title: 'Action Failed',
+        title: 'Aksi Gagal',
       );
     } finally {
       if (mounted) {
@@ -227,7 +227,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Change Password',
+          'Ubah Password',
           style: textStyle(
             color: ColorSys.darkBlue,
             fontSize: 16,
@@ -242,7 +242,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           children: [
             _buildPasswordField(
               controller: _currentPasswordController,
-              label: 'Current Password',
+              label: 'Password Saat Ini',
               obscureText: _obscureCurrent,
               onToggle: () {
                 setState(() {
@@ -250,12 +250,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 });
               },
               prefixIcon: Iconsax.lock_1,
-              helperText: 'Enter your current password.',
+              helperText: 'Masukkan password saat ini.',
             ),
             const SizedBox(height: 16),
             _buildPasswordField(
               controller: _newPasswordController,
-              label: 'New Password',
+              label: 'Password Baru',
               obscureText: _obscureNew,
               onToggle: () {
                 setState(() {
@@ -263,12 +263,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 });
               },
               prefixIcon: Iconsax.shield_tick,
-              helperText: 'Password must be at least 6 characters.',
+              helperText: 'Kata sandi minimal 6 karakter.',
             ),
             const SizedBox(height: 16),
             _buildPasswordField(
               controller: _confirmPasswordController,
-              label: 'Confirm New Password',
+              label: 'Konfirmasi Password',
               obscureText: _obscureConfirm,
               onToggle: () {
                 setState(() {
@@ -276,7 +276,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 });
               },
               prefixIcon: Iconsax.tick_circle,
-              helperText: 'Must match the new password.',
+              helperText: 'Harus sama dengan password baru.',
             ),
             const SizedBox(height: 24),
             MaterialButton(
@@ -298,7 +298,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                     )
                   : Text(
-                      'Update Password',
+                      'Perbarui Password',
                       style: textStyle(
                         color: Colors.white,
                         fontSize: 16.0,

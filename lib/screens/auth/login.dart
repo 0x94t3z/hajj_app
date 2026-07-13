@@ -130,11 +130,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? profileData!['displayName'].toString().trim()
                   : (firebaseUser.displayName?.trim().isNotEmpty ?? false)
                       ? firebaseUser.displayName!.trim()
-                      : 'Unknown User';
+                      : 'Akun Tidak Dikenal';
           final roles =
               (profileData?['roles']?.toString().trim().isNotEmpty ?? false)
                   ? profileData!['roles'].toString().trim()
-                  : 'Unknown Role';
+                  : 'Peran Tidak Dikenal';
           debugPrint(
             '[LOGIN] name=$name, roles=$roles',
           );
@@ -151,22 +151,22 @@ class _LoginScreenState extends State<LoginScreen> {
         await showAppPopup(
           context,
           type: AppPopupType.error,
-          title: 'Login Failed',
-          message: 'The password is incorrect. Please try again.',
+          title: 'Gagal Masuk',
+          message: 'Kata sandi salah. Silakan coba lagi.',
         );
       } else if (e.code == 'user-not-found') {
         await showAppPopup(
           context,
           type: AppPopupType.warning,
-          title: 'Login Failed',
-          message: 'No user found for that email.',
+          title: 'Gagal Masuk',
+          message: 'Akun dengan email tersebut tidak ditemukan.',
         );
       } else {
         await showAppPopup(
           context,
           type: AppPopupType.error,
-          title: 'Login Failed',
-          message: e.message ?? 'Something went wrong while logging in.',
+          title: 'Gagal Masuk',
+          message: e.message ?? 'Terjadi kesalahan saat masuk.',
         );
       }
     }
@@ -289,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.all(0.0),
                       labelText: 'Email',
-                      hintText: 'Your e-mail',
+                      hintText: 'Alamat email',
                       labelStyle: textStyle(
                         color: ColorSys.darkBlue,
                         fontSize: 14.0,
@@ -337,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.all(0.0),
                       labelText: 'Password',
-                      hintText: 'Password',
+                      hintText: 'Kata sandi',
                       hintStyle: textStyle(
                         color: ColorSys.textSecondary,
                         fontSize: 14.0,
@@ -391,7 +391,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           _navigateToForgotPasswordScreen(context);
                         },
                         child: Text(
-                          'Forgot Password?',
+                          'Lupa Password?',
                           style: textStyle(
                             color: ColorSys.darkBlue,
                             fontSize: 14.0,
@@ -441,7 +441,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           )
                         : Text(
-                            "Login",
+                            "Masuk",
                             style: textStyle(
                                 color: Colors.white,
                                 fontSize: 16.0,
@@ -458,7 +458,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Don\'t have an account?',
+                        'Belum punya akun?',
                         style: textStyle(
                           color: ColorSys.textSecondary,
                           fontSize: 14.0,
@@ -470,7 +470,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           _navigateToRegisterScreen(context);
                         },
                         child: Text(
-                          'Register',
+                          'Daftar',
                           style: textStyle(
                             color: ColorSys.darkBlue,
                             fontSize: 14.0,

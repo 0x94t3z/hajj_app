@@ -293,7 +293,9 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: ColorSys.darkBlue),
+            )
           : _errorMessage != null
               ? Center(
                   child: Padding(
@@ -314,7 +316,11 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (_allInboxStream == null)
-                        const Center(child: CircularProgressIndicator())
+                        const Center(
+                          child: CircularProgressIndicator(
+                            color: ColorSys.darkBlue,
+                          ),
+                        )
                       else
                         StreamBuilder<List<HelpConversationSummary>>(
                           stream: _allInboxStream,
@@ -340,7 +346,9 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                                     ConnectionState.waiting &&
                                 !inboxSnapshot.hasData) {
                               return const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: ColorSys.darkBlue,
+                                ),
                               );
                             }
 
@@ -379,7 +387,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                                 child: Text(
                                   _currentIsPetugas
                                       ? 'Belum ada permintaan bantuan masuk.'
-                                      : 'Belum ada permintaan bantuan. Gunakan tombol Help pada daftar petugas.',
+                                      : 'Belum ada permintaan bantuan. Gunakan tombol Bantuan pada daftar petugas.',
                                   style: textStyle(
                                     fontSize: 13,
                                     color: ColorSys.textSecondary,

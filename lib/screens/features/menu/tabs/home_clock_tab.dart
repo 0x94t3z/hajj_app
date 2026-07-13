@@ -15,6 +15,29 @@ class HomeClockTab extends StatefulWidget {
 
 class _HomeClockTabState extends State<HomeClockTab> {
   static bool _timeZoneInitialized = false;
+  static const Map<int, String> _hijriDayNamesId = {
+    1: 'Senin',
+    2: 'Selasa',
+    3: 'Rabu',
+    4: 'Kamis',
+    5: 'Jumat',
+    6: 'Sabtu',
+    7: 'Minggu',
+  };
+  static const Map<int, String> _hijriMonthNamesId = {
+    1: 'Muharram',
+    2: 'Safar',
+    3: 'Rabiul Awal',
+    4: 'Rabiul Akhir',
+    5: 'Jumadil Awal',
+    6: 'Jumadil Akhir',
+    7: 'Rajab',
+    8: 'Syaban',
+    9: 'Ramadan',
+    10: 'Syawal',
+    11: 'Zulkaidah',
+    12: 'Zulhijah',
+  };
 
   @override
   void initState() {
@@ -29,6 +52,7 @@ class _HomeClockTabState extends State<HomeClockTab> {
   @override
   Widget build(BuildContext context) {
     HijriCalendar today = HijriCalendar.now(); // Get current date in Hijri
+    final hijriDateText = _formatHijriDate(today);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -41,7 +65,7 @@ class _HomeClockTabState extends State<HomeClockTab> {
                 child: Padding(
                   padding: const EdgeInsets.all(18.0),
                   child: Text(
-                    '${today.fullDate()} H.',
+                    '$hijriDateText H.',
                     style: textStyle(fontSize: 18.0, color: ColorSys.darkBlue),
                   ),
                 ),
@@ -79,8 +103,8 @@ class _HomeClockTabState extends State<HomeClockTab> {
               ),
               const SizedBox(height: 70.0),
               _buildCountryWidget(
-                country: 'Saudi Arabia',
-                city: 'Mecca',
+                country: 'Arab Saudi',
+                city: 'Makkah',
                 timeZone: 'Asia/Riyadh',
               ),
               const SizedBox(height: 25.0),
@@ -96,13 +120,21 @@ class _HomeClockTabState extends State<HomeClockTab> {
     );
   }
 
+  String _formatHijriDate(HijriCalendar date) {
+    final dayName = _hijriDayNamesId[date.wkDay] ?? '';
+    final monthName = _hijriMonthNamesId[date.hMonth] ?? date.longMonthName;
+    final day = date.hDay;
+    final year = date.hYear;
+    return '$dayName, $day $monthName $year';
+  }
+
   Widget _buildCountryWidget({
     required String country,
     required String city,
     required String timeZone,
   }) {
     final now = tz.TZDateTime.now(tz.getLocation(timeZone));
-    final formattedTime = DateFormat('h:mm a').format(now);
+    final formattedTime = DateFormat('HH:mm').format(now);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 10.0),

@@ -90,16 +90,6 @@ class _NavigationScreenState extends State<NavigationScreen> {
     );
   }
 
-  double _estimateWalkDurationMinutes(double distanceKm) {
-    const walkingSpeedKmPerHour = 4.8;
-    return (distanceKm / walkingSpeedKmPerHour) * 60;
-  }
-
-  String _estimateWalkDuration(double distanceKm) {
-    final minutes = _estimateWalkDurationMinutes(distanceKm).ceil();
-    return '$minutes Min';
-  }
-
   bool _isIgnoredIosLocationError(Object error) {
     final text = error.toString();
     return text.contains('kCLErrorDomain') && text.contains('error 1');
@@ -214,28 +204,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10.0),
-                        const Icon(
-                          Iconsax.clock,
-                          size: 14.0,
-                          color: ColorSys.darkBlue,
-                        ),
-                        const SizedBox(width: 4.0),
-                        Flexible(
-                          child: Text(
-                            officer.duration,
-                            style: textStyle(
-                              fontSize: 14,
-                              color: ColorSys.darkBlue,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 20.0),
                     Row(
                       children: [
-                        ElevatedButton.icon(
+                        _buildOfficerActionButton(
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -249,45 +223,21 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           icon: const Icon(
                             Iconsax.direct_up,
                             color: Colors.white,
+                            size: 20,
                           ),
-                          label: const Text(
-                            'Go',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorSys.darkBlue,
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fixedSize: const Size(90, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                            ),
-                          ),
+                          label: 'Rute',
+                          backgroundColor: ColorSys.darkBlue,
                         ),
                         const SizedBox(width: 10.0),
-                        ElevatedButton.icon(
+                        _buildOfficerActionButton(
                           onPressed: () => _openHelpChat(officer),
                           icon: const Icon(
                             Iconsax.danger,
                             color: Colors.white,
+                            size: 20,
                           ),
-                          label: const Text(
-                            'Help',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            fixedSize: const Size(100, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25.0),
-                            ),
-                          ),
+                          label: 'Bantuan',
+                          backgroundColor: Colors.red,
                         ),
                       ],
                     ),
@@ -301,6 +251,50 @@ class _NavigationScreenState extends State<NavigationScreen> {
     );
   }
 
+  Widget _buildOfficerActionButton({
+    required VoidCallback onPressed,
+    required Widget icon,
+    required String label,
+    required Color backgroundColor,
+  }) {
+    return Expanded(
+      child: SizedBox(
+        height: 56,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24.0),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+                style: textStyle(
+                  fontSize: 11,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<bool> _confirmHelpRequest(UserModel user) async {
     final officerName =
         user.name.trim().isEmpty ? 'petugas haji' : _toTitleCase(user.name);
@@ -308,8 +302,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
       context,
       type: AppPopupType.info,
       title: 'Butuh Bantuan?',
-      message: 'Kamu akan meminta bantuan kepada $officerName. '
-          'Lokasi kamu akan dibagikan.',
+      message: 'Anda akan meminta bantuan kepada $officerName. '
+          'Lokasi Anda akan dibagikan.',
       confirmText: 'Lanjut',
       cancelText: 'Batal',
     );
@@ -474,7 +468,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
         final user = entry.key;
         final distanceKm = entry.value;
         user.distance = '${distanceKm.toStringAsFixed(2)} Km';
-        user.duration = _estimateWalkDuration(distanceKm);
+        // Duration is intentionally left empty here. Haversine is only used for
+        // initial ranking; travel duration comes from Mapbox Directions API.
+        user.duration = '';
         return _OfficerRouteItem(user: user, distanceKm: distanceKm);
       }).toList();
 
@@ -560,7 +556,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
       body: RefreshIndicator(
         onRefresh: _loadOfficerRoutes,
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(
+                child: CircularProgressIndicator(color: ColorSys.darkBlue),
+              )
             : _errorMessage != null
                 ? ListView(
                     padding: const EdgeInsets.all(20),
@@ -989,7 +987,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
     return Icons.navigation;
   }
 
-  String _formatDistanceMiles(double meters) {
+  String _formatDistanceMetric(double meters) {
     final km = meters / 1000;
     return '${km.toStringAsFixed(2)} Km';
   }
@@ -997,14 +995,14 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
   String _formatDurationCompact(double seconds) {
     final totalMinutes = (seconds / 60).ceil();
     if (totalMinutes < 60) {
-      return '$totalMinutes Min';
+      return '$totalMinutes Menit';
     }
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
     if (minutes == 0) {
-      return '$hours h';
+      return '$hours Jam';
     }
-    return '$hours h $minutes Min';
+    return '$hours Jam $minutes Menit';
   }
 
   void _updateNextInstruction() {
@@ -1442,9 +1440,8 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
 
     if (!mounted) return;
     setState(() {
-      _remainingMeters = remaining;
-      const walkingMetersPerSecond = 1.39;
-      _remainingSeconds = remaining / walkingMetersPerSecond;
+      // Keep route distance and duration from Mapbox Directions API.
+      // Haversine/direct distance here is only used for arrival and step checks.
       if (_steps.isNotEmpty) {
         _currentInstruction = _steps[_stepIndex].instruction;
       }
@@ -1579,7 +1576,7 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          '${_formatDurationCompact(_remainingSeconds)} • ${_formatDistanceMiles(_remainingMeters)}',
+                          '${_formatDurationCompact(_remainingSeconds)} • ${_formatDistanceMetric(_remainingMeters)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: textStyle(
@@ -1770,16 +1767,15 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
       color: ColorSys.darkBlue,
     );
     final distanceText = widget.officer.distance;
-    final durationText = widget.officer.duration;
     final distDurPainter = TextPainter(
       text: TextSpan(
-        text: '$distanceText  $durationText',
+        text: distanceText,
         style: distanceDurationStyle,
       ),
       maxLines: 1,
       textDirection: Directionality.of(context),
     )..layout();
-    final distDurRowWidth = distDurPainter.width + 40.0;
+    final distDurRowWidth = distDurPainter.width + 16.0;
 
     final contentWidth = math.max(textPainter.width, distDurRowWidth);
     final cardWidth =
@@ -1858,17 +1854,6 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
                             const SizedBox(width: 4.0),
                             Text(
                               distanceText,
-                              style: distanceDurationStyle,
-                            ),
-                            const SizedBox(width: 8.0),
-                            const Icon(
-                              Iconsax.clock,
-                              size: 12.0,
-                              color: ColorSys.darkBlue,
-                            ),
-                            const SizedBox(width: 4.0),
-                            Text(
-                              durationText,
                               style: distanceDurationStyle,
                             ),
                           ],

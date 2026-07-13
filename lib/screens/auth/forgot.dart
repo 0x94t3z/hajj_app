@@ -43,9 +43,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
       await _showMessage(
-        'Please enter your email address.',
+        'Silakan masukkan alamat email.',
         type: AppPopupType.warning,
-        title: 'Missing Email',
+        title: 'Email Belum Diisi',
       );
       return;
     }
@@ -58,9 +58,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
       if (!mounted) return;
       await _showMessage(
-        'We sent a password reset link to your email.',
+        'Tautan reset password telah dikirim ke email Anda.',
         type: AppPopupType.success,
-        title: 'Email Sent',
+        title: 'Email Terkirim',
       );
       if (mounted) {
         Navigator.pushReplacement(
@@ -69,24 +69,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      String message = 'Failed to send reset email.';
+      String message = 'Gagal mengirim email reset password.';
       if (e.code == 'invalid-email') {
-        message = 'Invalid email address.';
+        message = 'Alamat email tidak valid.';
       } else if (e.code == 'user-not-found') {
-        message = 'No user found with this email.';
+        message = 'Akun dengan email tersebut tidak ditemukan.';
       } else if (e.code == 'too-many-requests') {
-        message = 'Too many attempts. Please try again later.';
+        message = 'Terlalu banyak percobaan. Silakan coba lagi nanti.';
       }
       await _showMessage(
         message,
         type: AppPopupType.error,
-        title: 'Action Failed',
+        title: 'Aksi Gagal',
       );
     } catch (_) {
       await _showMessage(
-        'Something went wrong. Please try again.',
+        'Terjadi kesalahan. Silakan coba lagi.',
         type: AppPopupType.error,
-        title: 'Action Failed',
+        title: 'Aksi Gagal',
       );
     } finally {
       if (mounted) {
@@ -155,7 +155,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               FadeInDown(
                 delay: const Duration(milliseconds: 400),
                 child: Text(
-                  "Forgot Password",
+                  "Lupa Password",
                   style: textStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
@@ -169,7 +169,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               FadeInDown(
                 delay: const Duration(milliseconds: 400),
                 child: Text(
-                  "Enter your email address to reset your password",
+                  "Masukkan email untuk mengatur ulang password",
                   textAlign: TextAlign.center,
                   style: contentTextStyle(
                     color: ColorSys.textSecondary,
@@ -192,7 +192,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.all(0.0),
                     labelText: 'Email',
-                    hintText: 'Your e-mail',
+                    hintText: 'Alamat email',
                     labelStyle: textStyle(
                       color: ColorSys.darkBlue,
                       fontSize: 14.0,
@@ -210,7 +210,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     suffixIcon: TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
-                        'Cancel',
+                        'Batal',
                         style: textStyle(
                           color: ColorSys.darkBlue,
                           fontSize: 12.0,
@@ -258,7 +258,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                         )
                       : Text(
-                          "Next",
+                          "Lanjut",
                           style: textStyle(
                             color: Colors.white,
                             fontSize: 16.0,
