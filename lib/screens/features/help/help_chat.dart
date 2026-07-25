@@ -48,6 +48,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   bool _isSending = false;
   bool _isArchived = false;
   bool _messageAccessClosed = false;
+  String _conversationStatus = HelpService.statusRequested;
   bool _currentIsPetugas = false;
   String _peerId = '';
   String _peerName = '';
@@ -60,6 +61,11 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   StreamSubscription<Map<String, dynamic>?>? _conversationSubscription;
   StreamSubscription<User?>? _authStateSubscription;
   int _conversationEpoch = 0;
+
+  bool get _canSendMessages =>
+      !_isArchived &&
+      !_messageAccessClosed &&
+      HelpService.statusAllowsMessaging(_conversationStatus);
 
   @override
   void initState() {
@@ -114,7 +120,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
 
       final status = data['status']?.toString() ?? HelpService.statusRequested;
       final archived =
-          data['archived'] == true || status == HelpService.statusClosed;
+          data['archived'] == true || HelpService.statusIsFinal(status);
       final currentUser = FirebaseAuth.instance.currentUser;
       final officerId = data['officerId']?.toString() ?? '';
       final pilgrimId = data['pilgrimId']?.toString() ?? '';
@@ -133,6 +139,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
 
       setState(() {
         _isArchived = widget.readOnly || archived;
+        _conversationStatus = status;
         _currentIsPetugas = currentIsPetugas;
         _peerIsPetugas = !currentIsPetugas;
         if (peerId.isNotEmpty) {
@@ -204,6 +211,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       if (!mounted || currentEpoch != _conversationEpoch) return;
       setState(() {
         _conversationId = handle.conversationId;
+        _conversationStatus = HelpService.statusRequested;
         _bindMessagesStream(handle.conversationId);
         _bindConversationStream(handle.conversationId);
         _currentIsPetugas = handle.currentIsPetugas;
@@ -279,8 +287,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       if (peerRole.isEmpty) peerRole = widget.peerRole.trim();
       peerImageUrl = UserService.normalizeProfileImageUrl(peerImageUrl);
 
-      final status = data['status']?.toString() ?? 'open';
-      final archived = data['archived'] == true || status == 'closed';
+      final status = data['status']?.toString() ?? HelpService.statusRequested;
+      final archived =
+          data['archived'] == true || HelpService.statusIsFinal(status);
 
       if (!mounted || currentEpoch != _conversationEpoch) return;
       setState(() {
@@ -293,6 +302,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         _peerIsPetugas = peerIsPetugas;
         _resolvedPeerRole = peerRole;
         _isArchived = widget.readOnly || archived;
+        _conversationStatus = status;
         _messageAccessClosed = false;
         _isLoading = false;
       });
@@ -315,12 +325,16 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   }) async {
     final conversationId = _conversationId;
     if (conversationId == null || _isSending) return;
-    if (_isArchived) {
+    if (!_canSendMessages) {
+      final isFinal =
+          _isArchived || HelpService.statusIsFinal(_conversationStatus);
       await showAppPopup(
         context,
         type: AppPopupType.warning,
-        title: 'Sesi Diarsipkan',
-        message: 'Sesi ini sudah diarsipkan. Anda hanya dapat melihat pesan.',
+        title: isFinal ? 'Sesi Diarsipkan' : 'Menunggu Petugas',
+        message: isFinal
+            ? 'Sesi ini sudah diarsipkan. Anda hanya dapat melihat pesan.'
+            : 'Pesan dapat dikirim setelah petugas menerima permintaan bantuan.',
       );
       return;
     }
@@ -556,7 +570,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     List<HelpMessage> messages,
     String currentUid,
   ) {
-    if (_isArchived) return const <String>[];
+    if (!_canSendMessages) return const <String>[];
 
     final pilgrimId = _currentIsPetugas ? _peerId : currentUid;
     final petugasId = _currentIsPetugas ? currentUid : _peerId;
@@ -835,7 +849,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                               vertical: 16,
                                             ),
                                             child: Text(
-                                              'Belum ada pesan. Kirim bantuan sekarang.',
+                                              _canSendMessages
+                                                  ? 'Belum ada pesan.'
+                                                  : 'Menunggu petugas menerima permintaan bantuan.',
                                               textAlign: TextAlign.center,
                                               style: textStyle(
                                                 fontSize: 13,
@@ -917,6 +933,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                             children: [
                               Expanded(
                                 child: TextField(
+                                  enabled: _canSendMessages,
                                   controller: _messageController,
                                   focusNode: _messageFocusNode,
                                   minLines: 1,
@@ -928,7 +945,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                     fontSize: 14.0,
                                   ),
                                   decoration: InputDecoration(
-                                    hintText: 'Tulis pesan bantuan...',
+                                    hintText: _canSendMessages
+                                        ? 'Tulis pesan bantuan...'
+                                        : 'Menunggu petugas menerima...',
                                     hintStyle: textStyle(
                                       fontSize: 13,
                                       color: ColorSys.grey,
@@ -963,7 +982,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                 width: 48,
                                 height: 48,
                                 child: ElevatedButton(
-                                  onPressed: _isSending
+                                  onPressed: !_canSendMessages || _isSending
                                       ? null
                                       : () => _sendMessage(
                                             text: _messageController.text,

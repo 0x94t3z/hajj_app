@@ -99,7 +99,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
   }
 
   void _openConversation(HelpConversationSummary item) {
-    final isArchived = item.archived || item.status == HelpService.statusClosed;
+    final isArchived = item.archived || HelpService.statusIsFinal(item.status);
     if (!isArchived) {
       Navigator.pushNamed(
         context,
@@ -368,12 +368,14 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
                                 <HelpConversationSummary>[];
                             final activeItems = allItems
                                 .where((item) =>
-                                    item.status != 'closed' && !item.archived)
+                                    !HelpService.statusIsFinal(item.status) &&
+                                    !item.archived)
                                 .take(5)
                                 .toList();
                             final archivedItems = allItems
                                 .where((item) =>
-                                    item.status == 'closed' || item.archived)
+                                    HelpService.statusIsFinal(item.status) ||
+                                    item.archived)
                                 .toList();
                             final archiveCount = archivedItems.length;
                             final visibleArchiveCount =

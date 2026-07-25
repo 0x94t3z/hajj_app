@@ -1,30 +1,60 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-// import 'package:hajj_app/main.dart';
+import 'package:hajj_app/services/help_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    // await tester.pumpWidget(const MyApp());
+  group('Help conversation lifecycle', () {
+    test('messages are locked until an officer accepts the request', () {
+      expect(
+        HelpService.statusAllowsMessaging(HelpService.statusRequested),
+        isFalse,
+      );
+      expect(
+        HelpService.statusAllowsMessaging(HelpService.statusAccepted),
+        isTrue,
+      );
+      expect(
+        HelpService.statusAllowsMessaging(HelpService.statusOnTheWay),
+        isTrue,
+      );
+      expect(
+        HelpService.statusAllowsMessaging(HelpService.statusArrived),
+        isTrue,
+      );
+      expect(
+        HelpService.statusAllowsMessaging(HelpService.statusRejected),
+        isFalse,
+      );
+      expect(
+        HelpService.statusAllowsMessaging(HelpService.statusClosed),
+        isFalse,
+      );
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('rejected and closed conversations are final', () {
+      expect(
+        HelpService.statusIsFinal(HelpService.statusRequested),
+        isFalse,
+      );
+      expect(
+        HelpService.statusIsFinal(HelpService.statusAccepted),
+        isFalse,
+      );
+      expect(
+        HelpService.statusIsFinal(HelpService.statusOnTheWay),
+        isFalse,
+      );
+      expect(
+        HelpService.statusIsFinal(HelpService.statusArrived),
+        isFalse,
+      );
+      expect(
+        HelpService.statusIsFinal(HelpService.statusRejected),
+        isTrue,
+      );
+      expect(
+        HelpService.statusIsFinal(HelpService.statusClosed),
+        isTrue,
+      );
+    });
   });
 }

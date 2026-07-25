@@ -91,6 +91,16 @@ class HelpService {
   static const String statusRejected = 'rejected';
   static const String statusClosed = 'closed';
 
+  static bool statusAllowsMessaging(String status) {
+    return status == statusAccepted ||
+        status == statusOnTheWay ||
+        status == statusArrived;
+  }
+
+  static bool statusIsFinal(String status) {
+    return status == statusRejected || status == statusClosed;
+  }
+
   DatabaseReference get _conversationsRef => _database.ref('helpConversations');
   DatabaseReference get _activeSessionsRef =>
       _database.ref('helpConversationSessions');
@@ -452,9 +462,20 @@ class HelpService {
       final data = Map<String, dynamic>.from(snapshot.value as Map);
       final pilgrimId = data['pilgrimId']?.toString() ?? '';
       final officerId = data['officerId']?.toString() ?? '';
-      if (current.uid != pilgrimId && current.uid != officerId) {
-        throw _permissionDeniedError();
+      if (current.uid != officerId) {
+        throw Exception(
+          'Hanya petugas terkait yang dapat memperbarui status bantuan.',
+        );
       }
+
+      final pairKey = data['pairKey']?.toString().trim().isNotEmpty == true
+          ? data['pairKey'].toString()
+          : (pilgrimId.isNotEmpty && officerId.isNotEmpty
+              ? buildConversationId(
+                  pilgrimId: pilgrimId,
+                  officerId: officerId,
+                )
+              : '');
 
       final nowField = <String, dynamic>{
         'status': status,
@@ -492,18 +513,18 @@ class HelpService {
       }
 
       await _conversationsRef.child(conversationId).update(nowField);
+      if (statusIsFinal(status) && pairKey.isNotEmpty) {
+        await _clearActiveSessionPointer(
+          pairKey: pairKey,
+          conversationId: conversationId,
+        );
+      }
       await _enqueueStatusNotificationRequest(
         conversationId: conversationId,
         sender: current,
         conversationData: data,
         status: status,
       );
-      if (status == statusRejected) {
-        await _clearActiveSessionPointer(
-          pairKey: data['pairKey']?.toString() ?? '',
-          conversationId: conversationId,
-        );
-      }
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw _permissionDeniedError();
@@ -552,12 +573,6 @@ class HelpService {
         'completedAt': ServerValue.timestamp,
         'updatedAt': ServerValue.timestamp,
       });
-      await _enqueueStatusNotificationRequest(
-        conversationId: conversationId,
-        sender: current,
-        conversationData: data,
-        status: statusClosed,
-      );
 
       if (pairKey.isNotEmpty) {
         await _clearActiveSessionPointer(
@@ -565,6 +580,13 @@ class HelpService {
           conversationId: conversationId,
         );
       }
+
+      await _enqueueStatusNotificationRequest(
+        conversationId: conversationId,
+        sender: current,
+        conversationData: data,
+        status: statusClosed,
+      );
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw _permissionDeniedError();
@@ -587,10 +609,35 @@ class HelpService {
     final current = await _currentUserContext();
     final messageLatitude = senderLatitude ?? current.latitude;
     final messageLongitude = senderLongitude ?? current.longitude;
-    final messageRef =
-        _conversationsRef.child(conversationId).child('messages').push();
 
     try {
+      final conversationSnapshot =
+          await _conversationsRef.child(conversationId).get();
+      if (!conversationSnapshot.exists || conversationSnapshot.value is! Map) {
+        throw Exception('Percakapan tidak ditemukan.');
+      }
+
+      final conversationData =
+          Map<String, dynamic>.from(conversationSnapshot.value as Map);
+      final pilgrimId = conversationData['pilgrimId']?.toString() ?? '';
+      final officerId = conversationData['officerId']?.toString() ?? '';
+      if (current.uid != pilgrimId && current.uid != officerId) {
+        throw _permissionDeniedError();
+      }
+
+      final status = conversationData['status']?.toString() ?? statusRequested;
+      final archived = conversationData['archived'] == true;
+      if (archived || statusIsFinal(status)) {
+        throw Exception('Sesi bantuan telah diarsipkan.');
+      }
+      if (!statusAllowsMessaging(status)) {
+        throw Exception(
+          'Pesan dapat dikirim setelah petugas menerima permintaan bantuan.',
+        );
+      }
+
+      final messageRef =
+          _conversationsRef.child(conversationId).child('messages').push();
       await messageRef.set({
         'id': messageRef.key ?? '',
         'senderId': current.uid,
@@ -1031,7 +1078,7 @@ class HelpService {
       currentIsPetugas: currentIsPetugas,
     ).map((items) {
       return items
-          .where((item) => item.status != 'closed' && !item.archived)
+          .where((item) => !statusIsFinal(item.status) && !item.archived)
           .toList();
     });
   }
@@ -1045,7 +1092,7 @@ class HelpService {
       currentIsPetugas: currentIsPetugas,
     );
     return items
-        .where((item) => item.status != 'closed' && !item.archived)
+        .where((item) => !statusIsFinal(item.status) && !item.archived)
         .toList();
   }
 
@@ -1058,7 +1105,7 @@ class HelpService {
       currentIsPetugas: currentIsPetugas,
     ).map((items) {
       return items
-          .where((item) => item.status == 'closed' || item.archived)
+          .where((item) => statusIsFinal(item.status) || item.archived)
           .toList();
     });
   }
@@ -1242,8 +1289,9 @@ class HelpConversationSummary {
     final pilgrimLng = _toDoubleValue(data['pilgrimLng']);
     final officerLat = _toDoubleValue(data['officerLat']);
     final officerLng = _toDoubleValue(data['officerLng']);
-    final status = data['status']?.toString() ?? 'open';
-    final archived = data['archived'] == true;
+    final status = data['status']?.toString() ?? HelpService.statusRequested;
+    final archived =
+        data['archived'] == true || HelpService.statusIsFinal(status);
 
     int lastReadAt = 0;
     final readMetaRaw = data['readMeta'];
