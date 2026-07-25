@@ -102,8 +102,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   LocationPermission _lastKnownLocationPermission = LocationPermission.denied;
   StreamSubscription<User?>? _authStateSubscription;
   StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<DatabaseEvent>? _helpNotificationRequestSubscription;
   Timer? _helpNotificationPollTimer;
   bool _isPollingHelpNotifications = false;
+  bool _hasPendingHelpNotificationPoll = false;
+  DataSnapshot? _pendingHelpNotificationSnapshot;
   String? _helpNotificationListenerUid;
   String? _currentRouteName;
   int _helpNotificationListenerEpoch = 0;
@@ -191,6 +194,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     if (_helpNotificationListenerUid == user.uid &&
+        _helpNotificationRequestSubscription != null &&
         _helpNotificationPollTimer != null) {
       unawaited(
         _pollHelpNotifications(
@@ -203,6 +207,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
 
     _helpNotificationPollTimer?.cancel();
     _helpNotificationPollTimer = null;
+    await _helpNotificationRequestSubscription?.cancel();
+    _helpNotificationRequestSubscription = null;
     if (_helpNotificationListenerUid != user.uid) {
       _cachedIsPetugas = null;
       _seenHelpNotificationIds.clear();
@@ -210,9 +216,30 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     }
     _helpNotificationListenerUid = user.uid;
     _isPollingHelpNotifications = false;
+    _hasPendingHelpNotificationPoll = false;
+    _pendingHelpNotificationSnapshot = null;
     final listenerEpoch = ++_helpNotificationListenerEpoch;
     // Keep seen ids during runtime to prevent repeated popups when
     // listener is reattached (e.g. initial auth sync).
+
+    final requestQuery = FirebaseDatabase.instance
+        .ref('helpNotificationRequests')
+        .orderByChild('receiverUid')
+        .equalTo(user.uid);
+    _helpNotificationRequestSubscription = requestQuery.onValue.listen(
+      (event) {
+        unawaited(
+          _pollHelpNotifications(
+            listenerEpoch: listenerEpoch,
+            receiverUid: user.uid,
+            snapshot: event.snapshot,
+          ),
+        );
+      },
+      onError: (Object error) {
+        debugPrint('Help notification listener error: $error');
+      },
+    );
 
     unawaited(
       _pollHelpNotifications(
@@ -237,54 +264,35 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   Future<void> _pollHelpNotifications({
     required int listenerEpoch,
     required String receiverUid,
+    DataSnapshot? snapshot,
   }) async {
-    if (_isPollingHelpNotifications) return;
     if (listenerEpoch != _helpNotificationListenerEpoch) return;
+    if (_isPollingHelpNotifications) {
+      _hasPendingHelpNotificationPoll = true;
+      if (snapshot != null) {
+        _pendingHelpNotificationSnapshot = snapshot;
+      }
+      return;
+    }
     _isPollingHelpNotifications = true;
     try {
-      final snapshot = await FirebaseDatabase.instance
-          .ref('helpNotificationRequests')
-          .orderByChild('receiverUid')
-          .equalTo(receiverUid)
-          .get();
+      final notificationSnapshot = snapshot ??
+          await FirebaseDatabase.instance
+              .ref('helpNotificationRequests')
+              .orderByChild('receiverUid')
+              .equalTo(receiverUid)
+              .get();
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
-      final raw = snapshot.value;
+      final raw = notificationSnapshot.value;
       final items = <_HelpNotificationItem>[];
 
       if (raw is Map) {
         items.addAll(
           raw.entries.map((entry) {
             if (entry.value is! Map) return null;
-            final map = Map<String, dynamic>.from(entry.value as Map);
-            final id = map['id']?.toString().isNotEmpty == true
-                ? map['id'].toString()
-                : entry.key.toString();
-            final createdAt = map['createdAt'] is int
-                ? map['createdAt'] as int
-                : int.tryParse(map['createdAt']?.toString() ?? '0') ?? 0;
-            return _HelpNotificationItem(
-              id: id,
-              key: entry.key.toString(),
-              type: map['type']?.toString() ?? '',
-              priority: map['priority']?.toString() ?? '',
-              helpStatus: map['helpStatus']?.toString() ?? '',
-              title: map['title']?.toString() ?? 'Pesan bantuan baru',
-              body: map['body']?.toString() ?? '',
-              conversationId: map['conversationId']?.toString() ?? '',
-              status: map['status']?.toString() ?? '',
-              senderUid: map['senderUid']?.toString() ?? '',
-              senderName: map['senderName']?.toString() ?? '',
-              senderRole: map['senderRole']?.toString() ?? '',
-              senderKloter: map['senderKloter']?.toString() ?? '',
-              messageText: map['messageText']?.toString() ??
-                  map['body']?.toString() ??
-                  '',
-              routeDistanceMeters:
-                  _toNotificationDouble(map['routeDistanceMeters']),
-              routeDurationSeconds:
-                  _toNotificationDouble(map['routeDurationSeconds']),
-              estimatedArrivalAt: _toNotificationInt(map['estimatedArrivalAt']),
-              createdAt: createdAt,
+            return _helpNotificationItemFromMap(
+              entry.key.toString(),
+              Map<String, dynamic>.from(entry.value as Map),
             );
           }).whereType<_HelpNotificationItem>(),
         );
@@ -309,7 +317,6 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
             continue;
           }
         }
-        _seenHelpNotificationIds.add(item.id);
         newItems.add(item);
       }
 
@@ -358,23 +365,33 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                 HelpService.statusClosed,
               }.contains(firstItem.helpStatus));
 
-      await _presentHelpNotification(
-        count: popupCount,
-        isUrgent: isHelpRequest,
-        title: isHelpRequest ? 'Permintaan Bantuan Mendesak' : firstItem.title,
-        payload: firstItem.conversationId,
-        senderName: firstItem.senderName,
-        senderRole: firstItem.senderRole,
-        senderKloter: senderKloter,
-        messageText: firstItem.messageText,
-        peerIsPetugas: !isPetugas,
-        openTracking: shouldOpenTracking,
-        showRequestActions: isHelpRequest && isPetugas,
-        helpStatus: firstItem.helpStatus,
-        routeDistanceMeters: firstItem.routeDistanceMeters,
-        routeDurationSeconds: firstItem.routeDurationSeconds,
-        estimatedArrivalAt: firstItem.estimatedArrivalAt,
-      );
+      try {
+        await _presentHelpNotification(
+          count: popupCount,
+          isUrgent: isHelpRequest,
+          title:
+              isHelpRequest ? 'Permintaan Bantuan Mendesak' : firstItem.title,
+          payload: firstItem.conversationId,
+          senderName: firstItem.senderName,
+          senderRole: firstItem.senderRole,
+          senderKloter: senderKloter,
+          messageText: firstItem.messageText,
+          peerIsPetugas: !isPetugas,
+          openTracking: shouldOpenTracking,
+          showRequestActions: isHelpRequest && isPetugas,
+          helpStatus: firstItem.helpStatus,
+          routeDistanceMeters: firstItem.routeDistanceMeters,
+          routeDurationSeconds: firstItem.routeDurationSeconds,
+          estimatedArrivalAt: firstItem.estimatedArrivalAt,
+        );
+      } catch (error) {
+        debugPrint('Unable to present help notification: $error');
+        return;
+      }
+
+      for (final item in newItems) {
+        _seenHelpNotificationIds.add(item.id);
+      }
 
       for (final item in newItems) {
         if (listenerEpoch != _helpNotificationListenerEpoch) return;
@@ -391,6 +408,19 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       }
     } finally {
       _isPollingHelpNotifications = false;
+      if (_hasPendingHelpNotificationPoll &&
+          listenerEpoch == _helpNotificationListenerEpoch) {
+        final pendingSnapshot = _pendingHelpNotificationSnapshot;
+        _hasPendingHelpNotificationPoll = false;
+        _pendingHelpNotificationSnapshot = null;
+        unawaited(
+          _pollHelpNotifications(
+            listenerEpoch: listenerEpoch,
+            receiverUid: receiverUid,
+            snapshot: pendingSnapshot,
+          ),
+        );
+      }
     }
   }
 
@@ -465,7 +495,12 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     double routeDurationSeconds = 0,
     int estimatedArrivalAt = 0,
   }) async {
-    if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
+    final isViewingHelpScreen =
+        _isOnHelpChatRoute || HelpService.isHelpChatScreenActive;
+    if (_appLifecycleState == AppLifecycleState.resumed &&
+        isViewingHelpScreen) {
+      return;
+    }
 
     final popupCount = count < 1 ? 1 : count;
     final shouldOpenTracking = isUrgent || openTracking;
@@ -729,6 +764,38 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     if (value is int) return value;
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  _HelpNotificationItem? _helpNotificationItemFromMap(
+    String key,
+    Map<String, dynamic> map,
+  ) {
+    final id = map['id']?.toString().trim().isNotEmpty == true
+        ? map['id'].toString().trim()
+        : key.trim();
+    if (id.isEmpty) return null;
+
+    return _HelpNotificationItem(
+      id: id,
+      key: key,
+      type: map['type']?.toString() ?? '',
+      priority: map['priority']?.toString() ?? '',
+      helpStatus: map['helpStatus']?.toString() ?? '',
+      title: map['title']?.toString() ?? 'Pesan bantuan baru',
+      body: map['body']?.toString() ?? '',
+      conversationId: map['conversationId']?.toString() ?? '',
+      status: map['status']?.toString() ?? '',
+      senderUid: map['senderUid']?.toString() ?? '',
+      senderName: map['senderName']?.toString() ?? '',
+      senderRole: map['senderRole']?.toString() ?? '',
+      senderKloter: map['senderKloter']?.toString() ?? '',
+      messageText:
+          map['messageText']?.toString() ?? map['body']?.toString() ?? '',
+      routeDistanceMeters: _toNotificationDouble(map['routeDistanceMeters']),
+      routeDurationSeconds: _toNotificationDouble(map['routeDurationSeconds']),
+      estimatedArrivalAt: _toNotificationInt(map['estimatedArrivalAt']),
+      createdAt: _toNotificationInt(map['createdAt']),
+    );
   }
 
   Future<bool> _isConversationActive(String conversationId) async {
@@ -1120,7 +1187,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     _helpNotificationListenerEpoch++;
     _helpNotificationPollTimer?.cancel();
     _helpNotificationPollTimer = null;
+    await _helpNotificationRequestSubscription?.cancel();
+    _helpNotificationRequestSubscription = null;
     _isPollingHelpNotifications = false;
+    _hasPendingHelpNotificationPoll = false;
+    _pendingHelpNotificationSnapshot = null;
     _helpNotificationListenerUid = null;
     _seenHelpNotificationIds.clear();
     _seenUnreadHelpConversationKeys.clear();
