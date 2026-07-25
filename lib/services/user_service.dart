@@ -234,6 +234,76 @@ class UserService {
     return null;
   }
 
+  Future<DatabaseReference?> _resolveAnyUserRefById(String uid) async {
+    if (uid.trim().isEmpty) return null;
+    final usersRef = _database.ref('users');
+
+    try {
+      final directRef = usersRef.child(uid);
+      final directSnapshot = await directRef.get();
+      if (directSnapshot.exists && directSnapshot.value is Map) {
+        return directRef;
+      }
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+    }
+
+    try {
+      final byUserId = await usersRef
+          .orderByChild('userId')
+          .equalTo(uid)
+          .limitToFirst(1)
+          .get();
+      if (byUserId.exists && byUserId.value is Map) {
+        final found = byUserId.value as Map<dynamic, dynamic>;
+        if (found.isNotEmpty) {
+          return usersRef.child(found.keys.first.toString());
+        }
+      }
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+    }
+
+    try {
+      final snapshot = await usersRef.get();
+      if (!snapshot.exists || snapshot.value is! Map) return null;
+      final value = snapshot.value as Map<dynamic, dynamic>;
+      final rootMap = Map<String, dynamic>.from(value);
+      if (_looksLikeUserMap(rootMap) &&
+          (rootMap['userId']?.toString() ?? '') == uid) {
+        return usersRef;
+      }
+
+      for (final entry in value.entries) {
+        final row = entry.value;
+        if (row is! Map) continue;
+        final userData = Map<String, dynamic>.from(row);
+        if (entry.key.toString() == uid ||
+            (userData['userId']?.toString() ?? '') == uid) {
+          return usersRef.child(entry.key.toString());
+        }
+      }
+    } on FirebaseException catch (e) {
+      if (e.code != 'permission-denied') rethrow;
+    }
+
+    return null;
+  }
+
+  Stream<Map<String, dynamic>?> watchAnyUserDataById(String uid) async* {
+    final userRef = await _resolveAnyUserRefById(uid);
+    if (userRef == null) {
+      yield null;
+      return;
+    }
+
+    yield* userRef.onValue.map((event) {
+      final value = event.snapshot.value;
+      if (value is! Map) return null;
+      return Map<String, dynamic>.from(value);
+    });
+  }
+
   Future<DatabaseReference?> _resolveCurrentUserRef({
     bool forceRefresh = false,
   }) async {

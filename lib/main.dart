@@ -130,11 +130,15 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         _currentRouteName = routeName;
       },
     );
-    LocalNotificationService.onNotificationTap = _handleLocalNotificationTap;
+    LocalNotificationService.onNotificationResponse =
+        _handleLocalNotificationResponse;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final launchPayload = LocalNotificationService.takeLaunchPayload();
       if (launchPayload != null && launchPayload.trim().isNotEmpty) {
-        _handleLocalNotificationTap(launchPayload);
+        _handleLocalNotificationResponse(
+          launchPayload,
+          LocalNotificationService.takeLaunchActionId(),
+        );
       }
     });
     checkLoginStatus();
@@ -275,6 +279,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
               messageText: map['messageText']?.toString() ??
                   map['body']?.toString() ??
                   '',
+              routeDistanceMeters:
+                  _toNotificationDouble(map['routeDistanceMeters']),
+              routeDurationSeconds:
+                  _toNotificationDouble(map['routeDurationSeconds']),
+              estimatedArrivalAt: _toNotificationInt(map['estimatedArrivalAt']),
               createdAt: createdAt,
             );
           }).whereType<_HelpNotificationItem>(),
@@ -340,12 +349,14 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
       final isHelpRequest = firstItem.type == 'help_request' ||
           (firstItem.priority == 'urgent' && firstItem.helpStatus.isEmpty);
-      final shouldOpenTracking = firstItem.type == 'help_status' &&
-          {
-            HelpService.statusAccepted,
-            HelpService.statusOnTheWay,
-            HelpService.statusArrived,
-          }.contains(firstItem.helpStatus);
+      final shouldOpenTracking = isHelpRequest ||
+          (firstItem.type == 'help_status' &&
+              {
+                HelpService.statusAccepted,
+                HelpService.statusOnTheWay,
+                HelpService.statusArrived,
+                HelpService.statusClosed,
+              }.contains(firstItem.helpStatus));
 
       await _presentHelpNotification(
         count: popupCount,
@@ -358,7 +369,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         messageText: firstItem.messageText,
         peerIsPetugas: !isPetugas,
         openTracking: shouldOpenTracking,
+        showRequestActions: isHelpRequest && isPetugas,
         helpStatus: firstItem.helpStatus,
+        routeDistanceMeters: firstItem.routeDistanceMeters,
+        routeDurationSeconds: firstItem.routeDurationSeconds,
+        estimatedArrivalAt: firstItem.estimatedArrivalAt,
       );
 
       for (final item in newItems) {
@@ -424,6 +439,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         senderKloter: unreadItems.first.peerKloter,
         messageText: unreadItems.first.lastMessage,
         peerIsPetugas: !isPetugas,
+        openTracking: true,
+        showRequestActions: isPetugas,
       );
     } catch (_) {
       // The notification queue already handles the main path. Inbox polling is
@@ -442,9 +459,16 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     String messageText = '',
     bool peerIsPetugas = false,
     bool openTracking = false,
+    bool showRequestActions = false,
     String helpStatus = '',
+    double routeDistanceMeters = 0,
+    double routeDurationSeconds = 0,
+    int estimatedArrivalAt = 0,
   }) async {
+    if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
+
     final popupCount = count < 1 ? 1 : count;
+    final shouldOpenTracking = isUrgent || openTracking;
     final notificationTitle = title.trim().isNotEmpty
         ? title.trim()
         : (isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru');
@@ -457,39 +481,69 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     );
     final notificationPayload = _buildHelpNotificationPayload(
       payload,
-      openTracking: openTracking,
+      openTracking: shouldOpenTracking,
     );
+    final foregroundNavigator = _appLifecycleState == AppLifecycleState.resumed
+        ? _navigatorKey.currentState
+        : null;
+    final shouldOpenRequestDirectly = showRequestActions &&
+        payload?.trim().isNotEmpty == true &&
+        foregroundNavigator != null;
 
-    if (openTracking) {
-      await LocalNotificationService.showTrackingStatus(
-        title: _trackingNotificationTitle(
-          helpStatus,
-          fallbackTitle: notificationTitle,
-        ),
-        body: _trackingNotificationBody(
-          helpStatus,
-          senderName: senderName,
-          fallbackBody: notificationBody,
-        ),
-        payload: notificationPayload,
-        ongoing: helpStatus != HelpService.statusArrived,
-        playSound: true,
-      );
-    } else {
-      await LocalNotificationService.showNotification(
-        title: notificationTitle,
-        body: notificationBody,
-        payload: notificationPayload,
-      );
+    if (!shouldOpenRequestDirectly) {
+      if (showRequestActions && notificationPayload != null) {
+        await LocalNotificationService.showHelpRequestNotification(
+          title: notificationTitle,
+          body: notificationBody,
+          payload: notificationPayload,
+        );
+      } else if (openTracking) {
+        await LocalNotificationService.showTrackingStatus(
+          title: _trackingNotificationTitle(
+            helpStatus,
+            fallbackTitle: notificationTitle,
+            estimatedArrivalAt: estimatedArrivalAt,
+          ),
+          body: _trackingNotificationBody(
+            helpStatus,
+            senderName: senderName,
+            fallbackBody: notificationBody,
+            routeDistanceMeters: routeDistanceMeters,
+            routeDurationSeconds: routeDurationSeconds,
+          ),
+          payload: notificationPayload,
+          ongoing: helpStatus == HelpService.statusAccepted ||
+              helpStatus == HelpService.statusOnTheWay,
+          playSound: true,
+          showJourneyProgress: helpStatus == HelpService.statusOnTheWay,
+        );
+      } else {
+        await LocalNotificationService.showNotification(
+          title: notificationTitle,
+          body: notificationBody,
+          payload: notificationPayload,
+        );
+      }
     }
 
-    if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
     if (_appLifecycleState != AppLifecycleState.resumed) {
       return;
     }
 
-    final navigator = _navigatorKey.currentState;
+    final navigator = foregroundNavigator ?? _navigatorKey.currentState;
     if (navigator == null) return;
+
+    if (shouldOpenRequestDirectly) {
+      _openHelpNotificationTarget(
+        navigator,
+        conversationId: payload,
+        peerName: senderName,
+        peerRole: senderRole,
+        peerIsPetugas: peerIsPetugas,
+        openTracking: true,
+      );
+      return;
+    }
 
     final now = DateTime.now().millisecondsSinceEpoch;
     if (now - _lastHelpPopupEpochMs <= 1000) return;
@@ -505,7 +559,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       messageText: messageText,
       payload: payload,
       peerIsPetugas: peerIsPetugas,
-      openTracking: openTracking,
+      openTracking: shouldOpenTracking,
     );
   }
 
@@ -519,7 +573,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     return '$target:$cleanConversationId';
   }
 
-  void _handleLocalNotificationTap(String? rawPayload) {
+  Future<void> _handleLocalNotificationResponse(
+    String? rawPayload,
+    String? actionId,
+  ) async {
     if (!mounted) return;
     final payload = rawPayload?.trim() ?? '';
     if (payload.isEmpty) return;
@@ -541,9 +598,31 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     final navigator = _navigatorKey.currentState;
     if (navigator == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleLocalNotificationTap(rawPayload);
+        _handleLocalNotificationResponse(rawPayload, actionId);
       });
       return;
+    }
+
+    if (actionId == LocalNotificationService.acceptHelpActionId ||
+        actionId == LocalNotificationService.rejectHelpActionId) {
+      try {
+        await _helpService.updateConversationStatus(
+          conversationId: cleanConversationId,
+          status: actionId == LocalNotificationService.acceptHelpActionId
+              ? HelpService.statusAccepted
+              : HelpService.statusRejected,
+        );
+      } catch (error) {
+        debugPrint('Help notification action failed: $error');
+        await LocalNotificationService.showNotification(
+          title: 'Status bantuan gagal diperbarui',
+          body: 'Buka aplikasi dan coba kembali.',
+          payload: 'tracking:$cleanConversationId',
+        );
+        return;
+      }
+      if (!mounted) return;
+      target = 'tracking';
     }
 
     if (target == 'tracking') {
@@ -573,14 +652,20 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   String _trackingNotificationTitle(
     String helpStatus, {
     required String fallbackTitle,
+    required int estimatedArrivalAt,
   }) {
     switch (helpStatus) {
       case HelpService.statusAccepted:
         return 'Permintaan bantuan diterima';
       case HelpService.statusOnTheWay:
-        return 'Petugas menuju lokasi Anda';
+        final arrivalTime = _formatArrivalTime(estimatedArrivalAt);
+        return arrivalTime.isEmpty
+            ? 'Petugas menuju lokasi Anda'
+            : 'Petugas tiba sekitar $arrivalTime';
       case HelpService.statusArrived:
         return 'Petugas sudah sampai';
+      case HelpService.statusClosed:
+        return 'Bantuan telah selesai';
       default:
         return fallbackTitle;
     }
@@ -590,18 +675,60 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     String helpStatus, {
     required String senderName,
     required String fallbackBody,
+    required double routeDistanceMeters,
+    required double routeDurationSeconds,
   }) {
     final name = senderName.trim().isEmpty ? 'Petugas' : senderName.trim();
     switch (helpStatus) {
       case HelpService.statusAccepted:
         return '$name menerima permintaan bantuan. Buka untuk melacak posisi petugas.';
       case HelpService.statusOnTheWay:
-        return '$name sedang menuju lokasi Anda. Buka untuk melihat progres.';
+        final metrics = <String>[
+          if (routeDistanceMeters > 0)
+            _formatNotificationDistance(routeDistanceMeters),
+          if (routeDurationSeconds > 0)
+            _formatNotificationDuration(routeDurationSeconds),
+        ];
+        final suffix = metrics.isEmpty ? '' : ' • ${metrics.join(' • ')}';
+        return '$name sedang menuju lokasi Anda$suffix. Buka untuk melacak.';
       case HelpService.statusArrived:
         return '$name sudah berada di sekitar lokasi Anda.';
+      case HelpService.statusClosed:
+        return 'Proses bantuan telah diselesaikan.';
       default:
         return fallbackBody;
     }
+  }
+
+  String _formatArrivalTime(int epochMillis) {
+    if (epochMillis <= 0) return '';
+    final value = DateTime.fromMillisecondsSinceEpoch(epochMillis).toLocal();
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    return '$hour.$minute';
+  }
+
+  String _formatNotificationDistance(double distanceMeters) {
+    if (distanceMeters < 1000) {
+      return '${distanceMeters.round()} m';
+    }
+    return '${(distanceMeters / 1000).toStringAsFixed(1)} km';
+  }
+
+  String _formatNotificationDuration(double durationSeconds) {
+    final minutes = (durationSeconds / 60).ceil().clamp(1, 999);
+    return '$minutes menit';
+  }
+
+  static double _toNotificationDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static int _toNotificationInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   Future<bool> _isConversationActive(String conversationId) async {
@@ -1132,9 +1259,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    if (LocalNotificationService.onNotificationTap ==
-        _handleLocalNotificationTap) {
-      LocalNotificationService.onNotificationTap = null;
+    if (LocalNotificationService.onNotificationResponse ==
+        _handleLocalNotificationResponse) {
+      LocalNotificationService.onNotificationResponse = null;
     }
     _authStateSubscription?.cancel();
     _stopLocationTracking();
@@ -1249,6 +1376,9 @@ class _HelpNotificationItem {
     required this.senderRole,
     required this.senderKloter,
     required this.messageText,
+    required this.routeDistanceMeters,
+    required this.routeDurationSeconds,
+    required this.estimatedArrivalAt,
     required this.createdAt,
   });
 
@@ -1266,5 +1396,8 @@ class _HelpNotificationItem {
   final String senderRole;
   final String senderKloter;
   final String messageText;
+  final double routeDistanceMeters;
+  final double routeDurationSeconds;
+  final int estimatedArrivalAt;
   final int createdAt;
 }

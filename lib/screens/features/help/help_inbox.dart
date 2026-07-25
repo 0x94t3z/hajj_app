@@ -98,13 +98,25 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
     return '$dd/$mm $hh:$min';
   }
 
-  void _openChat(HelpConversationSummary item) {
+  void _openConversation(HelpConversationSummary item) {
+    final isArchived = item.archived || item.status == HelpService.statusClosed;
+    if (!isArchived) {
+      Navigator.pushNamed(
+        context,
+        '/help_tracking',
+        arguments: {
+          'conversationId': item.conversationId,
+        },
+      );
+      return;
+    }
+
     Navigator.pushNamed(
       context,
       '/help_chat',
       arguments: {
         'conversationId': item.conversationId,
-        'readOnly': item.archived || item.status == 'closed',
+        'readOnly': true,
         'peerId': item.peerId,
         'peerName': toTitleCaseName(item.peerName),
         'peerImageUrl': item.peerImageUrl,
@@ -173,7 +185,7 @@ class _HelpInboxScreenState extends State<HelpInboxScreen> {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: () {
-          _openChat(item);
+          _openConversation(item);
         },
         child: Container(
           decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:hajj_app/core/utils/name_formatter.dart';
+import 'package:hajj_app/services/mapbox_directions_service.dart';
 import 'package:hajj_app/services/user_service.dart';
 
 class HelpService {
@@ -231,6 +232,8 @@ class HelpService {
     String peerImageUrl = '',
     required bool peerIsPetugas,
     String peerRole = '',
+    double peerLatitude = 0,
+    double peerLongitude = 0,
   }) async {
     final current = await _currentUserContext();
 
@@ -315,6 +318,13 @@ class HelpService {
       // If strict rules block this read, update will still be attempted below.
     }
 
+    if (existingStatus == statusClosed || existingStatus == statusRejected) {
+      conversationId = _buildSessionConversationId(pairKey);
+      conversationExists = false;
+      existingStatus = '';
+    }
+
+    final targetConversationRef = _conversationsRef.child(conversationId);
     final baseData = <String, dynamic>{
       'conversationId': conversationId,
       'pairKey': pairKey,
@@ -355,8 +365,20 @@ class HelpService {
       }
     }
 
+    if (peerLatitude != 0.0 && peerLongitude != 0.0) {
+      if (current.isPetugas) {
+        baseData['pilgrimLat'] = peerLatitude;
+        baseData['pilgrimLng'] = peerLongitude;
+        baseData['pilgrimLocationUpdatedAt'] = ServerValue.timestamp;
+      } else {
+        baseData['officerLat'] = peerLatitude;
+        baseData['officerLng'] = peerLongitude;
+        baseData['officerLocationUpdatedAt'] = ServerValue.timestamp;
+      }
+    }
+
     try {
-      await conversationRef.update(baseData);
+      await targetConversationRef.update(baseData);
 
       // Persist active session pointer only after the conversation exists.
       // This allows Firebase Rules to validate participants from the conversation node.
@@ -436,7 +458,7 @@ class HelpService {
 
       final nowField = <String, dynamic>{
         'status': status,
-        'archived': false,
+        'archived': status == statusRejected,
         'updatedAt': ServerValue.timestamp,
       };
 
@@ -463,6 +485,8 @@ class HelpService {
           nowField.addAll({
             'rejectedAt': ServerValue.timestamp,
             'rejectedBy': current.uid,
+            'closedAt': ServerValue.timestamp,
+            'closedBy': current.uid,
           });
           break;
       }
@@ -474,6 +498,73 @@ class HelpService {
         conversationData: data,
         status: status,
       );
+      if (status == statusRejected) {
+        await _clearActiveSessionPointer(
+          pairKey: data['pairKey']?.toString() ?? '',
+          conversationId: conversationId,
+        );
+      }
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw _permissionDeniedError();
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> completeHelpSession(String conversationId) async {
+    final current = await _currentUserContext();
+    if (conversationId.trim().isEmpty) return;
+
+    try {
+      final snapshot = await _conversationsRef.child(conversationId).get();
+      if (!snapshot.exists || snapshot.value is! Map) {
+        throw Exception('Permintaan bantuan tidak ditemukan.');
+      }
+
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      final pilgrimId = data['pilgrimId']?.toString() ?? '';
+      final officerId = data['officerId']?.toString() ?? '';
+      final currentStatus = data['status']?.toString() ?? statusRequested;
+      if (current.uid != officerId) {
+        throw Exception('Hanya petugas yang dapat mengakhiri sesi bantuan.');
+      }
+      if (currentStatus != statusArrived) {
+        throw Exception(
+          'Sesi hanya dapat diakhiri setelah petugas menandai sudah sampai.',
+        );
+      }
+
+      final pairKey = data['pairKey']?.toString().trim().isNotEmpty == true
+          ? data['pairKey'].toString()
+          : (pilgrimId.isNotEmpty && officerId.isNotEmpty
+              ? buildConversationId(
+                  pilgrimId: pilgrimId,
+                  officerId: officerId,
+                )
+              : '');
+
+      await _conversationsRef.child(conversationId).update({
+        'status': statusClosed,
+        'archived': true,
+        'closedAt': ServerValue.timestamp,
+        'closedBy': current.uid,
+        'completedAt': ServerValue.timestamp,
+        'updatedAt': ServerValue.timestamp,
+      });
+      await _enqueueStatusNotificationRequest(
+        conversationId: conversationId,
+        sender: current,
+        conversationData: data,
+        status: statusClosed,
+      );
+
+      if (pairKey.isNotEmpty) {
+        await _clearActiveSessionPointer(
+          pairKey: pairKey,
+          conversationId: conversationId,
+        );
+      }
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw _permissionDeniedError();
@@ -754,6 +845,25 @@ class HelpService {
       final receiverUid = sender.uid == officerId ? pilgrimId : officerId;
       if (receiverUid.isEmpty || receiverUid == sender.uid) return;
 
+      MapboxRouteMetrics? routeMetrics;
+      if (status == statusOnTheWay && sender.uid == officerId) {
+        final officerLat = sender.latitude != 0
+            ? sender.latitude
+            : _toDoubleValue(conversationData['officerLat']);
+        final officerLng = sender.longitude != 0
+            ? sender.longitude
+            : _toDoubleValue(conversationData['officerLng']);
+        final pilgrimLat = _toDoubleValue(conversationData['pilgrimLat']);
+        final pilgrimLng = _toDoubleValue(conversationData['pilgrimLng']);
+        routeMetrics =
+            await const MapboxDirectionsService().fetchWalkingMetrics(
+          originLatitude: officerLat,
+          originLongitude: officerLng,
+          destinationLatitude: pilgrimLat,
+          destinationLongitude: pilgrimLng,
+        );
+      }
+
       late final String title;
       late final String body;
       switch (status) {
@@ -773,13 +883,17 @@ class HelpService {
           title = 'Permintaan bantuan belum dapat diterima';
           body = '${sender.name} belum dapat menerima permintaan bantuan.';
           break;
+        case statusClosed:
+          title = 'Bantuan telah selesai';
+          body = '${sender.name} telah menyelesaikan sesi bantuan.';
+          break;
         default:
           title = 'Status bantuan diperbarui';
           body = 'Status permintaan bantuan telah diperbarui.';
       }
 
       final requestRef = _database.ref('helpNotificationRequests').push();
-      await requestRef.set({
+      final requestData = <String, dynamic>{
         'id': requestRef.key ?? '',
         'receiverUid': receiverUid,
         'senderUid': sender.uid,
@@ -795,7 +909,17 @@ class HelpService {
         'priority': status == statusRejected ? 'normal' : 'urgent',
         'createdAt': ServerValue.timestamp,
         'status': 'pending',
-      });
+      };
+      if (routeMetrics != null) {
+        requestData.addAll({
+          'routeDistanceMeters': routeMetrics.distanceMeters.round(),
+          'routeDurationSeconds': routeMetrics.durationSeconds.round(),
+          'estimatedArrivalAt': DateTime.now()
+              .add(Duration(seconds: routeMetrics.durationSeconds.round()))
+              .millisecondsSinceEpoch,
+        });
+      }
+      await requestRef.set(requestData);
     } on FirebaseException {
       // Notification queue is optional and should not block status updates.
     }

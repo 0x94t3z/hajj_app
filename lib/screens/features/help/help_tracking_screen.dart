@@ -34,7 +34,8 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager;
   final Map<String, Uint8List> _avatarMarkerCache = <String, Uint8List>{};
-  Timer? _officerRefreshTimer;
+  final Map<int, Uint8List> _locationMarkerCache = <int, Uint8List>{};
+  StreamSubscription<Map<String, dynamic>?>? _officerLocationSubscription;
 
   String _conversationId = '';
   String _lastOfficerId = '';
@@ -44,6 +45,7 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
   double _routeDurationSeconds = 0;
   bool _isRenderingRoute = false;
   bool _isUpdatingStatus = false;
+  _TrackingCoordinates? _latestCoordinates;
 
   @override
   void didChangeDependencies() {
@@ -59,7 +61,7 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
 
   @override
   void dispose() {
-    _officerRefreshTimer?.cancel();
+    _officerLocationSubscription?.cancel();
     super.dispose();
   }
 
@@ -79,6 +81,70 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
     if (seconds <= 0) return '-';
     final minutes = math.max(1, (seconds / 60).round());
     return '$minutes menit';
+  }
+
+  String _formatKloter(dynamic value) {
+    final kloter = value?.toString().trim() ?? '';
+    if (kloter.isEmpty) return '';
+    if (kloter.toLowerCase().startsWith('kloter')) return kloter;
+    return 'Kloter $kloter';
+  }
+
+  _TrackingCoordinates? _resolveTrackingCoordinates(
+    Map<String, dynamic> data,
+  ) {
+    final officerLat = _toDouble(_officerUserData['latitude']) != 0
+        ? _toDouble(_officerUserData['latitude'])
+        : _toDouble(data['officerLat']);
+    final officerLng = _toDouble(_officerUserData['longitude']) != 0
+        ? _toDouble(_officerUserData['longitude'])
+        : _toDouble(data['officerLng']);
+    final pilgrimLat = _toDouble(data['pilgrimLat']);
+    final pilgrimLng = _toDouble(data['pilgrimLng']);
+
+    if (officerLat == 0 ||
+        officerLng == 0 ||
+        pilgrimLat == 0 ||
+        pilgrimLng == 0) {
+      return null;
+    }
+
+    return _TrackingCoordinates(
+      officerLat: officerLat,
+      officerLng: officerLng,
+      pilgrimLat: pilgrimLat,
+      pilgrimLng: pilgrimLng,
+    );
+  }
+
+  CameraOptions _initialCameraOptions(_TrackingCoordinates coordinates) {
+    final distanceMeters = calculateHaversineDistance(
+          coordinates.officerLat,
+          coordinates.officerLng,
+          coordinates.pilgrimLat,
+          coordinates.pilgrimLng,
+        ) *
+        1000;
+    final zoom = switch (distanceMeters) {
+      <= 100 => 18.2,
+      <= 300 => 17.2,
+      <= 800 => 16.0,
+      <= 2000 => 14.8,
+      <= 5000 => 13.5,
+      _ => 11.5,
+    };
+
+    return CameraOptions(
+      center: Point(
+        coordinates: Position(
+          (coordinates.officerLng + coordinates.pilgrimLng) / 2,
+          (coordinates.officerLat + coordinates.pilgrimLat) / 2,
+        ),
+      ),
+      zoom: zoom,
+      bearing: 0,
+      pitch: 0,
+    );
   }
 
   int _toMillis(dynamic value) {
@@ -144,6 +210,8 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
             : 'Petugas sudah sampai di sekitar lokasi';
       case HelpService.statusRejected:
         return 'Permintaan belum dapat diterima';
+      case HelpService.statusClosed:
+        return 'Bantuan telah selesai';
       default:
         return currentIsPetugas
             ? 'Permintaan bantuan masuk'
@@ -166,7 +234,9 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
             ? 'Status ini memberi tahu jemaah bahwa Anda sudah berada di sekitar lokasinya.'
             : 'Petugas sudah berada di sekitar lokasi Anda.';
       case HelpService.statusRejected:
-        return 'Silakan pilih petugas lain jika masih membutuhkan bantuan.';
+        return 'Petugas belum dapat menerima permintaan ini. Anda dapat mengirim permintaan bantuan kembali.';
+      case HelpService.statusClosed:
+        return 'Sesi bantuan telah diakhiri dan percakapan disimpan sebagai arsip.';
       default:
         return currentIsPetugas
             ? 'Jemaah membutuhkan bantuan. Terima permintaan jika Anda siap menindaklanjuti.'
@@ -182,7 +252,9 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
 
   Future<ui.Image?> _loadMarkerImage(String imageUrl) async {
     try {
-      final response = await http.get(Uri.parse(imageUrl));
+      final response = await http
+          .get(Uri.parse(imageUrl))
+          .timeout(const Duration(seconds: 3));
       if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
         return null;
       }
@@ -196,6 +268,59 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
     } catch (_) {
       return null;
     }
+  }
+
+  Future<Uint8List> _buildLocationMarker(Color color) async {
+    final cacheKey = color.toARGB32();
+    final cached = _locationMarkerCache[cacheKey];
+    if (cached != null) return cached;
+
+    const size = 96.0;
+    const center = Offset(size / 2, 40);
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    canvas.drawCircle(
+      center,
+      34,
+      Paint()..color = color.withValues(alpha: 0.22),
+    );
+    canvas.drawCircle(center, 25, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 21, Paint()..color = color);
+    canvas.drawCircle(
+      const Offset(size / 2, 35),
+      6,
+      Paint()..color = Colors.white,
+    );
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: const Offset(size / 2, 50),
+        width: 23,
+        height: 18,
+      ),
+      math.pi,
+      math.pi,
+      false,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round,
+    );
+
+    final pointerPath = Path()
+      ..moveTo(center.dx - 9, center.dy + 23)
+      ..lineTo(center.dx + 9, center.dy + 23)
+      ..lineTo(center.dx, center.dy + 39)
+      ..close();
+    canvas.drawPath(pointerPath, Paint()..color = color);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.toInt(), size.toInt());
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final markerBytes = bytes!.buffer.asUint8List();
+    _locationMarkerCache[cacheKey] = markerBytes;
+    return markerBytes;
   }
 
   Future<Uint8List> _buildAvatarMarker({
@@ -319,6 +444,10 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
 
   Future<void> _onMapCreated(MapboxMap map) async {
     _mapboxMap = map;
+    final coordinates = _latestCoordinates;
+    if (coordinates != null) {
+      await map.setCamera(_initialCameraOptions(coordinates));
+    }
     _pointAnnotationManager ??=
         await map.annotations.createPointAnnotationManager();
     _polylineAnnotationManager ??=
@@ -343,11 +472,19 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
   void _ensureOfficerRefresh(String officerId) {
     if (officerId.trim().isEmpty || officerId == _lastOfficerId) return;
     _lastOfficerId = officerId;
-    _officerRefreshTimer?.cancel();
+    _officerLocationSubscription?.cancel();
     unawaited(_refreshOfficerData(officerId));
-    _officerRefreshTimer = Timer.periodic(
-      const Duration(seconds: 6),
-      (_) => _refreshOfficerData(officerId),
+    _officerLocationSubscription =
+        _userService.watchAnyUserDataById(officerId).listen(
+      (data) {
+        if (!mounted || data == null) return;
+        setState(() {
+          _officerUserData = data;
+        });
+      },
+      onError: (_) {
+        // Conversation coordinates remain available if the profile stream fails.
+      },
     );
   }
 
@@ -360,35 +497,41 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
     final token = dotenv.env['MAPBOX_SECRET_KEY']?.trim() ?? '';
     if (token.isEmpty) return null;
 
-    final response = await http.get(
-      Uri.parse(
-        'https://api.mapbox.com/directions/v5/mapbox/walking/$officerLng,$officerLat;$pilgrimLng,$pilgrimLat?alternatives=false&continue_straight=true&geometries=geojson&overview=full&steps=false&language=id&voice_units=metric&access_token=$token',
-      ),
-    );
-    if (response.statusCode != 200) return null;
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              'https://api.mapbox.com/directions/v5/mapbox/walking/$officerLng,$officerLat;$pilgrimLng,$pilgrimLat?alternatives=false&continue_straight=true&geometries=geojson&overview=full&steps=false&language=id&voice_units=metric&access_token=$token',
+            ),
+          )
+          .timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) return null;
 
-    final data = json.decode(response.body) as Map<String, dynamic>;
-    final routes = data['routes'] as List<dynamic>? ?? [];
-    if (routes.isEmpty || routes.first is! Map<String, dynamic>) return null;
-    final route = routes.first as Map<String, dynamic>;
-    final geometry = route['geometry'] as Map<String, dynamic>? ?? {};
-    final rawCoordinates = geometry['coordinates'] as List<dynamic>? ?? [];
-    final coordinates = rawCoordinates
-        .whereType<List<dynamic>>()
-        .where((value) => value.length >= 2)
-        .map(
-          (value) => Position(
-            (value[0] as num).toDouble(),
-            (value[1] as num).toDouble(),
-          ),
-        )
-        .toList();
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final routes = data['routes'] as List<dynamic>? ?? [];
+      if (routes.isEmpty || routes.first is! Map<String, dynamic>) return null;
+      final route = routes.first as Map<String, dynamic>;
+      final geometry = route['geometry'] as Map<String, dynamic>? ?? {};
+      final rawCoordinates = geometry['coordinates'] as List<dynamic>? ?? [];
+      final coordinates = rawCoordinates
+          .whereType<List<dynamic>>()
+          .where((value) => value.length >= 2)
+          .map(
+            (value) => Position(
+              (value[0] as num).toDouble(),
+              (value[1] as num).toDouble(),
+            ),
+          )
+          .toList();
 
-    return _TrackingRoute(
-      coordinates: coordinates,
-      distanceMeters: (route['distance'] as num?)?.toDouble() ?? 0,
-      durationSeconds: (route['duration'] as num?)?.toDouble() ?? 0,
-    );
+      return _TrackingRoute(
+        coordinates: coordinates,
+        distanceMeters: (route['distance'] as num?)?.toDouble() ?? 0,
+        durationSeconds: (route['duration'] as num?)?.toDouble() ?? 0,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _renderTrackingMap({
@@ -399,7 +542,12 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
     required String officerImageUrl,
     required String pilgrimImageUrl,
   }) async {
-    if (_mapboxMap == null || _isRenderingRoute) return;
+    if (_mapboxMap == null ||
+        _pointAnnotationManager == null ||
+        _polylineAnnotationManager == null ||
+        _isRenderingRoute) {
+      return;
+    }
     final safeOfficerImageUrl = _safeProfileImageUrl(officerImageUrl);
     final safePilgrimImageUrl = _safeProfileImageUrl(pilgrimImageUrl);
     final routeKey =
@@ -411,12 +559,6 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
     _isRenderingRoute = true;
 
     try {
-      final route = await _fetchRoute(
-        officerLat: officerLat,
-        officerLng: officerLng,
-        pilgrimLat: pilgrimLat,
-        pilgrimLng: pilgrimLng,
-      );
       final directMeters = calculateHaversineDistance(
             officerLat,
             officerLng,
@@ -425,6 +567,66 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
           ) *
           1000;
 
+      await _fitCameraToPoints(
+        <Point>[
+          Point(coordinates: Position(officerLng, officerLat)),
+          Point(coordinates: Position(pilgrimLng, pilgrimLat)),
+        ],
+        fallback: CameraOptions(
+          center: Point(
+            coordinates: Position(
+              (officerLng + pilgrimLng) / 2,
+              (officerLat + pilgrimLat) / 2,
+            ),
+          ),
+          zoom: directMeters > 900 ? 14.8 : 16.5,
+          bearing: 0,
+          pitch: 0,
+        ),
+      );
+
+      final routeFuture = _fetchRoute(
+        officerLat: officerLat,
+        officerLng: officerLng,
+        pilgrimLat: pilgrimLat,
+        pilgrimLng: pilgrimLng,
+      );
+      final avatarMarkerFuture = Future.wait(<Future<Uint8List>>[
+        _buildAvatarMarker(
+          imageUrl: safeOfficerImageUrl,
+          borderColor: ColorSys.darkBlue,
+        ),
+        _buildAvatarMarker(
+          imageUrl: safePilgrimImageUrl,
+          borderColor: ColorSys.error,
+        ),
+      ]);
+
+      final locationMarkers = await Future.wait(<Future<Uint8List>>[
+        _buildLocationMarker(ColorSys.darkBlue),
+        _buildLocationMarker(ColorSys.error),
+      ]);
+
+      await _pointAnnotationManager?.deleteAll();
+      await Future.wait([
+        _pointAnnotationManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: Position(officerLng, officerLat)),
+            image: locationMarkers[0],
+            iconSize: 0.72,
+          ),
+        ),
+        _pointAnnotationManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: Position(pilgrimLng, pilgrimLat)),
+            image: locationMarkers[1],
+            iconSize: 0.72,
+          ),
+        ),
+      ]);
+
+      final route = await routeFuture;
+
       if (mounted) {
         setState(() {
           _routeDistanceMeters = route?.distanceMeters ?? directMeters;
@@ -432,16 +634,7 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
         });
       }
 
-      await _pointAnnotationManager?.deleteAll();
       await _polylineAnnotationManager?.deleteAll();
-      final officerMarker = await _buildAvatarMarker(
-        imageUrl: safeOfficerImageUrl,
-        borderColor: ColorSys.darkBlue,
-      );
-      final pilgrimMarker = await _buildAvatarMarker(
-        imageUrl: safePilgrimImageUrl,
-        borderColor: ColorSys.error,
-      );
 
       final coordinates = route?.coordinates ??
           <Position>[
@@ -463,93 +656,86 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
         );
       }
 
-      await _pointAnnotationManager?.create(
-        PointAnnotationOptions(
-          geometry: Point(coordinates: Position(officerLng, officerLat)),
-          image: officerMarker,
-          iconSize: 0.78,
-        ),
-      );
-      await _pointAnnotationManager?.create(
-        PointAnnotationOptions(
-          geometry: Point(coordinates: Position(pilgrimLng, pilgrimLat)),
-          image: pilgrimMarker,
-          iconSize: 0.78,
-        ),
-      );
-
       final routePoints = <Point>[
         Point(coordinates: Position(officerLng, officerLat)),
         ...coordinates.map((coordinate) => Point(coordinates: coordinate)),
         Point(coordinates: Position(pilgrimLng, pilgrimLat)),
       ];
 
-      try {
-        final camera = await _mapboxMap?.cameraForCoordinatesPadding(
-          routePoints,
-          CameraOptions(
-            bearing: 0,
-            pitch: 0,
+      await _fitCameraToPoints(
+        routePoints,
+        fallback: CameraOptions(
+          center: Point(
+            coordinates: Position(
+              (officerLng + pilgrimLng) / 2,
+              (officerLat + pilgrimLat) / 2,
+            ),
           ),
-          MbxEdgeInsets(
-            top: 130,
-            left: 36,
-            bottom: 360,
-            right: 36,
+          zoom: directMeters > 900 ? 14.8 : 16.5,
+          bearing: 0,
+          pitch: 0,
+        ),
+      );
+
+      final avatarMarkers = await avatarMarkerFuture;
+      if (_lastRenderedRouteKey != routeKey) return;
+      await _pointAnnotationManager?.deleteAll();
+      await Future.wait([
+        _pointAnnotationManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: Position(officerLng, officerLat)),
+            image: avatarMarkers[0],
+            iconSize: 0.78,
           ),
-          18,
-          null,
-        );
-        if (camera != null) {
-          await _mapboxMap?.easeTo(
-            camera,
-            MapAnimationOptions(duration: 700),
-          );
-        }
-      } catch (_) {
-        final centerLat = (officerLat + pilgrimLat) / 2;
-        final centerLng = (officerLng + pilgrimLng) / 2;
-        await _mapboxMap?.setCamera(
-          CameraOptions(
-            center: Point(coordinates: Position(centerLng, centerLat)),
-            zoom: directMeters > 900 ? 15.5 : 17.2,
-            bearing: 0,
-            pitch: 0,
+        ),
+        _pointAnnotationManager!.create(
+          PointAnnotationOptions(
+            geometry: Point(coordinates: Position(pilgrimLng, pilgrimLat)),
+            image: avatarMarkers[1],
+            iconSize: 0.78,
           ),
-        );
-      }
+        ),
+      ]);
     } finally {
       _isRenderingRoute = false;
     }
   }
 
+  Future<void> _fitCameraToPoints(
+    List<Point> points, {
+    required CameraOptions fallback,
+  }) async {
+    final map = _mapboxMap;
+    if (map == null) return;
+    try {
+      final camera = await map.cameraForCoordinatesPadding(
+        points,
+        CameraOptions(bearing: 0, pitch: 0),
+        MbxEdgeInsets(top: 130, left: 36, bottom: 360, right: 36),
+        18,
+        null,
+      );
+      await map.setCamera(camera);
+    } catch (_) {
+      await map.setCamera(fallback);
+    }
+  }
+
   void _scheduleRender(Map<String, dynamic> data) {
-    final officerLat = _toDouble(_officerUserData['latitude']) != 0
-        ? _toDouble(_officerUserData['latitude'])
-        : _toDouble(data['officerLat']);
-    final officerLng = _toDouble(_officerUserData['longitude']) != 0
-        ? _toDouble(_officerUserData['longitude'])
-        : _toDouble(data['officerLng']);
-    final pilgrimLat = _toDouble(data['pilgrimLat']);
-    final pilgrimLng = _toDouble(data['pilgrimLng']);
+    final coordinates = _resolveTrackingCoordinates(data);
+    if (coordinates == null) return;
     final officerImageUrl = _officerUserData['imageUrl']?.toString() ??
         data['officerImageUrl']?.toString() ??
         '';
     final pilgrimImageUrl = data['pilgrimImageUrl']?.toString() ?? '';
-    if (officerLat == 0 ||
-        officerLng == 0 ||
-        pilgrimLat == 0 ||
-        pilgrimLng == 0) {
-      return;
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(
         _renderTrackingMap(
-          officerLat: officerLat,
-          officerLng: officerLng,
-          pilgrimLat: pilgrimLat,
-          pilgrimLng: pilgrimLng,
+          officerLat: coordinates.officerLat,
+          officerLng: coordinates.officerLng,
+          pilgrimLat: coordinates.pilgrimLat,
+          pilgrimLng: coordinates.pilgrimLng,
           officerImageUrl: officerImageUrl,
           pilgrimImageUrl: pilgrimImageUrl,
         ),
@@ -653,6 +839,12 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
         conversationId: _conversationId,
         status: status,
       );
+      if (status == HelpService.statusRejected && mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home',
+          (route) => false,
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       await showAppPopup(
@@ -667,6 +859,104 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
           _isUpdatingStatus = false;
         });
       }
+    }
+  }
+
+  Future<void> _requestHelpAgain(Map<String, dynamic> data) async {
+    if (_isUpdatingStatus) return;
+
+    final officerId = data['officerId']?.toString().trim() ?? '';
+    if (officerId.isEmpty) return;
+
+    setState(() => _isUpdatingStatus = true);
+    try {
+      final handle = await _helpService.ensureConversationWithPeer(
+        peerId: officerId,
+        peerName: _officerUserData['displayName']?.toString() ??
+            data['officerName']?.toString() ??
+            'Petugas Haji',
+        peerImageUrl: _officerUserData['imageUrl']?.toString() ??
+            data['officerImageUrl']?.toString() ??
+            '',
+        peerIsPetugas: true,
+        peerRole: _officerUserData['roles']?.toString() ??
+            data['officerRole']?.toString() ??
+            'Petugas Haji',
+        peerLatitude: _toDouble(_officerUserData['latitude']) != 0
+            ? _toDouble(_officerUserData['latitude'])
+            : _toDouble(data['officerLat']),
+        peerLongitude: _toDouble(_officerUserData['longitude']) != 0
+            ? _toDouble(_officerUserData['longitude'])
+            : _toDouble(data['officerLng']),
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(
+        '/help_tracking',
+        arguments: {'conversationId': handle.conversationId},
+      );
+    } catch (_) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Permintaan Belum Terkirim',
+        message: 'Permintaan bantuan belum dapat dikirim. Silakan coba lagi.',
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdatingStatus = false);
+    }
+  }
+
+  Future<void> _completeSession() async {
+    if (_isUpdatingStatus || _conversationId.trim().isEmpty) return;
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Akhiri sesi bantuan?'),
+            content: const Text(
+              'Pastikan jemaah sudah ditemukan dan bantuan telah selesai. '
+              'Percakapan akan dipindahkan ke arsip.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: ColorSys.darkBlue,
+                ),
+                child: const Text('Akhiri Sesi'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!confirmed || !mounted) return;
+
+    setState(() => _isUpdatingStatus = true);
+    try {
+      await _helpService.completeHelpSession(_conversationId);
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.success,
+        title: 'Bantuan Selesai',
+        message: 'Sesi bantuan telah diakhiri dan disimpan sebagai arsip.',
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    } catch (e) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Sesi Belum Dapat Diakhiri',
+        message: e.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isUpdatingStatus = false);
     }
   }
 
@@ -727,25 +1017,76 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
     required bool currentIsPetugas,
   }) {
     if (!currentIsPetugas) {
-      return [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () => _openFullRoute(data),
-            icon: const Icon(Iconsax.direct_up, color: Colors.white),
-            label: Text(
-              'Buka Rute',
-              style: textStyle(
-                fontSize: 14,
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
+      if (status == HelpService.statusRejected) {
+        return [
+          Expanded(
+            child: ElevatedButton(
+              onPressed:
+                  _isUpdatingStatus ? null : () => _requestHelpAgain(data),
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: ColorSys.darkBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 15),
+              ),
+              child: Text(
+                'Minta Bantuan Lagi',
+                style: textStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
-            style: ElevatedButton.styleFrom(
-              elevation: 0,
-              backgroundColor: ColorSys.darkBlue,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          ),
+        ];
+      }
+
+      final (icon, label) = switch (status) {
+        HelpService.statusAccepted => (
+            Iconsax.tick_circle,
+            'Permintaan Diterima'
+          ),
+        HelpService.statusOnTheWay => (
+            Iconsax.direct_up,
+            'Petugas Menuju Lokasi'
+          ),
+        HelpService.statusArrived => (Iconsax.location, 'Petugas Sudah Tiba'),
+        HelpService.statusClosed => (Iconsax.tick_circle, 'Bantuan Selesai'),
+        _ => (Iconsax.clock, 'Menunggu Respons Petugas'),
+      };
+
+      return [
+        Expanded(
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: ColorSys.primaryTint,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: ColorSys.darkBlue.withValues(alpha: 0.18),
               ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: ColorSys.darkBlue, size: 19),
+                const SizedBox(width: 9),
+                Flexible(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: textStyle(
+                      fontSize: 14,
+                      color: ColorSys.darkBlue,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -879,6 +1220,61 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
       ];
     }
 
+    if (status == HelpService.statusArrived) {
+      return [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _isUpdatingStatus ? null : _completeSession,
+            icon: const Icon(Iconsax.tick_circle, color: Colors.white),
+            label: Text(
+              'Akhiri Sesi',
+              style: textStyle(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ColorSys.darkBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    if (status == HelpService.statusClosed ||
+        status == HelpService.statusRejected) {
+      return [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ColorSys.darkBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+            ),
+            child: Text(
+              'Kembali',
+              style: textStyle(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
     return [
       Expanded(
         child: ElevatedButton.icon(
@@ -921,6 +1317,11 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
         : _officerUserData['roles']?.toString().trim() ??
             data['officerRole']?.toString().trim() ??
             'Petugas Haji';
+    final peerKloter =
+        currentIsPetugas ? _formatKloter(data['pilgrimKloter']) : '';
+    final peerRoleLabel = peerKloter.isEmpty
+        ? peerRole
+        : '${peerRole.isEmpty ? 'Jemaah Haji' : peerRole} ($peerKloter)';
     final peerImageUrl = currentIsPetugas
         ? data['pilgrimImageUrl']?.toString() ?? ''
         : _officerUserData['imageUrl']?.toString() ??
@@ -988,7 +1389,7 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        peerRole,
+                        peerRoleLabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: textStyle(
@@ -1087,14 +1488,29 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
                 final data = snapshot.data ?? <String, dynamic>{};
                 final officerId = data['officerId']?.toString() ?? '';
                 _ensureOfficerRefresh(officerId);
+                final trackingCoordinates = _resolveTrackingCoordinates(data);
+                _latestCoordinates = trackingCoordinates;
                 _scheduleRender(data);
 
                 return Stack(
                   children: [
-                    MapWidget(
-                      styleUri: MapboxStyles.MAPBOX_STREETS,
-                      onMapCreated: _onMapCreated,
-                    ),
+                    if (trackingCoordinates != null)
+                      MapWidget(
+                        key: const ValueKey('help-tracking-map'),
+                        styleUri: MapboxStyles.MAPBOX_STREETS,
+                        cameraOptions:
+                            _initialCameraOptions(trackingCoordinates),
+                        onMapCreated: _onMapCreated,
+                      )
+                    else
+                      const ColoredBox(
+                        color: Color(0xFFF4F8FA),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: ColorSys.darkBlue,
+                          ),
+                        ),
+                      ),
                     Positioned(
                       top: 54,
                       left: 18,
@@ -1158,6 +1574,20 @@ class _TrackingRoute {
   final List<Position> coordinates;
   final double distanceMeters;
   final double durationSeconds;
+}
+
+class _TrackingCoordinates {
+  const _TrackingCoordinates({
+    required this.officerLat,
+    required this.officerLng,
+    required this.pilgrimLat,
+    required this.pilgrimLng,
+  });
+
+  final double officerLat;
+  final double officerLng;
+  final double pilgrimLat;
+  final double pilgrimLng;
 }
 
 class _TrackingMetric extends StatelessWidget {

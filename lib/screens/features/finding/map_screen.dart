@@ -1403,7 +1403,7 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Future<void> _openHelpChat(UserModel user) async {
+  Future<void> _openHelpTracking(UserModel user) async {
     if (_isSendingHelpRequest) return;
 
     final peerName =
@@ -1432,18 +1432,15 @@ class _MapScreenState extends State<MapScreen> {
         peerImageUrl: user.imageUrl,
         peerIsPetugas: true,
         peerRole: peerRole,
+        peerLatitude: user.latitude,
+        peerLongitude: user.longitude,
       );
 
       if (!mounted) return;
       Navigator.pushNamed(
         context,
-        '/help_chat',
+        '/help_tracking',
         arguments: {
-          'peerId': user.userId,
-          'peerName': peerName,
-          'peerImageUrl': user.imageUrl,
-          'peerIsPetugas': true,
-          'peerRole': peerRole,
           'conversationId': handle.conversationId,
         },
       );
@@ -1557,7 +1554,7 @@ class _MapScreenState extends State<MapScreen> {
                         ),
                         const SizedBox(width: 10.0),
                         _buildOfficerActionButton(
-                          onPressed: () => _openHelpChat(user),
+                          onPressed: () => _openHelpTracking(user),
                           icon: const Icon(
                             Iconsax.danger,
                             color: Colors.white,
