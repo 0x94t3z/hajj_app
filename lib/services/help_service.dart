@@ -83,6 +83,13 @@ class HelpService {
     'Terima kasih, saya akan mengikuti arahan.',
   ];
 
+  static const String statusRequested = 'requested';
+  static const String statusAccepted = 'accepted';
+  static const String statusOnTheWay = 'on_the_way';
+  static const String statusArrived = 'arrived';
+  static const String statusRejected = 'rejected';
+  static const String statusClosed = 'closed';
+
   DatabaseReference get _conversationsRef => _database.ref('helpConversations');
   DatabaseReference get _activeSessionsRef =>
       _database.ref('helpConversationSessions');
@@ -294,6 +301,20 @@ class HelpService {
 
     final conversationRef = _conversationsRef.child(conversationId);
 
+    var conversationExists = false;
+    var existingStatus = '';
+    try {
+      final existingSnapshot = await conversationRef.get();
+      conversationExists = existingSnapshot.exists;
+      if (existingSnapshot.value is Map) {
+        final existingData =
+            Map<String, dynamic>.from(existingSnapshot.value as Map);
+        existingStatus = existingData['status']?.toString() ?? '';
+      }
+    } catch (_) {
+      // If strict rules block this read, update will still be attempted below.
+    }
+
     final baseData = <String, dynamic>{
       'conversationId': conversationId,
       'pairKey': pairKey,
@@ -307,12 +328,20 @@ class HelpService {
       'officerImageUrl': officerImageUrl,
       'officerRole': officerRole,
       'officerKloter': officerKloter,
-      'status': 'open',
-      'archived': false,
-      'openedAt': ServerValue.timestamp,
       // Keep conversation heartbeat fresh for inbox ordering.
       'updatedAt': ServerValue.timestamp,
     };
+
+    if (!conversationExists || existingStatus == statusClosed) {
+      baseData.addAll({
+        'status': current.isPetugas ? statusAccepted : statusRequested,
+        'archived': false,
+        'openedAt': ServerValue.timestamp,
+        if (!current.isPetugas) 'requestedAt': ServerValue.timestamp,
+      });
+    } else {
+      baseData['archived'] = false;
+    }
 
     if (current.latitude != 0.0 || current.longitude != 0.0) {
       if (current.isPetugas) {
@@ -337,6 +366,16 @@ class HelpService {
           conversationId: conversationId,
         );
       }
+
+      if (!current.isPetugas &&
+          (!conversationExists ||
+              existingStatus == statusClosed ||
+              existingStatus == statusRejected)) {
+        await _enqueueHelpRequestNotification(
+          conversationId: conversationId,
+          sender: current,
+        );
+      }
     } on FirebaseException catch (e) {
       if (e.code == 'permission-denied') {
         throw _permissionDeniedError();
@@ -355,6 +394,92 @@ class HelpService {
           ? peerRole.trim()
           : (peerIsPetugas ? 'Petugas Haji' : 'Jemaah Haji'),
     );
+  }
+
+  Stream<Map<String, dynamic>?> watchConversation(String conversationId) {
+    return _conversationsRef.child(conversationId).onValue.map((event) {
+      final raw = event.snapshot.value;
+      if (raw is! Map) return null;
+      return Map<String, dynamic>.from(raw);
+    }).asBroadcastStream();
+  }
+
+  Future<void> updateConversationStatus({
+    required String conversationId,
+    required String status,
+  }) async {
+    final current = await _currentUserContext();
+    if (conversationId.trim().isEmpty) return;
+
+    final allowedStatuses = <String>{
+      statusAccepted,
+      statusOnTheWay,
+      statusArrived,
+      statusRejected,
+    };
+    if (!allowedStatuses.contains(status)) {
+      throw Exception('Status bantuan tidak valid.');
+    }
+
+    try {
+      final snapshot = await _conversationsRef.child(conversationId).get();
+      if (!snapshot.exists || snapshot.value is! Map) {
+        throw Exception('Percakapan tidak ditemukan.');
+      }
+
+      final data = Map<String, dynamic>.from(snapshot.value as Map);
+      final pilgrimId = data['pilgrimId']?.toString() ?? '';
+      final officerId = data['officerId']?.toString() ?? '';
+      if (current.uid != pilgrimId && current.uid != officerId) {
+        throw _permissionDeniedError();
+      }
+
+      final nowField = <String, dynamic>{
+        'status': status,
+        'archived': false,
+        'updatedAt': ServerValue.timestamp,
+      };
+
+      switch (status) {
+        case statusAccepted:
+          nowField.addAll({
+            'acceptedAt': ServerValue.timestamp,
+            'acceptedBy': current.uid,
+          });
+          break;
+        case statusOnTheWay:
+          nowField.addAll({
+            'onTheWayAt': ServerValue.timestamp,
+            'onTheWayBy': current.uid,
+          });
+          break;
+        case statusArrived:
+          nowField.addAll({
+            'arrivedAt': ServerValue.timestamp,
+            'arrivedBy': current.uid,
+          });
+          break;
+        case statusRejected:
+          nowField.addAll({
+            'rejectedAt': ServerValue.timestamp,
+            'rejectedBy': current.uid,
+          });
+          break;
+      }
+
+      await _conversationsRef.child(conversationId).update(nowField);
+      await _enqueueStatusNotificationRequest(
+        conversationId: conversationId,
+        sender: current,
+        conversationData: data,
+        status: status,
+      );
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        throw _permissionDeniedError();
+      }
+      rethrow;
+    }
   }
 
   Future<void> sendMessage({
@@ -574,6 +699,105 @@ class HelpService {
       });
     } on FirebaseException {
       // Notification queue is optional and should not block chat.
+    }
+  }
+
+  Future<void> _enqueueHelpRequestNotification({
+    required String conversationId,
+    required _CurrentUserContext sender,
+  }) async {
+    try {
+      final conversationSnapshot =
+          await _conversationsRef.child(conversationId).get();
+      if (!conversationSnapshot.exists || conversationSnapshot.value == null) {
+        return;
+      }
+      if (conversationSnapshot.value is! Map) return;
+      final conversationMap =
+          Map<String, dynamic>.from(conversationSnapshot.value as Map);
+      final officerId = conversationMap['officerId']?.toString() ?? '';
+      if (officerId.isEmpty || officerId == sender.uid) return;
+
+      final requestRef = _database.ref('helpNotificationRequests').push();
+      await requestRef.set({
+        'id': requestRef.key ?? '',
+        'receiverUid': officerId,
+        'senderUid': sender.uid,
+        'senderName': sender.name,
+        'senderRole': sender.role,
+        'senderKloter': sender.kloter,
+        'conversationId': conversationId,
+        'type': 'help_request',
+        'title': 'Permintaan Bantuan Mendesak',
+        'body': sender.kloter.trim().isEmpty
+            ? 'Permintaan bantuan baru dari ${sender.name}.'
+            : 'Permintaan bantuan baru dari ${sender.name}, Kloter ${sender.kloter}.',
+        'messageText': '',
+        'priority': 'urgent',
+        'createdAt': ServerValue.timestamp,
+        'status': 'pending',
+      });
+    } on FirebaseException {
+      // Notification queue is optional and should not block chat.
+    }
+  }
+
+  Future<void> _enqueueStatusNotificationRequest({
+    required String conversationId,
+    required _CurrentUserContext sender,
+    required Map<String, dynamic> conversationData,
+    required String status,
+  }) async {
+    try {
+      final officerId = conversationData['officerId']?.toString() ?? '';
+      final pilgrimId = conversationData['pilgrimId']?.toString() ?? '';
+      final receiverUid = sender.uid == officerId ? pilgrimId : officerId;
+      if (receiverUid.isEmpty || receiverUid == sender.uid) return;
+
+      late final String title;
+      late final String body;
+      switch (status) {
+        case statusAccepted:
+          title = 'Permintaan bantuan diterima';
+          body = '${sender.name} menerima permintaan bantuan Anda.';
+          break;
+        case statusOnTheWay:
+          title = 'Petugas menuju lokasi Anda';
+          body = '${sender.name} sedang menuju lokasi Anda.';
+          break;
+        case statusArrived:
+          title = 'Petugas sudah sampai';
+          body = '${sender.name} sudah berada di sekitar lokasi Anda.';
+          break;
+        case statusRejected:
+          title = 'Permintaan bantuan belum dapat diterima';
+          body = '${sender.name} belum dapat menerima permintaan bantuan.';
+          break;
+        default:
+          title = 'Status bantuan diperbarui';
+          body = 'Status permintaan bantuan telah diperbarui.';
+      }
+
+      final requestRef = _database.ref('helpNotificationRequests').push();
+      await requestRef.set({
+        'id': requestRef.key ?? '',
+        'receiverUid': receiverUid,
+        'senderUid': sender.uid,
+        'senderName': sender.name,
+        'senderRole': sender.role,
+        'senderKloter': sender.kloter,
+        'conversationId': conversationId,
+        'type': 'help_status',
+        'helpStatus': status,
+        'title': title,
+        'body': body,
+        'messageText': body,
+        'priority': status == statusRejected ? 'normal' : 'urgent',
+        'createdAt': ServerValue.timestamp,
+        'status': 'pending',
+      });
+    } on FirebaseException {
+      // Notification queue is optional and should not block status updates.
     }
   }
 

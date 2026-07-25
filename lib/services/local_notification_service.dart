@@ -1,6 +1,14 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class LocalNotificationService {
+  static const _androidChannelId = 'help_messages_alert_channel_v3';
+  static const _androidChannelName = 'Pesan Bantuan Mendesak';
+  static const _androidChannelDescription =
+      'Notifikasi bantuan mendesak antara jemaah dan petugas.';
+  static const _androidAlertSound =
+      RawResourceAndroidNotificationSound('universfield_new_notification');
+  static const _iosAlertSound = 'universfield-new-notification.caf';
+
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   static bool _isInitialized = false;
@@ -10,7 +18,16 @@ class LocalNotificationService {
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings();
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      defaultPresentAlert: true,
+      defaultPresentBadge: true,
+      defaultPresentSound: true,
+      defaultPresentBanner: true,
+      defaultPresentList: true,
+    );
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
@@ -18,10 +35,23 @@ class LocalNotificationService {
 
     await _plugin.initialize(initSettings);
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _androidChannelId,
+        _androidChannelName,
+        description: _androidChannelDescription,
+        importance: Importance.max,
+        playSound: true,
+        sound: _androidAlertSound,
+        enableVibration: true,
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+      ),
+    );
+
+    await androidPlugin?.requestNotificationsPermission();
 
     await _plugin
         .resolvePlatformSpecificImplementation<
@@ -45,11 +75,17 @@ class LocalNotificationService {
     }
 
     const androidDetails = AndroidNotificationDetails(
-      'help_messages_channel',
-      'Pesan Bantuan',
-      channelDescription: 'Notifikasi bantuan antara jemaah dan petugas.',
+      _androidChannelId,
+      _androidChannelName,
+      channelDescription: _androidChannelDescription,
       importance: Importance.max,
       priority: Priority.high,
+      playSound: true,
+      sound: _androidAlertSound,
+      enableVibration: true,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      category: AndroidNotificationCategory.alarm,
+      visibility: NotificationVisibility.public,
       ticker: 'ticker',
     );
 
@@ -57,6 +93,9 @@ class LocalNotificationService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      presentBanner: true,
+      presentList: true,
+      sound: _iosAlertSound,
     );
 
     const details = NotificationDetails(

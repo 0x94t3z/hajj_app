@@ -52,6 +52,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   bool _isArchived = false;
   bool _messageAccessClosed = false;
   bool _currentIsPetugas = false;
+  String _helpStatus = HelpService.statusRequested;
   String _peerId = '';
   String _peerName = '';
   String _peerImageUrl = '';
@@ -60,6 +61,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   String _lastMarkedReadMessageId = '';
   String? _errorMessage;
   Stream<List<HelpMessage>>? _messagesStream;
+  StreamSubscription<Map<String, dynamic>?>? _conversationSubscription;
   StreamSubscription<User?>? _authStateSubscription;
   int _conversationEpoch = 0;
 
@@ -97,6 +99,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   @override
   void dispose() {
     HelpService.unregisterHelpChatScreen();
+    _conversationSubscription?.cancel();
     _authStateSubscription?.cancel();
     _messageController.dispose();
     _messageFocusNode.dispose();
@@ -105,6 +108,52 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
 
   void _bindMessagesStream(String conversationId) {
     _messagesStream = _helpService.watchMessages(conversationId);
+  }
+
+  void _bindConversationStream(String conversationId) {
+    unawaited(_conversationSubscription?.cancel());
+    _conversationSubscription =
+        _helpService.watchConversation(conversationId).listen((data) {
+      if (!mounted || data == null) return;
+
+      final status = data['status']?.toString() ?? HelpService.statusRequested;
+      final archived =
+          data['archived'] == true || status == HelpService.statusClosed;
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final officerId = data['officerId']?.toString() ?? '';
+      final pilgrimId = data['pilgrimId']?.toString() ?? '';
+      final currentIsPetugas = currentUser?.uid == officerId;
+      final peerId = currentIsPetugas ? pilgrimId : officerId;
+
+      final peerName = currentIsPetugas
+          ? data['pilgrimName']?.toString().trim()
+          : data['officerName']?.toString().trim();
+      final peerImageUrl = currentIsPetugas
+          ? data['pilgrimImageUrl']?.toString().trim()
+          : data['officerImageUrl']?.toString().trim();
+      final peerRole = currentIsPetugas
+          ? data['pilgrimRole']?.toString().trim()
+          : data['officerRole']?.toString().trim();
+
+      setState(() {
+        _helpStatus = status;
+        _isArchived = widget.readOnly || archived;
+        _currentIsPetugas = currentIsPetugas;
+        _peerIsPetugas = !currentIsPetugas;
+        if (peerId.isNotEmpty) {
+          _peerId = peerId;
+        }
+        if (peerName?.isNotEmpty == true) {
+          _peerName = peerName!;
+        }
+        if (peerImageUrl?.isNotEmpty == true) {
+          _peerImageUrl = UserService.normalizeProfileImageUrl(peerImageUrl!);
+        }
+        if (peerRole?.isNotEmpty == true) {
+          _resolvedPeerRole = peerRole!;
+        }
+      });
+    });
   }
 
   Widget _buildPeerImage(String imageUrl) {
@@ -161,6 +210,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
       setState(() {
         _conversationId = handle.conversationId;
         _bindMessagesStream(handle.conversationId);
+        _bindConversationStream(handle.conversationId);
         _currentIsPetugas = handle.currentIsPetugas;
         _resolvedPeerRole = peerRoleForConversation.isNotEmpty
             ? peerRoleForConversation
@@ -247,10 +297,12 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         _peerImageUrl = peerImageUrl;
         _peerIsPetugas = peerIsPetugas;
         _resolvedPeerRole = peerRole;
+        _helpStatus = status;
         _isArchived = widget.readOnly || archived;
         _messageAccessClosed = false;
         _isLoading = false;
       });
+      _bindConversationStream(conversationId);
       unawaited(_helpService.markConversationAsRead(conversationId));
     } catch (e) {
       if (!mounted || currentEpoch != _conversationEpoch) return;
@@ -311,9 +363,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     }
   }
 
-  Future<void> _openGoToRequester() async {
-    if (!_currentIsPetugas || _peerIsPetugas) return;
-
+  Future<void> _openPeerNavigation() async {
     try {
       final rawData = await _userService.fetchAnyUserDataById(_peerId);
       if (!mounted) return;
@@ -376,7 +426,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
           context,
           type: AppPopupType.warning,
           title: 'Lokasi Belum Tersedia',
-          message: 'Lokasi jemaah belum tersedia untuk navigasi.',
+          message: _currentIsPetugas
+              ? 'Lokasi jemaah belum tersedia untuk navigasi.'
+              : 'Lokasi petugas belum tersedia untuk navigasi.',
         );
         return;
       }
@@ -397,6 +449,318 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         message: 'Gagal membuka navigasi: $e',
       );
     }
+  }
+
+  void _openHelpTracking() {
+    final conversationId = _conversationId?.trim() ?? '';
+    if (conversationId.isEmpty) return;
+    Navigator.pushNamed(
+      context,
+      '/help_tracking',
+      arguments: {
+        'conversationId': conversationId,
+      },
+    );
+  }
+
+  Future<void> _updateHelpStatus(String status) async {
+    final conversationId = _conversationId;
+    if (conversationId == null || conversationId.trim().isEmpty) return;
+    if (_isSending) return;
+
+    setState(() {
+      _isSending = true;
+    });
+    try {
+      await _helpService.updateConversationStatus(
+        conversationId: conversationId,
+        status: status,
+      );
+      if (!mounted) return;
+      if (_currentIsPetugas && status == HelpService.statusAccepted) {
+        _openHelpTracking();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      await showAppPopup(
+        context,
+        type: AppPopupType.error,
+        title: 'Status Gagal Diperbarui',
+        message: 'Status bantuan tidak dapat diperbarui: $e',
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+      }
+    }
+  }
+
+  String _statusTitle(String status) {
+    switch (status) {
+      case HelpService.statusRequested:
+        return _currentIsPetugas
+            ? 'Permintaan bantuan masuk'
+            : 'Menunggu konfirmasi petugas';
+      case HelpService.statusAccepted:
+        return _currentIsPetugas
+            ? 'Permintaan sudah diterima'
+            : 'Petugas menerima permintaan';
+      case HelpService.statusOnTheWay:
+        return _currentIsPetugas
+            ? 'Anda sedang menuju lokasi jemaah'
+            : 'Petugas sedang menuju lokasi Anda';
+      case HelpService.statusArrived:
+        return _currentIsPetugas
+            ? 'Anda sudah sampai di lokasi'
+            : 'Petugas sudah sampai di lokasi';
+      case HelpService.statusRejected:
+        return 'Permintaan bantuan ditolak';
+      default:
+        return 'Status bantuan aktif';
+    }
+  }
+
+  String _statusMessage(String status) {
+    switch (status) {
+      case HelpService.statusRequested:
+        return _currentIsPetugas
+            ? 'Jemaah membutuhkan bantuan. Terima permintaan jika Anda siap menindaklanjuti.'
+            : 'Permintaan bantuan sudah dikirim. Silakan tunggu sampai petugas menerima permintaan.';
+      case HelpService.statusAccepted:
+        return _currentIsPetugas
+            ? 'Jemaah sudah diberi tahu bahwa permintaan bantuan diterima.'
+            : 'Petugas telah menerima permintaan. Anda dapat membuka chat atau melihat lokasi petugas.';
+      case HelpService.statusOnTheWay:
+        return _currentIsPetugas
+            ? 'Status ini memberi tahu jemaah bahwa Anda sedang menuju lokasinya.'
+            : 'Petugas sedang menuju lokasi Anda. Tetap berada di tempat yang aman.';
+      case HelpService.statusArrived:
+        return _currentIsPetugas
+            ? 'Status ini memberi tahu jemaah bahwa Anda sudah berada di sekitar lokasinya.'
+            : 'Petugas sudah berada di sekitar lokasi Anda.';
+      case HelpService.statusRejected:
+        return _currentIsPetugas
+            ? 'Permintaan ini belum dapat Anda tindak lanjuti.'
+            : 'Petugas belum dapat menerima permintaan. Silakan pilih petugas lain jika masih membutuhkan bantuan.';
+      default:
+        return 'Sesi bantuan sedang aktif.';
+    }
+  }
+
+  Widget _buildHelpStatusPanel() {
+    if (_isArchived || _messageAccessClosed) return const SizedBox.shrink();
+
+    final status = _helpStatus;
+    final isRequested = status == HelpService.statusRequested;
+    final isAccepted = status == HelpService.statusAccepted;
+    final isOnTheWay = status == HelpService.statusOnTheWay;
+    final isArrived = status == HelpService.statusArrived;
+    final isRejected = status == HelpService.statusRejected;
+    final accent = isRejected ? ColorSys.error : ColorSys.darkBlue;
+
+    final actions = <Widget>[];
+    if (_currentIsPetugas && !_peerIsPetugas && isRequested) {
+      actions.addAll([
+        Expanded(
+          child: OutlinedButton(
+            onPressed: _isSending
+                ? null
+                : () => _updateHelpStatus(HelpService.statusRejected),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: ColorSys.error),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Tolak',
+              style: textStyle(
+                fontSize: 12.5,
+                color: ColorSys.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _isSending
+                ? null
+                : () => _updateHelpStatus(HelpService.statusAccepted),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ColorSys.darkBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Terima',
+              style: textStyle(
+                fontSize: 12.5,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ]);
+    } else if (_currentIsPetugas && !_peerIsPetugas && isAccepted) {
+      actions.addAll([
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _isSending ? null : _openPeerNavigation,
+            icon: const Icon(Iconsax.location, size: 16),
+            label: Text(
+              'Cari Jemaah',
+              style: textStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _isSending
+                ? null
+                : () => _updateHelpStatus(HelpService.statusOnTheWay),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ColorSys.darkBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Menuju Lokasi',
+              style: textStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ]);
+    } else if (_currentIsPetugas && !_peerIsPetugas && isOnTheWay) {
+      actions.addAll([
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _isSending ? null : _openPeerNavigation,
+            icon: const Icon(Iconsax.location, size: 16),
+            label: Text(
+              'Cari Jemaah',
+              style: textStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _isSending
+                ? null
+                : () => _updateHelpStatus(HelpService.statusArrived),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ColorSys.darkBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Sudah Sampai',
+              style: textStyle(
+                fontSize: 12,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ]);
+    } else if (!_currentIsPetugas &&
+        _peerIsPetugas &&
+        (isAccepted || isOnTheWay || isArrived)) {
+      actions.add(
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: _isSending ? null : _openHelpTracking,
+            icon: const Icon(
+              Iconsax.direct_up,
+              size: 16,
+              color: Colors.white,
+            ),
+            label: Text(
+              'Lacak Petugas',
+              style: textStyle(
+                fontSize: 12.5,
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: ColorSys.darkBlue,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: accent.withValues(alpha: 0.16)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isRejected ? Iconsax.close_circle : Iconsax.info_circle,
+                  color: accent,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _statusTitle(status),
+                    style: textStyle(
+                      fontSize: 13.5,
+                      color: accent,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _statusMessage(status),
+              style: textStyle(
+                fontSize: 12,
+                color: ColorSys.textSecondary,
+              ),
+            ),
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Row(children: actions),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   String _formatTime(int millis) {
@@ -557,7 +921,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                   SizedBox(
                     height: 26,
                     child: ElevatedButton.icon(
-                      onPressed: _openGoToRequester,
+                      onPressed: _openPeerNavigation,
                       icon: const Icon(
                         Iconsax.direct_up,
                         size: 12,
@@ -815,6 +1179,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                           ],
                         ),
                       ),
+                    _buildHelpStatusPanel(),
                     Expanded(
                       child: (_messagesStream == null)
                           ? const Center(

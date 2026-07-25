@@ -14,6 +14,7 @@ import 'package:hajj_app/screens/features/finding/map_screen.dart';
 import 'package:hajj_app/screens/features/finding/navigation_screen.dart';
 import 'package:hajj_app/screens/features/help/help_chat.dart';
 import 'package:hajj_app/screens/features/help/help_inbox.dart';
+import 'package:hajj_app/screens/features/help/help_tracking_screen.dart';
 import 'package:hajj_app/screens/features/profile/edit.dart';
 import 'package:hajj_app/screens/presentation/onboarding_screen.dart';
 import 'package:hajj_app/screens/auth/login.dart';
@@ -253,6 +254,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
             return _HelpNotificationItem(
               id: id,
               key: entry.key.toString(),
+              type: map['type']?.toString() ?? '',
+              priority: map['priority']?.toString() ?? '',
+              helpStatus: map['helpStatus']?.toString() ?? '',
               title: map['title']?.toString() ?? 'Pesan bantuan baru',
               body: map['body']?.toString() ?? '',
               conversationId: map['conversationId']?.toString() ?? '',
@@ -327,15 +331,26 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       final firstItem = newItems.first;
       final senderKloter = await _resolveHelpSenderKloter(firstItem);
       if (listenerEpoch != _helpNotificationListenerEpoch) return;
+      final isHelpRequest = firstItem.type == 'help_request' ||
+          (firstItem.priority == 'urgent' && firstItem.helpStatus.isEmpty);
+      final shouldOpenTracking = firstItem.type == 'help_status' &&
+          {
+            HelpService.statusAccepted,
+            HelpService.statusOnTheWay,
+            HelpService.statusArrived,
+          }.contains(firstItem.helpStatus);
 
       await _presentHelpNotification(
         count: popupCount,
-        isUrgent: isPetugas,
+        isUrgent: isHelpRequest,
+        title: isHelpRequest ? 'Permintaan Bantuan Mendesak' : firstItem.title,
         payload: firstItem.conversationId,
         senderName: firstItem.senderName,
         senderRole: firstItem.senderRole,
         senderKloter: senderKloter,
         messageText: firstItem.messageText,
+        peerIsPetugas: !isPetugas,
+        openTracking: shouldOpenTracking,
       );
 
       for (final item in newItems) {
@@ -400,6 +415,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         senderRole: unreadItems.first.peerRole,
         senderKloter: unreadItems.first.peerKloter,
         messageText: unreadItems.first.lastMessage,
+        peerIsPetugas: !isPetugas,
       );
     } catch (_) {
       // The notification queue already handles the main path. Inbox polling is
@@ -410,18 +426,24 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   Future<void> _presentHelpNotification({
     required int count,
     required bool isUrgent,
+    String title = '',
     String? payload,
     String senderName = '',
     String senderRole = '',
     String senderKloter = '',
     String messageText = '',
+    bool peerIsPetugas = false,
+    bool openTracking = false,
   }) async {
     if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
 
     final popupCount = count < 1 ? 1 : count;
+    final notificationTitle = title.trim().isNotEmpty
+        ? title.trim()
+        : (isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru');
     if (_appLifecycleState != AppLifecycleState.resumed) {
       await LocalNotificationService.showNotification(
-        title: isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru',
+        title: notificationTitle,
         body: _helpNotificationText(
           popupCount,
           isUrgent: isUrgent,
@@ -444,11 +466,14 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       navigator,
       count: popupCount,
       isUrgent: isUrgent,
+      title: notificationTitle,
       senderName: senderName,
       senderRole: senderRole,
       senderKloter: senderKloter,
       messageText: messageText,
       payload: payload,
+      peerIsPetugas: peerIsPetugas,
+      openTracking: openTracking,
     );
   }
 
@@ -640,14 +665,19 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     NavigatorState navigator, {
     required int count,
     required bool isUrgent,
+    String title = '',
     String senderName = '',
     String senderRole = '',
     String senderKloter = '',
     String messageText = '',
     String? payload,
+    bool peerIsPetugas = false,
+    bool openTracking = false,
   }) async {
     final accent = isUrgent ? ColorSys.error : ColorSys.darkBlue;
-    final title = isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru';
+    final popupTitle = title.trim().isNotEmpty
+        ? title.trim()
+        : (isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru');
     final backgroundColor = isUrgent ? const Color(0xFFFFFBFB) : Colors.white;
     await showDialog<void>(
       context: navigator.context,
@@ -694,7 +724,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  title,
+                  popupTitle,
                   textAlign: TextAlign.center,
                   style: textStyle(
                     fontSize: 18,
@@ -756,7 +786,8 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
                             conversationId: payload,
                             peerName: senderName,
                             peerRole: senderRole,
-                            peerIsPetugas: !isUrgent,
+                            peerIsPetugas: peerIsPetugas,
+                            openTracking: openTracking,
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -793,10 +824,21 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     required String peerName,
     required String peerRole,
     required bool peerIsPetugas,
+    bool openTracking = false,
   }) {
     final targetConversationId = conversationId?.trim() ?? '';
     if (targetConversationId.isEmpty) {
       navigator.pushNamed('/help_inbox');
+      return;
+    }
+
+    if (openTracking) {
+      navigator.pushNamed(
+        '/help_tracking',
+        arguments: {
+          'conversationId': targetConversationId,
+        },
+      );
       return;
     }
 
@@ -816,7 +858,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     );
   }
 
-  bool get _isOnHelpChatRoute => _currentRouteName == '/help_chat';
+  bool get _isOnHelpChatRoute =>
+      _currentRouteName == '/help_chat' ||
+      _currentRouteName == '/help_tracking';
 
   Future<void> _stopHelpNotificationListener() async {
     _helpNotificationListenerEpoch++;
@@ -987,6 +1031,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         '/finding': (context) => const MapScreen(),
         '/navigation': (context) => const NavigationScreen(),
         '/help_inbox': (context) => const HelpInboxScreen(),
+        '/help_tracking': (context) => const HelpTrackingScreen(),
         '/setting': (context) => const SettingsScreen(),
         '/edit': (context) => const EditScreen(),
       },
@@ -1061,6 +1106,9 @@ class _HelpNotificationItem {
   const _HelpNotificationItem({
     required this.id,
     required this.key,
+    required this.type,
+    required this.priority,
+    required this.helpStatus,
     required this.title,
     required this.body,
     required this.conversationId,
@@ -1075,6 +1123,9 @@ class _HelpNotificationItem {
 
   final String id;
   final String key;
+  final String type;
+  final String priority;
+  final String helpStatus;
   final String title;
   final String body;
   final String conversationId;

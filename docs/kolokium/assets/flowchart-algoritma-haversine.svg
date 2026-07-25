@@ -65,9 +65,9 @@
   <text x="620" y="1238" class="shapeText">Urutkan jarak</text>
   <text x="620" y="1260" class="shapeText">dari terkecil</text>
 
-  <polygon points="425,1340 815,1340 775,1405 465,1405" class="io"/>
-  <text x="620" y="1364" class="shapeText">Output ranking</text>
-  <text x="620" y="1387" class="shapeText">petugas terdekat</text>
+  <polygon points="395,1340 880,1340 835,1405 350,1405" class="io"/>
+  <text x="615" y="1364" class="shapeText">Output ranking</text>
+  <text x="615" y="1387" class="shapeText">petugas terdekat</text>
 
   <ellipse cx="620" cy="1480" rx="82" ry="30" class="startEnd"/>
   <text x="620" y="1481" class="shapeText">Selesai</text>

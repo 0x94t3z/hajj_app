@@ -1907,7 +1907,7 @@ class _MapScreenState extends State<MapScreen> {
                     color: Colors.white.withValues(alpha: 0.88),
                   ),
                   child: const Icon(
-                    Iconsax.routing,
+                    Iconsax.direct_up,
                     color: ColorSys.darkBlue,
                     size: 28.0,
                   ),
