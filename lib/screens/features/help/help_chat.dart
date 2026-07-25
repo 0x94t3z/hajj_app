@@ -509,7 +509,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
             : 'Petugas menerima permintaan';
       case HelpService.statusOnTheWay:
         return _currentIsPetugas
-            ? 'Anda sedang menuju lokasi jemaah'
+            ? 'Menuju lokasi jemaah'
             : 'Petugas sedang menuju lokasi Anda';
       case HelpService.statusArrived:
         return _currentIsPetugas
@@ -559,6 +559,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     final isArrived = status == HelpService.statusArrived;
     final isRejected = status == HelpService.statusRejected;
     final accent = isRejected ? ColorSys.error : ColorSys.darkBlue;
+    final showStatusMessage = !(_currentIsPetugas && isOnTheWay);
 
     final actions = <Widget>[];
     if (_currentIsPetugas && !_peerIsPetugas && isRequested) {
@@ -613,10 +614,21 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: _isSending ? null : _openPeerNavigation,
-            icon: const Icon(Iconsax.location, size: 16),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: ColorSys.darkBlue,
+              side: const BorderSide(color: ColorSys.darkBlue),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Iconsax.direct_up, size: 16),
             label: Text(
-              'Cari Jemaah',
-              style: textStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              'Buka Peta',
+              style: textStyle(
+                fontSize: 12,
+                color: ColorSys.darkBlue,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),
@@ -649,10 +661,21 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: _isSending ? null : _openPeerNavigation,
-            icon: const Icon(Iconsax.location, size: 16),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: ColorSys.darkBlue,
+              side: const BorderSide(color: ColorSys.darkBlue),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Iconsax.direct_up, size: 16),
             label: Text(
-              'Cari Jemaah',
-              style: textStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              'Buka Peta',
+              style: textStyle(
+                fontSize: 12,
+                color: ColorSys.darkBlue,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),
@@ -669,13 +692,24 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: Text(
-              'Sudah Sampai',
-              style: textStyle(
-                fontSize: 12,
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Iconsax.tick_circle,
+                  size: 16,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  'Tandai Tiba',
+                  style: textStyle(
+                    fontSize: 12,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -745,14 +779,16 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(
-              _statusMessage(status),
-              style: textStyle(
-                fontSize: 12,
-                color: ColorSys.textSecondary,
+            if (showStatusMessage) ...[
+              const SizedBox(height: 6),
+              Text(
+                _statusMessage(status),
+                style: textStyle(
+                  fontSize: 12,
+                  color: ColorSys.textSecondary,
+                ),
               ),
-            ),
+            ],
             if (actions.isNotEmpty) ...[
               const SizedBox(height: 12),
               Row(children: actions),
@@ -861,9 +897,8 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
 
   Widget _buildMessageBubble(
     HelpMessage message,
-    String currentUid, {
-    bool showFindPilgrimButton = false,
-  }) {
+    String currentUid,
+  ) {
     final isMine = message.senderId == currentUid;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final bubbleMaxWidth =
@@ -917,38 +952,6 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (showFindPilgrimButton && !isMine) ...[
-                  SizedBox(
-                    height: 26,
-                    child: ElevatedButton.icon(
-                      onPressed: _openPeerNavigation,
-                      icon: const Icon(
-                        Iconsax.direct_up,
-                        size: 12,
-                        color: Colors.white,
-                      ),
-                      label: Text(
-                        'Cari Jemaah',
-                        style: textStyle(
-                          fontSize: 10.5,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: ColorSys.darkBlue,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
                 Text(
                   _formatTime(message.createdAt),
                   style: textStyle(
@@ -1308,18 +1311,6 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                 final templates = _resolveQuickTemplates(
                                     messages, currentUid);
                                 final showQuickReplies = templates.isNotEmpty;
-                                var latestPilgrimMessageId = '';
-                                if (_currentIsPetugas && !_peerIsPetugas) {
-                                  for (var i = messages.length - 1;
-                                      i >= 0;
-                                      i--) {
-                                    final candidate = messages[i];
-                                    if (candidate.senderId == _peerId) {
-                                      latestPilgrimMessageId = candidate.id;
-                                      break;
-                                    }
-                                  }
-                                }
 
                                 return Column(
                                   children: [
@@ -1342,20 +1333,9 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                         itemBuilder: (context, index) {
                                           final message =
                                               orderedMessages[index];
-                                          final showFindPilgrimButton =
-                                              !_isArchived &&
-                                                  _currentIsPetugas &&
-                                                  !_peerIsPetugas &&
-                                                  latestPilgrimMessageId
-                                                      .isNotEmpty &&
-                                                  message.senderId == _peerId &&
-                                                  message.id ==
-                                                      latestPilgrimMessageId;
                                           return _buildMessageBubble(
                                             message,
                                             currentUid,
-                                            showFindPilgrimButton:
-                                                showFindPilgrimButton,
                                           );
                                         },
                                       ),

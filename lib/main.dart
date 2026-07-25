@@ -130,6 +130,13 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         _currentRouteName = routeName;
       },
     );
+    LocalNotificationService.onNotificationTap = _handleLocalNotificationTap;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final launchPayload = LocalNotificationService.takeLaunchPayload();
+      if (launchPayload != null && launchPayload.trim().isNotEmpty) {
+        _handleLocalNotificationTap(launchPayload);
+      }
+    });
     checkLoginStatus();
 
     _authStateSubscription =
@@ -351,6 +358,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         messageText: firstItem.messageText,
         peerIsPetugas: !isPetugas,
         openTracking: shouldOpenTracking,
+        helpStatus: firstItem.helpStatus,
       );
 
       for (final item in newItems) {
@@ -434,25 +442,49 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     String messageText = '',
     bool peerIsPetugas = false,
     bool openTracking = false,
+    String helpStatus = '',
   }) async {
-    if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
-
     final popupCount = count < 1 ? 1 : count;
     final notificationTitle = title.trim().isNotEmpty
         ? title.trim()
         : (isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru');
-    if (_appLifecycleState != AppLifecycleState.resumed) {
+    final notificationBody = _helpNotificationText(
+      popupCount,
+      isUrgent: isUrgent,
+      senderName: senderName,
+      senderKloter: senderKloter,
+      messageText: messageText,
+    );
+    final notificationPayload = _buildHelpNotificationPayload(
+      payload,
+      openTracking: openTracking,
+    );
+
+    if (openTracking) {
+      await LocalNotificationService.showTrackingStatus(
+        title: _trackingNotificationTitle(
+          helpStatus,
+          fallbackTitle: notificationTitle,
+        ),
+        body: _trackingNotificationBody(
+          helpStatus,
+          senderName: senderName,
+          fallbackBody: notificationBody,
+        ),
+        payload: notificationPayload,
+        ongoing: helpStatus != HelpService.statusArrived,
+        playSound: true,
+      );
+    } else {
       await LocalNotificationService.showNotification(
         title: notificationTitle,
-        body: _helpNotificationText(
-          popupCount,
-          isUrgent: isUrgent,
-          senderName: senderName,
-          senderKloter: senderKloter,
-          messageText: messageText,
-        ),
-        payload: payload,
+        body: notificationBody,
+        payload: notificationPayload,
       );
+    }
+
+    if (_isOnHelpChatRoute || HelpService.isHelpChatScreenActive) return;
+    if (_appLifecycleState != AppLifecycleState.resumed) {
       return;
     }
 
@@ -475,6 +507,101 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       peerIsPetugas: peerIsPetugas,
       openTracking: openTracking,
     );
+  }
+
+  String? _buildHelpNotificationPayload(
+    String? conversationId, {
+    required bool openTracking,
+  }) {
+    final cleanConversationId = conversationId?.trim() ?? '';
+    if (cleanConversationId.isEmpty) return null;
+    final target = openTracking ? 'tracking' : 'chat';
+    return '$target:$cleanConversationId';
+  }
+
+  void _handleLocalNotificationTap(String? rawPayload) {
+    if (!mounted) return;
+    final payload = rawPayload?.trim() ?? '';
+    if (payload.isEmpty) return;
+
+    var target = 'chat';
+    var conversationId = payload;
+    final separatorIndex = payload.indexOf(':');
+    if (separatorIndex > 0) {
+      final prefix = payload.substring(0, separatorIndex);
+      if (prefix == 'chat' || prefix == 'tracking') {
+        target = prefix;
+        conversationId = payload.substring(separatorIndex + 1);
+      }
+    }
+
+    final cleanConversationId = conversationId.trim();
+    if (cleanConversationId.isEmpty) return;
+
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleLocalNotificationTap(rawPayload);
+      });
+      return;
+    }
+
+    if (target == 'tracking') {
+      navigator.pushNamed(
+        '/help_tracking',
+        arguments: {
+          'conversationId': cleanConversationId,
+        },
+      );
+      return;
+    }
+
+    navigator.pushNamed(
+      '/help_chat',
+      arguments: {
+        'conversationId': cleanConversationId,
+        'readOnly': false,
+        'peerId': '',
+        'peerName': 'Pesan Bantuan',
+        'peerImageUrl': '',
+        'peerIsPetugas': false,
+        'peerRole': '',
+      },
+    );
+  }
+
+  String _trackingNotificationTitle(
+    String helpStatus, {
+    required String fallbackTitle,
+  }) {
+    switch (helpStatus) {
+      case HelpService.statusAccepted:
+        return 'Permintaan bantuan diterima';
+      case HelpService.statusOnTheWay:
+        return 'Petugas menuju lokasi Anda';
+      case HelpService.statusArrived:
+        return 'Petugas sudah sampai';
+      default:
+        return fallbackTitle;
+    }
+  }
+
+  String _trackingNotificationBody(
+    String helpStatus, {
+    required String senderName,
+    required String fallbackBody,
+  }) {
+    final name = senderName.trim().isEmpty ? 'Petugas' : senderName.trim();
+    switch (helpStatus) {
+      case HelpService.statusAccepted:
+        return '$name menerima permintaan bantuan. Buka untuk melacak posisi petugas.';
+      case HelpService.statusOnTheWay:
+        return '$name sedang menuju lokasi Anda. Buka untuk melihat progres.';
+      case HelpService.statusArrived:
+        return '$name sudah berada di sekitar lokasi Anda.';
+      default:
+        return fallbackBody;
+    }
   }
 
   Future<bool> _isConversationActive(String conversationId) async {
@@ -1005,6 +1132,10 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    if (LocalNotificationService.onNotificationTap ==
+        _handleLocalNotificationTap) {
+      LocalNotificationService.onNotificationTap = null;
+    }
     _authStateSubscription?.cancel();
     _stopLocationTracking();
     _stopHelpNotificationListener();
