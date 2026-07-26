@@ -58,7 +58,7 @@ class LocalNotificationService {
     if (_isInitialized) return;
 
     const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_stat_hajj_app');
     final iosSettings = DarwinInitializationSettings(
       requestAlertPermission: requestPermissions,
       requestBadgePermission: requestPermissions,

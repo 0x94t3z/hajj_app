@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Monochrome Kaaba mark for Android's small-notification icon mask. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,5.8L11.8,2L21,5.8L12,9.7Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,7.4L11,10.9L11,21.8L3,18.4Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12.7,10.9L21,7.4L21,18.4L12.7,21.8Z" />
+</vector>
