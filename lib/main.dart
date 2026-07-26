@@ -116,6 +116,9 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   bool? _cachedIsPetugas;
   bool _hasLoggedLocationPermissionIssue = false;
   bool _realtimeDbOnline = true;
+  String? _pendingNotificationPayload;
+  String? _pendingNotificationActionId;
+  bool _isHandlingNotificationResponse = false;
 
   bool _isIgnoredIosLocationError(Object error) {
     final text = error.toString();
@@ -134,11 +137,11 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       },
     );
     LocalNotificationService.onNotificationResponse =
-        _handleLocalNotificationResponse;
+        _queueLocalNotificationResponse;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final launchPayload = LocalNotificationService.takeLaunchPayload();
       if (launchPayload != null && launchPayload.trim().isNotEmpty) {
-        _handleLocalNotificationResponse(
+        _queueLocalNotificationResponse(
           launchPayload,
           LocalNotificationService.takeLaunchActionId(),
         );
@@ -152,6 +155,12 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
       setState(() {
         isLoggedIn = user != null;
       });
+
+      if (user != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          unawaited(_drainPendingNotificationResponse());
+        });
+      }
 
       if (user == null) {
         await _stopLocationTracking();
@@ -613,6 +622,40 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     return '$target:$cleanConversationId';
   }
 
+  void _queueLocalNotificationResponse(
+    String? rawPayload,
+    String? actionId,
+  ) {
+    final payload = rawPayload?.trim() ?? '';
+    if (payload.isEmpty) return;
+    _pendingNotificationPayload = payload;
+    _pendingNotificationActionId = actionId;
+    unawaited(_drainPendingNotificationResponse());
+  }
+
+  Future<void> _drainPendingNotificationResponse() async {
+    if (_isHandlingNotificationResponse || !mounted) return;
+    if (FirebaseAuth.instance.currentUser == null ||
+        _navigatorKey.currentState == null) {
+      return;
+    }
+
+    final payload = _pendingNotificationPayload;
+    if (payload == null || payload.isEmpty) return;
+    final actionId = _pendingNotificationActionId;
+    _pendingNotificationPayload = null;
+    _pendingNotificationActionId = null;
+    _isHandlingNotificationResponse = true;
+    try {
+      await _handleLocalNotificationResponse(payload, actionId);
+    } finally {
+      _isHandlingNotificationResponse = false;
+      if (_pendingNotificationPayload != null) {
+        unawaited(_drainPendingNotificationResponse());
+      }
+    }
+  }
+
   Future<void> _handleLocalNotificationResponse(
     String? rawPayload,
     String? actionId,
@@ -645,12 +688,21 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
 
     if (actionId == LocalNotificationService.acceptHelpActionId ||
         actionId == LocalNotificationService.rejectHelpActionId) {
+      final isRejected =
+          actionId == LocalNotificationService.rejectHelpActionId;
+      if (!isRejected) {
+        navigator.pushNamedAndRemoveUntil(
+          '/help_tracking',
+          ModalRoute.withName('/home'),
+          arguments: {'conversationId': cleanConversationId},
+        );
+      }
       try {
         await _helpService.updateConversationStatus(
           conversationId: cleanConversationId,
-          status: actionId == LocalNotificationService.acceptHelpActionId
-              ? HelpService.statusAccepted
-              : HelpService.statusRejected,
+          status: isRejected
+              ? HelpService.statusRejected
+              : HelpService.statusAccepted,
         );
       } catch (error) {
         debugPrint('Help notification action failed: $error');
@@ -662,15 +714,18 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         return;
       }
       if (!mounted) return;
-      target = 'tracking';
+      if (isRejected) {
+        navigator.pushNamedAndRemoveUntil('/home', (route) => false);
+        return;
+      }
+      return;
     }
 
     if (target == 'tracking') {
-      navigator.pushNamed(
+      navigator.pushNamedAndRemoveUntil(
         '/help_tracking',
-        arguments: {
-          'conversationId': cleanConversationId,
-        },
+        ModalRoute.withName('/home'),
+        arguments: {'conversationId': cleanConversationId},
       );
       return;
     }
@@ -1342,7 +1397,7 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     if (LocalNotificationService.onNotificationResponse ==
-        _handleLocalNotificationResponse) {
+        _queueLocalNotificationResponse) {
       LocalNotificationService.onNotificationResponse = null;
     }
     _authStateSubscription?.cancel();

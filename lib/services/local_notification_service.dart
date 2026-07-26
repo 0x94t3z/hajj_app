@@ -75,11 +75,15 @@ class LocalNotificationService {
             DarwinNotificationAction.plain(
               acceptHelpActionId,
               'Terima',
+              options: <DarwinNotificationActionOption>{
+                DarwinNotificationActionOption.foreground,
+              },
             ),
             DarwinNotificationAction.plain(
               rejectHelpActionId,
               'Tolak',
               options: <DarwinNotificationActionOption>{
+                DarwinNotificationActionOption.foreground,
                 DarwinNotificationActionOption.destructive,
               },
             ),
@@ -237,13 +241,13 @@ class LocalNotificationService {
         const AndroidNotificationAction(
           acceptHelpActionId,
           'Terima',
-          showsUserInterface: false,
+          showsUserInterface: true,
           cancelNotification: true,
         ),
         const AndroidNotificationAction(
           rejectHelpActionId,
           'Tolak',
-          showsUserInterface: false,
+          showsUserInterface: true,
           cancelNotification: true,
         ),
       ],

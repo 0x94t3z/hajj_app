@@ -1358,7 +1358,10 @@ class _HelpTrackingScreenState extends State<HelpTrackingScreen> {
         return [
           Expanded(
             child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                '/home',
+                (route) => false,
+              ),
               style: ElevatedButton.styleFrom(
                 elevation: 0,
                 backgroundColor: ColorSys.darkBlue,
