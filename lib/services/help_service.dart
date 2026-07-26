@@ -927,8 +927,8 @@ class HelpService {
           body = '${sender.name} sudah berada di sekitar lokasi Anda.';
           break;
         case statusRejected:
-          title = 'Permintaan bantuan belum dapat diterima';
-          body = '${sender.name} belum dapat menerima permintaan bantuan.';
+          title = 'Permintaan bantuan ditolak';
+          body = '${sender.name} belum dapat membantu saat ini.';
           break;
         case statusClosed:
           title = 'Bantuan telah selesai';

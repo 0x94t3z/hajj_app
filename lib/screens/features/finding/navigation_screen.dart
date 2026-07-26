@@ -609,6 +609,7 @@ class DirectionMapScreen extends StatefulWidget {
 class _DirectionMapScreenState extends State<DirectionMapScreen> {
   final UserService _userService = UserService();
   MapboxMap? _mapboxMap;
+  int _mapGeneration = 0;
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager;
   StreamSubscription<geo.Position>? _positionStream;
@@ -699,18 +700,29 @@ class _DirectionMapScreenState extends State<DirectionMapScreen> {
 
   @override
   void dispose() {
+    _mapGeneration++;
+    _mapboxMap = null;
+    _pointAnnotationManager = null;
+    _polylineAnnotationManager = null;
     _positionStream?.cancel();
     super.dispose();
   }
 
   Future<void> _onMapCreated(MapboxMap map) async {
+    final generation = ++_mapGeneration;
     _mapboxMap = map;
+    _pointAnnotationManager = null;
+    _polylineAnnotationManager = null;
     _navigationPuckImage ??= await _buildNavigationPuckImage();
     _transparentPuckImage ??= await _buildTransparentPuckImage();
-    _pointAnnotationManager ??=
-        await map.annotations.createPointAnnotationManager();
-    _polylineAnnotationManager ??=
+    if (!mounted || generation != _mapGeneration || _mapboxMap != map) return;
+    final pointManager = await map.annotations.createPointAnnotationManager();
+    if (!mounted || generation != _mapGeneration || _mapboxMap != map) return;
+    final polylineManager =
         await map.annotations.createPolylineAnnotationManager();
+    if (!mounted || generation != _mapGeneration || _mapboxMap != map) return;
+    _pointAnnotationManager = pointManager;
+    _polylineAnnotationManager = polylineManager;
 
     _destinationMarker ??= await _buildOfficerCircleMarkerBytes();
 

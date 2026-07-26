@@ -1,0 +1,47 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["userId", "email", "roles"]
+    },
+    "helpConversations": {
+      ".indexOn": ["officerId", "pilgrimId", "lastMessageAt", "updatedAt"],
+      ".read": "auth != null && ((query.orderByChild == 'officerId' && query.equalTo == auth.uid) || (query.orderByChild == 'pilgrimId' && query.equalTo == auth.uid))",
+      "$conversationId": {
+        ".read": "auth != null && (data.child('officerId').val() == auth.uid || data.child('pilgrimId').val() == auth.uid)",
+        ".write": "auth != null && ((data.exists() && (data.child('officerId').val() == auth.uid || data.child('pilgrimId').val() == auth.uid)) || (!data.exists() && (newData.child('officerId').val() == auth.uid || newData.child('pilgrimId').val() == auth.uid)))",
+        "messages": {
+          "$messageId": {
+            ".read": "auth != null && (root.child('helpConversations').child($conversationId).child('officerId').val() == auth.uid || root.child('helpConversations').child($conversationId).child('pilgrimId').val() == auth.uid)",
+            ".write": "auth != null && (root.child('helpConversations').child($conversationId).child('officerId').val() == auth.uid || root.child('helpConversations').child($conversationId).child('pilgrimId').val() == auth.uid) && newData.child('senderId').val() == auth.uid"
+          }
+        }
+      }
+    },
+    "helpConversationSessions": {
+      "$pairKey": {
+        ".read": "auth != null && (!data.exists() || (data.isString() && (root.child('helpConversations').child(data.val()).child('officerId').val() == auth.uid || root.child('helpConversations').child(data.val()).child('pilgrimId').val() == auth.uid)))",
+        ".write": "auth != null && ((newData.exists() && newData.isString() && (root.child('helpConversations').child(newData.val()).child('officerId').val() == auth.uid || root.child('helpConversations').child(newData.val()).child('pilgrimId').val() == auth.uid)) || (!newData.exists() && data.exists() && data.isString() && (root.child('helpConversations').child(data.val()).child('officerId').val() == auth.uid || root.child('helpConversations').child(data.val()).child('pilgrimId').val() == auth.uid)))"
+      }
+    },
+    "helpNotificationRequests": {
+      ".indexOn": ["receiverUid", "createdAt", "status"],
+      ".read": "auth != null && query.orderByChild == 'receiverUid' && query.equalTo == auth.uid",
+      "$requestId": {
+        ".read": "auth != null && (data.child('receiverUid').val() == auth.uid || data.child('senderUid').val() == auth.uid)",
+        ".write": "auth != null && ((!data.exists() && newData.child('senderUid').val() == auth.uid && newData.child('receiverUid').val() != null) || (data.exists() && data.child('receiverUid').val() == auth.uid && newData.child('receiverUid').val() == data.child('receiverUid').val() && newData.child('senderUid').val() == data.child('senderUid').val()))"
+      }
+    },
+    "notificationTokens": {
+      ".indexOn": ["uid"],
+      "$tokenKey": {
+        ".read": "auth != null && data.child('uid').val() == auth.uid",
+        ".write": "auth != null && ((!newData.exists() && data.child('uid').val() == auth.uid) || (newData.exists() && newData.child('uid').val() == auth.uid))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['uid', 'token', 'platform', 'updatedAt']) && newData.child('uid').isString() && newData.child('token').isString())"
+      }
+    }
+  }
+}

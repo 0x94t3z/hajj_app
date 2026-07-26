@@ -35,6 +35,7 @@ class _MapScreenState extends State<MapScreen> {
   final UserService _userService = UserService();
   final HelpService _helpService = HelpService();
   MapboxMap? mapboxMap;
+  int _mapGeneration = 0;
   PointAnnotationManager? _pointAnnotationManager;
   PolylineAnnotationManager? _polylineAnnotationManager;
   Uint8List? _destinationMarker;
@@ -220,6 +221,10 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   void dispose() {
+    _mapGeneration++;
+    mapboxMap = null;
+    _pointAnnotationManager = null;
+    _polylineAnnotationManager = null;
     _navigationPositionSubscription?.cancel();
     _nearestPositionSubscription?.cancel();
     _pageController.dispose();
@@ -227,9 +232,13 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _onMapCreated(MapboxMap map) async {
+    final generation = ++_mapGeneration;
     mapboxMap = map;
+    _pointAnnotationManager = null;
+    _polylineAnnotationManager = null;
     _customMapPuckImage ??= await _buildCustomMapPuckImage();
     _transparentPuckImage ??= await _buildTransparentPuckImage();
+    if (!mounted || generation != _mapGeneration || mapboxMap != map) return;
     unawaited(_applyStandardMapStyle());
     mapboxMap?.setCamera(
       CameraOptions(
@@ -256,10 +265,15 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
     );
-    _pointAnnotationManager ??=
-        await mapboxMap?.annotations.createPointAnnotationManager();
-    _polylineAnnotationManager ??=
-        await mapboxMap?.annotations.createPolylineAnnotationManager();
+    // Each rebuilt Android MapView has its own native annotation controller.
+    // Reusing a manager from the old view crashes with "No manager found".
+    final pointManager = await map.annotations.createPointAnnotationManager();
+    if (!mounted || generation != _mapGeneration || mapboxMap != map) return;
+    final polylineManager =
+        await map.annotations.createPolylineAnnotationManager();
+    if (!mounted || generation != _mapGeneration || mapboxMap != map) return;
+    _pointAnnotationManager = pointManager;
+    _polylineAnnotationManager = polylineManager;
     _destinationMarker ??= await _buildOfficerCircleMarkerBytes();
 
     // Auto zoom to current user location when map is ready (same behavior as second.dart).

@@ -1,4 +1,32 @@
+import 'dart:ui';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hajj_app/firebase_options.dart';
+import 'package:hajj_app/services/help_service.dart';
+
+@pragma('vm:entry-point')
+Future<void> localNotificationBackgroundResponse(
+  NotificationResponse response,
+) async {
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+    await LocalNotificationService.processHelpRequestAction(
+      response.payload,
+      response.actionId,
+    );
+  } catch (error, stackTrace) {
+    debugPrint('Background help action failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
+  }
+}
 
 class LocalNotificationService {
   static const _androidChannelId = 'help_messages_alert_channel_v4';
@@ -26,15 +54,15 @@ class LocalNotificationService {
   static void Function(String? payload, String? actionId)?
       onNotificationResponse;
 
-  static Future<void> initialize() async {
+  static Future<void> initialize({bool requestPermissions = true}) async {
     if (_isInitialized) return;
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     final iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: requestPermissions,
+      requestBadgePermission: requestPermissions,
+      requestSoundPermission: requestPermissions,
       defaultPresentAlert: true,
       defaultPresentBadge: true,
       defaultPresentSound: true,
@@ -47,15 +75,11 @@ class LocalNotificationService {
             DarwinNotificationAction.plain(
               acceptHelpActionId,
               'Terima',
-              options: <DarwinNotificationActionOption>{
-                DarwinNotificationActionOption.foreground,
-              },
             ),
             DarwinNotificationAction.plain(
               rejectHelpActionId,
               'Tolak',
               options: <DarwinNotificationActionOption>{
-                DarwinNotificationActionOption.foreground,
                 DarwinNotificationActionOption.destructive,
               },
             ),
@@ -80,6 +104,8 @@ class LocalNotificationService {
         onNotificationResponse?.call(response.payload, response.actionId);
         onNotificationTap?.call(response.payload);
       },
+      onDidReceiveBackgroundNotificationResponse:
+          localNotificationBackgroundResponse,
     );
 
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
@@ -111,16 +137,18 @@ class LocalNotificationService {
       ),
     );
 
-    await androidPlugin?.requestNotificationsPermission();
+    if (requestPermissions) {
+      await androidPlugin?.requestNotificationsPermission();
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+      await _plugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    }
 
     _isInitialized = true;
   }
@@ -209,13 +237,13 @@ class LocalNotificationService {
         const AndroidNotificationAction(
           acceptHelpActionId,
           'Terima',
-          showsUserInterface: true,
+          showsUserInterface: false,
           cancelNotification: true,
         ),
         const AndroidNotificationAction(
           rejectHelpActionId,
           'Tolak',
-          showsUserInterface: true,
+          showsUserInterface: false,
           cancelNotification: true,
         ),
       ],
@@ -307,5 +335,36 @@ class LocalNotificationService {
       await initialize();
     }
     await _plugin.cancel(trackingStatusNotificationId);
+  }
+
+  static Future<bool> processHelpRequestAction(
+    String? rawPayload,
+    String? actionId,
+  ) async {
+    if (actionId != acceptHelpActionId && actionId != rejectHelpActionId) {
+      return false;
+    }
+
+    final conversationId = conversationIdFromPayload(rawPayload);
+    if (conversationId == null) return false;
+
+    await HelpService().updateConversationStatus(
+      conversationId: conversationId,
+      status: actionId == acceptHelpActionId
+          ? HelpService.statusAccepted
+          : HelpService.statusRejected,
+    );
+    return true;
+  }
+
+  static String? conversationIdFromPayload(String? rawPayload) {
+    final payload = rawPayload?.trim() ?? '';
+    if (payload.isEmpty) return null;
+
+    final separatorIndex = payload.indexOf(':');
+    final value = separatorIndex >= 0
+        ? payload.substring(separatorIndex + 1).trim()
+        : payload;
+    return value.isEmpty ? null : value;
   }
 }

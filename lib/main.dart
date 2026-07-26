@@ -498,21 +498,25 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     final isViewingHelpScreen =
         _isOnHelpChatRoute || HelpService.isHelpChatScreenActive;
     if (_appLifecycleState == AppLifecycleState.resumed &&
-        isViewingHelpScreen) {
+        isViewingHelpScreen &&
+        !isUrgent) {
       return;
     }
 
     final popupCount = count < 1 ? 1 : count;
     final shouldOpenTracking = isUrgent || openTracking;
-    final notificationTitle = title.trim().isNotEmpty
-        ? title.trim()
-        : (isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru');
+    final notificationTitle = helpStatus == HelpService.statusRejected
+        ? 'Permintaan bantuan ditolak'
+        : title.trim().isNotEmpty
+            ? title.trim()
+            : (isUrgent ? 'Permintaan Bantuan Mendesak' : 'Pesan Baru');
     final notificationBody = _helpNotificationText(
       popupCount,
       isUrgent: isUrgent,
       senderName: senderName,
       senderKloter: senderKloter,
       messageText: messageText,
+      helpStatus: helpStatus,
     );
     final notificationPayload = _buildHelpNotificationPayload(
       payload,
@@ -525,40 +529,41 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
         payload?.trim().isNotEmpty == true &&
         foregroundNavigator != null;
 
-    if (!shouldOpenRequestDirectly) {
-      if (showRequestActions && notificationPayload != null) {
-        await LocalNotificationService.showHelpRequestNotification(
-          title: notificationTitle,
-          body: notificationBody,
-          payload: notificationPayload,
-        );
-      } else if (openTracking) {
-        await LocalNotificationService.showTrackingStatus(
-          title: _trackingNotificationTitle(
-            helpStatus,
-            fallbackTitle: notificationTitle,
-            estimatedArrivalAt: estimatedArrivalAt,
-          ),
-          body: _trackingNotificationBody(
-            helpStatus,
-            senderName: senderName,
-            fallbackBody: notificationBody,
-            routeDistanceMeters: routeDistanceMeters,
-            routeDurationSeconds: routeDurationSeconds,
-          ),
-          payload: notificationPayload,
-          ongoing: helpStatus == HelpService.statusAccepted ||
-              helpStatus == HelpService.statusOnTheWay,
-          playSound: true,
-          showJourneyProgress: helpStatus == HelpService.statusOnTheWay,
-        );
-      } else {
-        await LocalNotificationService.showNotification(
-          title: notificationTitle,
-          body: notificationBody,
-          payload: notificationPayload,
-        );
-      }
+    // An urgent request must always leave a system notification. Previously,
+    // the foreground direct-open path skipped this call, so a request received
+    // just before the app went to the background disappeared from the shade.
+    if (showRequestActions && notificationPayload != null) {
+      await LocalNotificationService.showHelpRequestNotification(
+        title: notificationTitle,
+        body: notificationBody,
+        payload: notificationPayload,
+      );
+    } else if (openTracking) {
+      await LocalNotificationService.showTrackingStatus(
+        title: _trackingNotificationTitle(
+          helpStatus,
+          fallbackTitle: notificationTitle,
+          estimatedArrivalAt: estimatedArrivalAt,
+        ),
+        body: _trackingNotificationBody(
+          helpStatus,
+          senderName: senderName,
+          fallbackBody: notificationBody,
+          routeDistanceMeters: routeDistanceMeters,
+          routeDurationSeconds: routeDurationSeconds,
+        ),
+        payload: notificationPayload,
+        ongoing: helpStatus == HelpService.statusAccepted ||
+            helpStatus == HelpService.statusOnTheWay,
+        playSound: true,
+        showJourneyProgress: helpStatus == HelpService.statusOnTheWay,
+      );
+    } else {
+      await LocalNotificationService.showNotification(
+        title: notificationTitle,
+        body: notificationBody,
+        payload: notificationPayload,
+      );
     }
 
     if (_appLifecycleState != AppLifecycleState.resumed) {
@@ -879,11 +884,17 @@ class _HajjAppState extends State<HajjApp> with WidgetsBindingObserver {
     String senderName = '',
     String senderKloter = '',
     String messageText = '',
+    String helpStatus = '',
   }) {
     final total = count < 1 ? 1 : count;
     final cleanName = senderName.trim();
     final cleanKloter = senderKloter.trim();
     final cleanMessage = messageText.trim();
+    if (helpStatus == HelpService.statusRejected) {
+      return cleanName.isEmpty
+          ? 'Petugas belum dapat membantu saat ini.'
+          : '$cleanName belum dapat membantu saat ini.';
+    }
     if (isUrgent) {
       if (cleanName.isNotEmpty) {
         final kloterText = cleanKloter.isNotEmpty

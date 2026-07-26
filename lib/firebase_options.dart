@@ -65,12 +65,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAjgAkt2vjYQ5hLAXb58h8oWLFYu3z1oZw',
-    appId: '1:744668372957:ios:1269f0b0069c25c6946034',
+    appId: '1:744668372957:ios:3d648233f6ce3ca5946034',
     messagingSenderId: '744668372957',
     projectId: 'hajjapp-3da80',
     databaseURL: 'https://hajjapp-3da80-default-rtdb.firebaseio.com',
     storageBucket: 'hajjapp-3da80.appspot.com',
-    iosBundleId: 'com.example.hajjApp',
+    iosBundleId: 'com.0x94t3z.hajjapp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
