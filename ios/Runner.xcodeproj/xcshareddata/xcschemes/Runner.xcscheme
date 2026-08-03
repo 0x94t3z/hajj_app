@@ -74,7 +74,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <LocationScenarioReference
-         identifier = "../../../../../Downloads/zamzam_tower.gpx"
+         identifier = "../../../../../Downloads/location/petugas.gpx"
          referenceType = "0">
       </LocationScenarioReference>
    </LaunchAction>

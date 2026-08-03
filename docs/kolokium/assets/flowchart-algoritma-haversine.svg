@@ -41,13 +41,14 @@
   <text x="263" y="510" class="shapeText">Lewati data</text>
   <text x="263" y="532" class="shapeText">petugas</text>
 
-  <rect x="370" y="640" width="500" height="205" rx="8" class="calc"/>
-  <text x="620" y="670" class="shapeText">Proses Perhitungan Haversine</text>
-  <line x1="400" y1="695" x2="840" y2="695" class="thin"/>
-  <text x="620" y="724" class="formulaText">1. Konversi koordinat dari derajat ke radian</text>
-  <text x="620" y="756" class="formulaText">2. Hitung Delta lat = lat2 - lat1 dan Delta lon = lon2 - lon1</text>
-  <text x="620" y="788" class="formulaText">3. Hitung a = sin²(Delta lat/2) + cos(lat1) x cos(lat2) x sin²(Delta lon/2)</text>
-  <text x="620" y="820" class="formulaText">4. Batasi nilai a pada rentang 0 sampai 1, lalu hitung d = 2r x asin(akar a)</text>
+  <rect x="370" y="625" width="500" height="230" rx="8" class="calc"/>
+  <text x="620" y="655" class="shapeText">Proses Perhitungan Haversine</text>
+  <line x1="400" y1="680" x2="840" y2="680" class="thin"/>
+  <text x="620" y="707" class="formulaText">1. Konversi koordinat dari derajat ke radian</text>
+  <text x="620" y="737" class="formulaText">2. Hitung Delta lat = lat2 - lat1 dan Delta lon = lon2 - lon1</text>
+  <text x="620" y="767" class="formulaText">3. Hitung a = sin²(Delta lat/2) + cos(lat1) x cos(lat2) x sin²(Delta lon/2)</text>
+  <text x="620" y="797" class="formulaText">4. Batasi a pada rentang 0–1, lalu hitung c = 2 × atan2(√a, √(1−a))</text>
+  <text x="620" y="827" class="formulaText">5. Hitung jarak d = r × c</text>
 
   <rect x="490" y="910" width="260" height="58" rx="7" class="process"/>
   <text x="620" y="933" class="shapeText">Simpan jarak</text>
@@ -77,9 +78,9 @@
   <path d="M620 393 L620 455" class="line"/>
   <path d="M495 515 L385 515" class="line"/>
   <text x="440" y="498" class="label">Tidak</text>
-  <path d="M620 575 L620 640" class="line"/>
+  <path d="M620 575 L620 625" class="line"/>
   <text x="645" y="608" class="label">Ya</text>
-  <path d="M620 845 L620 910" class="line"/>
+  <path d="M620 855 L620 910" class="line"/>
   <path d="M620 968 L620 1030" class="line"/>
   <path d="M750 1090 L860 1090" class="line"/>
   <text x="805" y="1073" class="label">Ya</text>

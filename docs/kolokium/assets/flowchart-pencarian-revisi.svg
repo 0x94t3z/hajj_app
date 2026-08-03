@@ -32,7 +32,7 @@
 
   <polygon points="145,328 420,328 390,383 115,383" class="io"/>
   <text x="268" y="350" class="shapeText">Tampilkan menu petugas</text>
-  <text x="268" y="372" class="shapeText">dan Help Inbox</text>
+  <text x="268" y="372" class="shapeText">dan Permintaan Bantuan</text>
   <ellipse cx="263" cy="455" rx="82" ry="30" class="startEnd"/>
   <text x="263" y="456" class="shapeText">Selesai</text>
 
@@ -86,9 +86,9 @@
   <ellipse cx="240" cy="1530" rx="82" ry="30" class="startEnd"/>
   <text x="240" y="1531" class="shapeText">Selesai</text>
 
-  <rect x="870" y="1395" width="260" height="58" rx="7" class="process"/>
-  <text x="1000" y="1418" class="shapeText">Buka chat dan</text>
-  <text x="1000" y="1440" class="shapeText">notifikasi bantuan</text>
+  <rect x="840" y="1395" width="320" height="58" rx="7" class="process"/>
+  <text x="1000" y="1418" class="shapeText">Kirim permintaan bantuan</text>
+  <text x="1000" y="1440" class="smallText">dan tampilkan status penanganan</text>
   <ellipse cx="1000" cy="1530" rx="82" ry="30" class="startEnd"/>
   <text x="1000" y="1531" class="shapeText">Selesai</text>
 
@@ -118,10 +118,10 @@
   <path d="M505 1263 L405 1263 L405 1188 L480 1188 L480 1160" class="line"/>
   <text x="455" y="1247" class="label">Tidak</text>
   <path d="M505 1423 L370 1423" class="line"/>
-  <text x="438" y="1406" class="label">Go</text>
+  <text x="438" y="1406" class="label">Rute</text>
   <path d="M240 1453 L240 1500" class="line"/>
-  <path d="M735 1423 L870 1423" class="line"/>
-  <text x="803" y="1406" class="label">Help</text>
+  <path d="M735 1423 L840 1423" class="line"/>
+  <text x="788" y="1406" class="label">Bantuan</text>
   <path d="M1000 1453 L1000 1500" class="line"/>
   </g>
 </svg>
